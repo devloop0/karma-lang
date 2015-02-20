@@ -1,4 +1,4 @@
-This is the karma-lang language.
+This is the karma language.
 
 Once you have downloaded your repository, this is how you get the build running:
 	1) Create a build directory: mkdir build
