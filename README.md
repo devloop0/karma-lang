@@ -12,7 +12,7 @@ Once you run the program, you can type program instructions into the standard ou
 If correct, the program will just show the lexed output. If incorrect, the program will also show an error message with a caret and colored output (if a terminal is unsupported, it will just show garbage).
 
 Thank you for downloading and contributing to karma-lang!
-This repository is under active development; feature suggestions are welcome.
+This project is under active development; feature suggestions are welcome.
 
 STATUS:
 	Currently, the parser is working for the basic language; type detection and code generation to this basic language is being worked on.
