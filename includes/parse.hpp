@@ -243,12 +243,17 @@ namespace karma_lang {
 			shared_ptr<dictionary> parse_dictionary();
 	};
 
+	enum subscript_colon_kind {
+		SUBSCRIPT_COLON_ZERO, SUBSCRIPT_COLON_ONE, SUBSCRIPT_COLON_TWO, SUBSCRIPT_COLON_NONE
+	};
+
 	class subscript : public root_node {
 		shared_ptr<binary_expression> start;
 		shared_ptr<binary_expression> done;
 		shared_ptr<binary_expression> step;
 		bool valid;
 		source_token_list::iterator subscript_pos;
+		subscript_colon_kind sc_kind;
 		public:
 			subscript(shared_ptr<root_node> r);
 			~subscript();
@@ -258,6 +263,7 @@ namespace karma_lang {
 			const bool get_valid();
 			source_token_list::iterator get_position();
 			shared_ptr<subscript> parse_subscript();
+			const subscript_colon_kind get_subscript_colon_kind();
 	};
 
 	class function_argument_list : public root_node {
@@ -318,7 +324,7 @@ namespace karma_lang {
 		bool valid;
 		source_token_list::iterator statement_pos;
 		public:
-			statement(shared_ptr<root_node> r);
+			statement(shared_ptr<root_node> root);
 			~statement();
 			const bool get_valid();
 			const statement_kind get_statement_kind();

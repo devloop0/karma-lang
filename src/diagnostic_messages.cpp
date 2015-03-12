@@ -19,9 +19,24 @@ namespace karma_lang {
 	const string diagnostic_messages::expected_close_dict = "Expected a close dict ('}}}'), at the end of the expression.";
 	const string diagnostic_messages::expected_a_colon_to_separate_key_value_pairs = "Expected a colon (':') to separate dictionary key-value pairs.";
 	const string diagnostic_messages::expected_close_bracket = "Expected a close bracket (']'), at the the end of the subscript expression.";
-	const string diagnostic_messages::expected_an_expression_defaulting_to_whole_sequence = "Expected an expression in a sequence slice; defaulting to whole sequence.";
 	const string diagnostic_messages::explicit_empty_step_size = "Explicitly used a step size but left it empty; defaulting to '1'.";
 	const string diagnostic_messages::expected_a_point_to = "Expected a point-to ('->') here.";
 	const string diagnostic_messages::expected_an_equals = "Expected an equals ('=') here (or a new-line ('\\n')).";
 	const string diagnostic_messages::expected_open_bracket = "Expected an open-bracket ('['), here.";
+	const string diagnostic_messages::expected_an_identifier = "Expected an identifier.";
+	const string diagnostic_messages::expected_only_one_immut = "Expected only one 'immut' qualifier; defaulting to one 'immut'.";
+	const string diagnostic_messages::repeated_declaration_ignoring_this_one = "Repeated variable declaration here.";
+	const string diagnostic_messages::originally_declared_here =  "Originally declared here.";
+	const string diagnostic_messages::incompatible_types = "Incompatible types with this binary expression. Expression beginning given here.";
+	const string diagnostic_messages::unknown_symbol = "Unknown symbol found here. (Did you forget to declare it somewhere)?: ";
+	const string diagnostic_messages::expected_at_least_one_element_in_sequence = "Expected at least one element in the list, tuple, or dictionary to its deduce type; defaulting to 'int'.";
+	const string diagnostic_messages::expected_same_type_for_all_elements_in_list_or_dictionary = "Expected all elements in the list or dictionary to have the same type.";
+	const string diagnostic_messages::subscript_applicable_only_for_sequences_and_dictionaries = "Subscripts are only applicable for lists, dictionaries, strings, and tuples.";
+	const string diagnostic_messages::empty_subscript_defaulting_to_whole_sequence = "Empty subscript; defaulting to whole sequence.";
+	const string diagnostic_messages::expected_subscript_for_sequence_to_be_integer = "Expected a sequence subscript to be an integer. (Did you mean to declare a dictionary)?";
+	const string diagnostic_messages::dictionaries_only_support_subscripting_not_slicing = "Dictionaries only support subscripting, not slicing.";
+	const string diagnostic_messages::expected_dictionary_subscript_to_equal_its_key_type = "Expected a dictionary subscript to equal its key type.";
+	const string diagnostic_messages::unequal_but_compatible_types = "The types of this binary expression are unequal but compatible; continuing.";
+	const string diagnostic_messages::expected_lvalue = "For an assignment expression, expected to find an lvalue.";
+	const string diagnostic_messages::immut_value_cannot_be_modified = "An immutable variable cannot be modified.";
 }

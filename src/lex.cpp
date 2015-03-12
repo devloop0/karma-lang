@@ -395,11 +395,11 @@ namespace karma_lang {
 			case '9': {
 				int save = cols;
 				string acc = string(1, source[i]);
-				bool decimal_flag = true;
+				bool decimal_flag = false;
 				i++, cols++;
-				while (isdigit(source[i]) || (decimal_flag && source[i] == '.')) {
+				while (isdigit(source[i]) || (!decimal_flag && source[i] == '.')) {
 					if (source[i] == '.')
-						decimal_flag = false;
+						decimal_flag = true;
 					acc += source[i];
 					i++, cols++;
 				}
