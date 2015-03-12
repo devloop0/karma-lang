@@ -527,7 +527,7 @@ namespace karma_lang {
 					shared_ptr<annotated_subscript> asubscr = make_shared<annotated_subscript>(ann_root_node, subscr, subscr->get_start() == nullptr ? nullptr : analyze_binary_expression(subscr->get_start()),
 							subscr->get_final() == nullptr ? nullptr : analyze_binary_expression(subscr->get_final()), subscr->get_step() == nullptr ? nullptr : analyze_binary_expression(subscr->get_step()),
 							subscr->get_start() == nullptr ? bad : analyze_binary_expression(subscr->get_start())->get_type_information(), subscr->get_final() == nullptr ? bad : analyze_binary_expression(subscr->get_final())->get_type_information(),
-							subscr->get_step() == nullptr ? bad : analyze_binary_expression(subscr->get_start())->get_type_information());
+							subscr->get_step() == nullptr ? bad : analyze_binary_expression(subscr->get_step())->get_type_information());
 					return make_pair(temp, asubscr);
 				}
 				else if(prev == _dict) {
@@ -544,7 +544,7 @@ namespace karma_lang {
 					shared_ptr<annotated_subscript> asubscr = make_shared<annotated_subscript>(ann_root_node, subscr, subscr->get_start() == nullptr ? nullptr : analyze_binary_expression(subscr->get_start()),
 							subscr->get_final() == nullptr ? nullptr : analyze_binary_expression(subscr->get_final()), subscr->get_step() == nullptr ? nullptr : analyze_binary_expression(subscr->get_step()),
 							subscr->get_start() == nullptr ? bad : analyze_binary_expression(subscr->get_start())->get_type_information(), subscr->get_final() == nullptr ? bad : analyze_binary_expression(subscr->get_final())->get_type_information(),
-							subscr->get_step() == nullptr ? bad : analyze_binary_expression(subscr->get_start())->get_type_information());
+							subscr->get_step() == nullptr ? bad : analyze_binary_expression(subscr->get_step())->get_type_information());
 					return make_pair(type_information(*(prev.get_value_information()), value_kind::VALUE_LVALUE), asubscr);
 				}
 				else if(prev == _list || prev == _tuple || prev == _string) {
@@ -576,7 +576,7 @@ namespace karma_lang {
 						shared_ptr<annotated_subscript> asubscr = make_shared<annotated_subscript>(ann_root_node, subscr, subscr->get_start() == nullptr ? nullptr : analyze_binary_expression(subscr->get_start()),
 								subscr->get_final() == nullptr ? nullptr : analyze_binary_expression(subscr->get_final()), subscr->get_step() == nullptr ? nullptr : analyze_binary_expression(subscr->get_step()),
 								subscr->get_start() == nullptr ? bad : analyze_binary_expression(subscr->get_start())->get_type_information(), subscr->get_final() == nullptr ? bad : analyze_binary_expression(subscr->get_final())->get_type_information(),
-								subscr->get_step() == nullptr ? bad : analyze_binary_expression(subscr->get_start())->get_type_information());
+								subscr->get_step() == nullptr ? bad : analyze_binary_expression(subscr->get_step())->get_type_information());
 						return make_pair(type_information(prev, value_kind::VALUE_LVALUE), asubscr);
 					}
 					if(subscr->get_start() != nullptr && subscr->get_final() == nullptr && subscr->get_step() == nullptr && subscr->get_subscript_colon_kind() == subscript_colon_kind::SUBSCRIPT_COLON_ZERO) {
@@ -585,7 +585,7 @@ namespace karma_lang {
 							shared_ptr<annotated_subscript> asubscr = make_shared<annotated_subscript>(ann_root_node, subscr, subscr->get_start() == nullptr ? nullptr : analyze_binary_expression(subscr->get_start()),
 									subscr->get_final() == nullptr ? nullptr : analyze_binary_expression(subscr->get_final()), subscr->get_step() == nullptr ? nullptr : analyze_binary_expression(subscr->get_step()),
 									subscr->get_start() == nullptr ? bad : analyze_binary_expression(subscr->get_start())->get_type_information(), subscr->get_final() == nullptr ? bad : analyze_binary_expression(subscr->get_final())->get_type_information(),
-									subscr->get_step() == nullptr ? bad : analyze_binary_expression(subscr->get_start())->get_type_information());
+									subscr->get_step() == nullptr ? bad : analyze_binary_expression(subscr->get_step())->get_type_information());
 							return make_pair(temp, asubscr);
 						}
 						else {
@@ -593,7 +593,7 @@ namespace karma_lang {
 							shared_ptr<annotated_subscript> asubscr = make_shared<annotated_subscript>(ann_root_node, subscr, subscr->get_start() == nullptr ? nullptr : analyze_binary_expression(subscr->get_start()),
 									subscr->get_final() == nullptr ? nullptr : analyze_binary_expression(subscr->get_final()), subscr->get_step() == nullptr ? nullptr : analyze_binary_expression(subscr->get_step()),
 									subscr->get_start() == nullptr ? bad : analyze_binary_expression(subscr->get_start())->get_type_information(), subscr->get_final() == nullptr ? bad : analyze_binary_expression(subscr->get_final())->get_type_information(),
-									subscr->get_step() == nullptr ? bad : analyze_binary_expression(subscr->get_start())->get_type_information());
+									subscr->get_step() == nullptr ? bad : analyze_binary_expression(subscr->get_step())->get_type_information());
 							return make_pair(temp, asubscr);
 						}
 					}
@@ -601,14 +601,14 @@ namespace karma_lang {
 					shared_ptr<annotated_subscript> asubscr = make_shared<annotated_subscript>(ann_root_node, subscr, subscr->get_start() == nullptr ? nullptr : analyze_binary_expression(subscr->get_start()),
 							subscr->get_final() == nullptr ? nullptr : analyze_binary_expression(subscr->get_final()), subscr->get_step() == nullptr ? nullptr : analyze_binary_expression(subscr->get_step()),
 							subscr->get_start() == nullptr ? bad : analyze_binary_expression(subscr->get_start())->get_type_information(), subscr->get_final() == nullptr ? bad : analyze_binary_expression(subscr->get_final())->get_type_information(),
-							subscr->get_step() == nullptr ? bad : analyze_binary_expression(subscr->get_start())->get_type_information());
+							subscr->get_step() == nullptr ? bad : analyze_binary_expression(subscr->get_step())->get_type_information());
 					return make_pair(temp, asubscr);
 				}
 				type_information temp = type_information(type_information(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_LVALUE), prev.get_literal());
 				shared_ptr<annotated_subscript> asubscr = make_shared<annotated_subscript>(ann_root_node, subscr, subscr->get_start() == nullptr ? nullptr : analyze_binary_expression(subscr->get_start()),
 						subscr->get_final() == nullptr ? nullptr : analyze_binary_expression(subscr->get_final()), subscr->get_step() == nullptr ? nullptr : analyze_binary_expression(subscr->get_step()),
 						subscr->get_start() == nullptr ? bad : analyze_binary_expression(subscr->get_start())->get_type_information(), subscr->get_final() == nullptr ? bad : analyze_binary_expression(subscr->get_final())->get_type_information(),
-						subscr->get_step() == nullptr ? bad : analyze_binary_expression(subscr->get_start())->get_type_information());
+						subscr->get_step() == nullptr ? bad : analyze_binary_expression(subscr->get_step())->get_type_information());
 				return make_pair(temp, asubscr);
 			}
 			else
@@ -752,7 +752,7 @@ namespace karma_lang {
 			abexpr_list.push_back(analyze_binary_expression(bexpr_list[i]));
 			type_information in_t_inf = analyze_binary_expression(bexpr_list[i])->get_type_information();
 			t_inf_list.push_back(in_t_inf);
-			if(t_inf == in_t_inf || t_inf.get_type_kind() == type_kind::TYPE_ANY);
+			if(t_inf.get_type_kind() == type_kind::TYPE_ANY || t_inf == in_t_inf || in_t_inf.get_type_kind() == type_kind::TYPE_ANY);
 			else {
 				root->get_diagnostics_reporter()->print(diagnostic_messages::expected_same_type_for_all_elements_in_list_or_dictionary, bexpr_list[i]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 				root->get_diagnostics_reporter()->print(diagnostic_messages::originally_declared_here, bexpr_list[0]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_NOTE);
@@ -796,7 +796,7 @@ namespace karma_lang {
 			type_information in_kt_inf = analyze_binary_expression(kl[i])->get_type_information();
 			klist.push_back(analyze_binary_expression(kl[i]));
 			ktlist.push_back(in_kt_inf);
-			if(kt_inf == in_kt_inf || kt_inf.get_type_kind() == type_kind::TYPE_ANY);
+			if(kt_inf.get_type_kind() == type_kind::TYPE_ANY || kt_inf == in_kt_inf || in_kt_inf.get_type_kind() == type_kind::TYPE_ANY);
 			else {
 				root->get_diagnostics_reporter()->print(diagnostic_messages::expected_same_type_for_all_elements_in_list_or_dictionary, kl[i]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 				root->get_diagnostics_reporter()->print(diagnostic_messages::originally_declared_here, kl[0]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_NOTE);
@@ -808,7 +808,7 @@ namespace karma_lang {
 			type_information in_vt_inf = analyze_binary_expression(vl[i])->get_type_information();
 			vlist.push_back(analyze_binary_expression(vl[i]));
 			vtlist.push_back(in_vt_inf);
-			if(vt_inf == in_vt_inf || vt_inf.get_type_kind() == type_kind::TYPE_ANY);
+			if(vt_inf.get_type_kind() == type_kind::TYPE_ANY || vt_inf == in_vt_inf || in_vt_inf.get_type_kind() == type_kind::TYPE_ANY);
 			else {
 				root->get_diagnostics_reporter()->print(diagnostic_messages::expected_same_type_for_all_elements_in_list_or_dictionary, vl[i]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 				root->get_diagnostics_reporter()->print(diagnostic_messages::originally_declared_here, vl[0]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_NOTE);

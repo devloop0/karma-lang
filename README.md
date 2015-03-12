@@ -79,7 +79,7 @@ The `main.cpp` file contains all of the necessary information to use the karma-l
 
 To compile the program, you need to first remove all the comments.
 ```c++
-std::string comments_removed = comment_remover(source).remove_comments()
+std::string comments_removed = karma_lang::comment_remover(source).remove_comments()
 ```
 
 Then. you need to lex the source file; for diagnostic purposes, you need to provide the name of the file you wanted lexed as a string as well; this process will return an `std::shared_ptr<karma_lang::source_token_list>` type.
