@@ -15,4 +15,6 @@ Thank you for downloading and contributing to karma-lang!
 This project is under active development; feature suggestions are welcome.
 
 STATUS:
-	Currently, the parser is working for the basic language; type detection and code generation to this basic language is being worked on.
+	Currently, the parser and semantic analysis have been completed. More bugfixes to these will be coming. The next step is code-generation.*
+
+* The next step will be code-generation. It is currently up in the air, choosing between, generating code to C, native-code (x86_64 for linux, most likely NASM if this is the option being chosen), or creating a VM to interpret the code. Once a decision has been made, the README.md file will be updated and then the coding will begin.
