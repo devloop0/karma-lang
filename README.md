@@ -20,11 +20,13 @@ Obviously, there will be more to the language to come, but as of now, this is wh
  
 Future work will include:
 
- 1. Code generation
- 	* It is currently up for debate which of the following options to chose for code generation:
-    	1. Native machine code (hardest of all, but guaranteed performance).
-        2. C code (easier, but harder in the future (convulted exception support and maybe, generic support).
-        3. VM (easiest of all, especially in the long run, but severe performance hit).
+It was decided that for code generation, a virtual machine would be used to interpret the code from the karma programming language. (This will most likely be started in another repository to keep the two code bases independent from each other). Optimizations have not yet started, but are on the back burner after more features have been added to the language and the virtual machine has been implemented.
+
+ 1. ~~Code generation~~
+ 	* ~~It is currently up for debate which of the following options to chose for code generation:~~
+    	1. ~~Native machine code (hardest of all, but guaranteed performance).~~
+        2. ~~C code (easier, but harder in the future (convulted exception support and maybe, generic support).~~
+        3. ~~VM (easiest of all, especially in the long run, but severe performance hit).~~ 
  2. Optimizations (control flow graph, SSA, etc.)
 
 ---
