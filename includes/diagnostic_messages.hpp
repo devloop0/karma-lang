@@ -51,6 +51,11 @@ namespace karma_lang {
 			const static string unequal_but_compatible_types;
 			const static string expected_lvalue;
 			const static string immut_value_cannot_be_modified;
+			const static string unequal_but_compatible_types_list_dict;
+			const static string expected_lvalue_for_increments_and_decrements;
+			const static string expected_boolean;
+			const static string instruction_not_supported;
+			const static string tuples_cannot_be_modified;
 	};
 }
 

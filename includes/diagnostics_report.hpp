@@ -29,10 +29,12 @@ namespace karma_lang {
 
 	class diagnostics_reporter {
 		shared_ptr<source_token_list> stlist;
+		int error_count;
 		public:
 			diagnostics_reporter(shared_ptr<source_token_list> stl);
 			~diagnostics_reporter();
 			shared_ptr<token> print(string message, source_token_list::iterator current_pos, diagnostics_reporter_kind kind);	
+			const int get_error_count();
 	};
 }
 

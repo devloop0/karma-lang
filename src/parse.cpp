@@ -694,27 +694,31 @@ namespace karma_lang {
 	shared_ptr<binary_expression> binary_expression::exponent_expression() {
 		source_token_list::iterator save = root->get_position();
 		if (save >= root->get_lexer()->get_source_token_list()->end()) {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
 		shared_ptr<unary_expression> uexpr = make_shared<unary_expression>(root)->parse_unary_expression();
 		if (uexpr->get_valid()) {
 			source_token_list::iterator save1 = root->get_position();
 			if (save1 >= root->get_lexer()->get_source_token_list()->end() || (save1 < root->get_lexer()->get_source_token_list()->end() && (*save1)->get_token_kind() != token_kind::TOKEN_EXPONENT)) {
-				valid = true;
-				lhs = uexpr;
-				rhs = nullptr;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = true;
+				ret->lhs = uexpr;
+				ret->rhs = nullptr;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+				ret->binary_expression_pos = save;
+				return ret;
 			}
 			root->set_position(root->get_position() + 1);
 			source_token_list::iterator save2 = root->get_position();
@@ -724,75 +728,90 @@ namespace karma_lang {
 			}
 			shared_ptr<binary_expression> bexpr = exponent_expression();
 			if (bexpr->get_valid()) {
-				valid = true;
-				lhs = uexpr;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
-				rhs = bexpr;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_EXPONENT;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = true;
+				ret->lhs = uexpr;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
+				ret->rhs = bexpr;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_EXPONENT;
+				ret->binary_expression_pos = save;
+				return ret;
 			}
 			else {
 				root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-				valid = false;
-				lhs = uexpr;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
-				rhs = bexpr;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_EXPONENT;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = false;
+				ret->lhs = uexpr;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
+				ret->rhs = bexpr;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_EXPONENT;
+				ret->binary_expression_pos = save;
+				return ret;
 			}
 		}
 		else {
 			root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_unary_expression, save, diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-			valid = false;
-			rhs = nullptr;
-			lhs = uexpr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = uexpr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
-		valid = false;
-		rhs = nullptr;
-		lhs = nullptr;
-		lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-		return make_shared<binary_expression>(*this);
+		shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+		ret->valid = false;
+		ret->rhs = nullptr;
+		ret->lhs = nullptr;
+		ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+		ret->binary_expression_pos = save;
+		return ret;
 	}
 
 	shared_ptr<binary_expression> binary_expression::multiplicative_expression() {
 		source_token_list::iterator save = root->get_position();
 		if (save >= root->get_lexer()->get_source_token_list()->end()) {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
 		shared_ptr<binary_expression> bexpr = exponent_expression();
 		if (bexpr->get_valid()) {
 			source_token_list::iterator save1 = root->get_position();
+			shared_ptr<binary_expression> temp = make_shared<binary_expression>(root);
+			bool first_check = false;
 			if (save1 >= root->get_lexer()->get_source_token_list()->end()) {
-				valid = true;
-				lhs = bexpr;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				rhs = nullptr;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = true;
+				ret->lhs = bexpr;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->rhs = nullptr;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+				ret->binary_expression_pos = save;
+				return ret;
 			}
 			if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_MULTIPLY || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_DIVIDE ||
 					(*(root->get_position()))->get_token_kind() == token_kind::TOKEN_MODULUS) {
+				first_check = true;
 				source_token_list::iterator pre_loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -801,18 +820,19 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> exp_expr = exponent_expression();
 				if (exp_expr->get_valid()) {
-					valid = true;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = true;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_MULTIPLY)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_MULTIPLY;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_MULTIPLY;
 					else if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_DIVIDE)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_DIVIDE;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_DIVIDE;
 					else if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_MODULUS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_MODULUS;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_MODULUS;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -820,26 +840,32 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = false;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_MULTIPLY)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_MULTIPLY;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_MULTIPLY;
 					else if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_DIVIDE)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_DIVIDE;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_DIVIDE;
 					else if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_MODULUS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_MODULUS;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_MODULUS;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
 			}
+			if(!first_check)
+				return bexpr;
+			shared_ptr<binary_expression> temp2 = make_shared<binary_expression>(root);
+			bool second_check = false;
 			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_MULTIPLY || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_DIVIDE ||
 						(*(root->get_position()))->get_token_kind() == token_kind::TOKEN_MODULUS)) {
+				second_check = true;
 				source_token_list::iterator loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -848,18 +874,19 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> bexpr1 = exponent_expression();
 				if (bexpr1->get_valid()) {
-					valid = true;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = bexpr1;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->valid = true;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs = bexpr1;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_MULTIPLY)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_MULTIPLY;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_MULTIPLY;
 					else if ((*loop_save)->get_token_kind() == token_kind::TOKEN_DIVIDE)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_DIVIDE;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_DIVIDE;
 					else if ((*loop_save)->get_token_kind() == token_kind::TOKEN_MODULUS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_MODULUS;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_MODULUS;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, loop_save, diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -867,72 +894,95 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					rhs = bexpr1;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->valid = false;
+					temp2->rhs = bexpr1;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_MULTIPLY)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_MULTIPLY;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_MULTIPLY;
 					else if ((*loop_save)->get_token_kind() == token_kind::TOKEN_DIVIDE)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_DIVIDE;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_DIVIDE;
 					else if ((*loop_save)->get_token_kind() == token_kind::TOKEN_MODULUS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_MODULUS;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_MODULUS;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, loop_save, diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
+				temp = make_shared<binary_expression>(root);
+				temp->valid = temp2->valid;
+				temp->rhs = temp2->rhs;
+				temp->lhs = temp2->lhs;
+				temp->lhs_kind = temp2->lhs_kind;
+				temp->rhs_kind = temp2->rhs_kind;
+				temp->operation_kind = temp2->operation_kind;
+				temp->expression_kind = temp2->expression_kind;
+				temp->binary_expression_pos = temp2->binary_expression_pos;
 			}
-			return make_shared<binary_expression>(*this);
+			if(!second_check)
+				return temp;
+			return temp2;
 		}
 		else {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
-		valid = false;
-		rhs = nullptr;
-		lhs = nullptr;
-		lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-		return make_shared<binary_expression>(*this);
+		shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+		ret->valid = false;
+		ret->rhs = nullptr;
+		ret->lhs = nullptr;
+		ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+		ret->binary_expression_pos = save;
+		return ret;
 	}
 
 	shared_ptr<binary_expression> binary_expression::additive_expression() {
 		source_token_list::iterator save = root->get_position();
 		if (save >= root->get_lexer()->get_source_token_list()->end()) {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
 		shared_ptr<binary_expression> bexpr = multiplicative_expression();
 		if (bexpr->get_valid()) {
 			source_token_list::iterator save1 = root->get_position();
+			shared_ptr<binary_expression> temp = make_shared<binary_expression>(root);
+			bool first_check = false;
 			if (save1 >= root->get_lexer()->get_source_token_list()->end()) {
-				valid = true;
-				lhs = bexpr;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				rhs = nullptr;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = true;
+				ret->lhs = bexpr;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->rhs = nullptr;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+				ret->binary_expression_pos = save;
+				return ret;
 			}
 			if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_PLUS || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_MINUS) {
+				first_check = true;
 				source_token_list::iterator pre_loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -941,16 +991,17 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> exp_expr = multiplicative_expression();
 				if (exp_expr->get_valid()) {
-					valid = true;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = true;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_PLUS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_PLUS;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_PLUS;
 					else if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_MINUS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_MINUS;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_MINUS;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -958,23 +1009,29 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = false;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_PLUS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_PLUS;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_PLUS;
 					else if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_MINUS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_MINUS;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_MINUS;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
 			}
+			if(!first_check)
+				return bexpr;
+			shared_ptr<binary_expression> temp2 = make_shared<binary_expression>(root);
+			bool second_check = false;
 			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_PLUS || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_MINUS)) {
+				second_check = true;
 				source_token_list::iterator loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -983,16 +1040,17 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> bexpr1 = multiplicative_expression();
 				if (bexpr1->get_valid()) {
-					valid = true;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = bexpr1;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->valid = true;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs = bexpr1;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_PLUS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_PLUS;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_PLUS;
 					else if ((*loop_save)->get_token_kind() == token_kind::TOKEN_MINUS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_MINUS;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_MINUS;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, loop_save, diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -1000,70 +1058,93 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					rhs = bexpr1;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->valid = false;
+					temp2->rhs = bexpr1;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_PLUS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_PLUS;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_PLUS;
 					else if ((*loop_save)->get_token_kind() == token_kind::TOKEN_MINUS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_MINUS;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_MINUS;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, loop_save, diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
+				temp = make_shared<binary_expression>(root);
+				temp->valid = temp2->valid;
+				temp->rhs = temp2->rhs;
+				temp->lhs = temp2->lhs;
+				temp->lhs_kind = temp2->lhs_kind;
+				temp->rhs_kind = temp2->rhs_kind;
+				temp->operation_kind = temp2->operation_kind;
+				temp->expression_kind = temp2->expression_kind;
+				temp->binary_expression_pos = temp2->binary_expression_pos;
 			}
-			return make_shared<binary_expression>(*this);
+			if(!second_check)
+				return temp;
+			return temp2;
 		}
 		else {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
-		valid = false;
-		rhs = nullptr;
-		lhs = nullptr;
-		lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-		return make_shared<binary_expression>(*this);
+		shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+		ret->valid = false;
+		ret->rhs = nullptr;
+		ret->lhs = nullptr;
+		ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+		ret->binary_expression_pos = save;
+		return ret;
 	}
 
 	shared_ptr<binary_expression> binary_expression::shift_expression() {
 		source_token_list::iterator save = root->get_position();
 		if (save >= root->get_lexer()->get_source_token_list()->end()) {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
 		shared_ptr<binary_expression> bexpr = additive_expression();
 		if (bexpr->get_valid()) {
 			source_token_list::iterator save1 = root->get_position();
+			shared_ptr<binary_expression> temp = make_shared<binary_expression>(root);
+			bool first_check = false;
 			if (save1 >= root->get_lexer()->get_source_token_list()->end()) {
-				valid = true;
-				lhs = bexpr;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				rhs = nullptr;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = true;
+				ret->lhs = bexpr;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->rhs = nullptr;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+				ret->binary_expression_pos = save;
+				return ret;
 			}
 			if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_SHIFT_LEFT || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_SHIFT_RIGHT) {
+				first_check = true;
 				source_token_list::iterator pre_loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -1072,16 +1153,17 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> exp_expr = additive_expression();
 				if (exp_expr->get_valid()) {
-					valid = true;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = true;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_SHIFT_RIGHT)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT;
 					else if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_SHIFT_LEFT)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -1089,23 +1171,29 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = false;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_SHIFT_RIGHT)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT;
 					else if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_SHIFT_LEFT)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
 			}
+			if(!first_check)
+				return bexpr;
+			shared_ptr<binary_expression> temp2 = make_shared<binary_expression>(root);
+			bool second_check = false;
 			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_SHIFT_LEFT || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_SHIFT_RIGHT)) {
+				second_check = true;
 				source_token_list::iterator loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -1114,16 +1202,17 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> bexpr1 = additive_expression();
 				if (bexpr1->get_valid()) {
-					valid = true;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = bexpr1;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->valid = true;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs = bexpr1;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_SHIFT_LEFT)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT;
 					else if ((*loop_save)->get_token_kind() == token_kind::TOKEN_SHIFT_RIGHT)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, loop_save, diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -1131,71 +1220,94 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					rhs = bexpr1;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->valid = false;
+					temp->rhs = bexpr1;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_SHIFT_RIGHT)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT;
 					else if ((*loop_save)->get_token_kind() == token_kind::TOKEN_SHIFT_LEFT)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, loop_save, diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
+				temp = make_shared<binary_expression>(root);
+				temp->valid = temp2->valid;
+				temp->rhs = temp2->rhs;
+				temp->lhs = temp2->lhs;
+				temp->lhs_kind = temp2->lhs_kind;
+				temp->rhs_kind = temp2->rhs_kind;
+				temp->operation_kind = temp2->operation_kind;
+				temp->expression_kind = temp2->expression_kind;
+				temp->binary_expression_pos = temp2->binary_expression_pos;
 			}
-			return make_shared<binary_expression>(*this);
+			if(!second_check)
+				return temp;
+			return temp2;
 		}
 		else {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
-		valid = false;
-		rhs = nullptr;
-		lhs = nullptr;
-		lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-		return make_shared<binary_expression>(*this);
+		shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+		ret->valid = false;
+		ret->rhs = nullptr;
+		ret->lhs = nullptr;
+		ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+		ret->binary_expression_pos = save;
+		return ret;
 	}
 
 	shared_ptr<binary_expression> binary_expression::relational_expression() {
 		source_token_list::iterator save = root->get_position();
 		if (save >= root->get_lexer()->get_source_token_list()->end()) {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
 		shared_ptr<binary_expression> bexpr = shift_expression();
 		if (bexpr->get_valid()) {
 			source_token_list::iterator save1 = root->get_position();
+			shared_ptr<binary_expression> temp = make_shared<binary_expression>(root);
+			bool first_check = false;
 			if (save1 >= root->get_lexer()->get_source_token_list()->end()) {
-				valid = true;
-				lhs = bexpr;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				rhs = nullptr;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = true;
+				ret->lhs = bexpr;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->rhs = nullptr;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+				ret->binary_expression_pos = save;
+				return ret;
 			}
 			if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_LESS_THAN || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_GREATER_THAN ||
 					(*(root->get_position()))->get_token_kind() == token_kind::TOKEN_LESS_THAN_OR_EQUAL_TO || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_GREATER_THAN_OR_EQUAL_TO) {
+				first_check = true;
 				source_token_list::iterator pre_loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -1204,20 +1316,21 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> exp_expr = shift_expression();
 				if (exp_expr->get_valid()) {
-					valid = true;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = true;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_LESS_THAN)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_LESS_THAN;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_LESS_THAN;
 					else if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_GREATER_THAN)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_GREATER_THAN;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_GREATER_THAN;
 					else if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_LESS_THAN_OR_EQUAL_TO)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_LESS_THAN_OR_EQUAL_TO;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_LESS_THAN_OR_EQUAL_TO;
 					else if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_GREATER_THAN_OR_EQUAL_TO)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_GREATER_THAN_OR_EQUAL_TO;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_GREATER_THAN_OR_EQUAL_TO;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -1225,28 +1338,34 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = false;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_LESS_THAN)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_LESS_THAN;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_LESS_THAN;
 					else if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_GREATER_THAN)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_GREATER_THAN;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_GREATER_THAN;
 					else if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_LESS_THAN_OR_EQUAL_TO)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_LESS_THAN_OR_EQUAL_TO;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_LESS_THAN_OR_EQUAL_TO;
 					else if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_GREATER_THAN_OR_EQUAL_TO)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_GREATER_THAN_OR_EQUAL_TO;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_GREATER_THAN_OR_EQUAL_TO;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
 			}
+			if(!first_check)
+				return bexpr;
+			shared_ptr<binary_expression> temp2 = make_shared<binary_expression>(root);
+			bool second_check = false;
 			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_LESS_THAN || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_GREATER_THAN ||
 						(*(root->get_position()))->get_token_kind() == token_kind::TOKEN_GREATER_THAN_OR_EQUAL_TO || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_LESS_THAN_OR_EQUAL_TO)) {
+				second_check = true;
 				source_token_list::iterator loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -1255,20 +1374,21 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> bexpr1 = shift_expression();
 				if (bexpr1->get_valid()) {
-					valid = true;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = bexpr1;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->valid = true;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs = bexpr1;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_GREATER_THAN)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_GREATER_THAN;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_GREATER_THAN;
 					else if ((*loop_save)->get_token_kind() == token_kind::TOKEN_LESS_THAN)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_LESS_THAN;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_LESS_THAN;
 					else if ((*loop_save)->get_token_kind() == token_kind::TOKEN_LESS_THAN_OR_EQUAL_TO)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_LESS_THAN_OR_EQUAL_TO;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_LESS_THAN_OR_EQUAL_TO;
 					else if ((*loop_save)->get_token_kind() == token_kind::TOKEN_GREATER_THAN_OR_EQUAL_TO)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_GREATER_THAN_OR_EQUAL_TO;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_GREATER_THAN_OR_EQUAL_TO;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, loop_save, diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -1276,74 +1396,97 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					rhs = bexpr1;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->valid = false;
+					temp2->rhs = bexpr1;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_GREATER_THAN)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_GREATER_THAN;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_GREATER_THAN;
 					else if ((*loop_save)->get_token_kind() == token_kind::TOKEN_LESS_THAN)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_LESS_THAN;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_LESS_THAN;
 					else if ((*loop_save)->get_token_kind() == token_kind::TOKEN_LESS_THAN_OR_EQUAL_TO)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_LESS_THAN_OR_EQUAL_TO;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_LESS_THAN_OR_EQUAL_TO;
 					else if ((*loop_save)->get_token_kind() == token_kind::TOKEN_GREATER_THAN_OR_EQUAL_TO)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_GREATER_THAN_OR_EQUAL_TO;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_GREATER_THAN_OR_EQUAL_TO;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, loop_save, diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
+				temp = make_shared<binary_expression>(root);
+				temp->valid = temp2->valid;
+				temp->rhs = temp2->rhs;
+				temp->lhs = temp2->lhs;
+				temp->lhs_kind = temp2->lhs_kind;
+				temp->rhs_kind = temp2->rhs_kind;
+				temp->operation_kind = temp2->operation_kind;
+				temp->expression_kind = temp2->expression_kind;
+				temp->binary_expression_pos = temp2->binary_expression_pos;
 			}
-			return make_shared<binary_expression>(*this);
+			if(!second_check)
+				return temp;
+			return temp2;
 		}
 		else {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
-		valid = false;
-		rhs = nullptr;
-		lhs = nullptr;
-		lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-		return make_shared<binary_expression>(*this);
+		shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+		ret->valid = false;
+		ret->rhs = nullptr;
+		ret->lhs = nullptr;
+		ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+		ret->binary_expression_pos = save;
+		return ret;
 	}
 
 	shared_ptr<binary_expression> binary_expression::equality_expression() {
 		source_token_list::iterator save = root->get_position();
 		if (save >= root->get_lexer()->get_source_token_list()->end()) {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
 		shared_ptr<binary_expression> bexpr = relational_expression();
 		if (bexpr->get_valid()) {
 			source_token_list::iterator save1 = root->get_position();
+			shared_ptr<binary_expression> temp = make_shared<binary_expression>(root);
+			bool first_check = false;
 			if (save1 >= root->get_lexer()->get_source_token_list()->end()) {
-				valid = true;
-				lhs = bexpr;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				rhs = nullptr;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = true;
+				ret->lhs = bexpr;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->rhs = nullptr;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+				ret->binary_expression_pos = save;
+				return ret;
 			}
 			if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_DOUBLE_EQUALS || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_NOT_EQUALS) {
+				first_check = true;
 				source_token_list::iterator pre_loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -1352,16 +1495,17 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> exp_expr = relational_expression();
 				if (exp_expr->get_valid()) {
-					valid = true;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = true;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_DOUBLE_EQUALS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_EQUALS_EQUALS;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_EQUALS_EQUALS;
 					else if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_NOT_EQUALS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_NOT_EQUAL;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_NOT_EQUAL;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -1369,23 +1513,29 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = false;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_DOUBLE_EQUALS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_EQUALS_EQUALS;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_EQUALS_EQUALS;
 					else if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_NOT_EQUALS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_NOT_EQUAL;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_NOT_EQUAL;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
 			}
+			if(!first_check)
+				return bexpr;
+			shared_ptr<binary_expression> temp2 = make_shared<binary_expression>(root);
+			bool second_check = false;
 			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_DOUBLE_EQUALS || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_NOT_EQUALS)) {
+				second_check = true;
 				source_token_list::iterator loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -1394,16 +1544,17 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> bexpr1 = relational_expression();
 				if (bexpr1->get_valid()) {
-					valid = true;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = bexpr1;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->valid = true;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs = bexpr1;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_DOUBLE_EQUALS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_EQUALS_EQUALS;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_EQUALS_EQUALS;
 					else if ((*loop_save)->get_token_kind() == token_kind::TOKEN_NOT_EQUALS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_NOT_EQUAL;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_NOT_EQUAL;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -1411,70 +1562,92 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					rhs = bexpr1;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->valid = false;
+					temp2->rhs = bexpr1;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_DOUBLE_EQUALS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_EQUALS_EQUALS;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_EQUALS_EQUALS;
 					else if ((*loop_save)->get_token_kind() == token_kind::TOKEN_NOT_EQUALS)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_NOT_EQUAL;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_NOT_EQUAL;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
+				temp = make_shared<binary_expression>(root);
+				temp->valid = temp2->valid;
+				temp->rhs = temp2->rhs;
+				temp->lhs = temp2->lhs;
+				temp->lhs_kind = temp2->lhs_kind;
+				temp->rhs_kind = temp2->rhs_kind;
+				temp->operation_kind = temp2->operation_kind;
+				temp->expression_kind = temp2->expression_kind;
+				temp->binary_expression_pos = temp2->binary_expression_pos;
 			}
-			return make_shared<binary_expression>(*this);
+			if(!second_check)
+				return temp;
+			return temp2;
 		}
 		else {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
-		valid = false;
-		rhs = nullptr;
-		lhs = nullptr;
-		lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-		return make_shared<binary_expression>(*this);
+		shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+		ret->valid = false;
+		ret->rhs = nullptr;
+		ret->lhs = nullptr;
+		ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+		ret->binary_expression_pos = save;
+		return ret;
 	}
 
 	shared_ptr<binary_expression> binary_expression::and_expression() {
 		source_token_list::iterator save = root->get_position();
 		if (save >= root->get_lexer()->get_source_token_list()->end()) {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
 		shared_ptr<binary_expression> bexpr = equality_expression();
 		if (bexpr->get_valid()) {
 			source_token_list::iterator save1 = root->get_position();
+			shared_ptr<binary_expression> temp = make_shared<binary_expression>(root);
+			bool first_check = false;
 			if (save1 >= root->get_lexer()->get_source_token_list()->end()) {
-				valid = true;
-				lhs = bexpr;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				rhs = nullptr;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = true;
+				ret->lhs = bexpr;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->rhs = nullptr;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+				ret->binary_expression_pos = save;
+				return ret;
 			}
 			if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_BITWISE_AND) {
+				first_check = true;
 				source_token_list::iterator pre_loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -1483,14 +1656,15 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> exp_expr = relational_expression();
 				if (exp_expr->get_valid()) {
-					valid = true;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = true;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_BITWISE_AND)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_AND;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_AND;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -1498,21 +1672,27 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = false;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_BITWISE_AND)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_AND;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_AND;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
 			}
+			if(!first_check)
+				return bexpr;
+			shared_ptr<binary_expression> temp2 = make_shared<binary_expression>(root);
+			bool second_check = false;
 			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_BITWISE_AND)) {
+				second_check = true;
 				source_token_list::iterator loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -1521,14 +1701,15 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> bexpr1 = equality_expression();
 				if (bexpr1->get_valid()) {
-					valid = true;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = bexpr1;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->valid = true;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs = bexpr1;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_BITWISE_AND)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_AND;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_AND;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -1536,68 +1717,91 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					rhs = bexpr1;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->valid = false;
+					temp2->rhs = bexpr1;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_BITWISE_AND)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_AND;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_AND;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
+				temp = make_shared<binary_expression>(root);
+				temp->valid = temp2->valid;
+				temp->rhs = temp2->rhs;
+				temp->lhs = temp2->lhs;
+				temp->lhs_kind = temp2->lhs_kind;
+				temp->rhs_kind = temp2->rhs_kind;
+				temp->operation_kind = temp2->operation_kind;
+				temp->expression_kind = temp2->expression_kind;
+				temp->binary_expression_pos = temp2->binary_expression_pos;
 			}
-			return make_shared<binary_expression>(*this);
+			if(!second_check)
+				return temp;
+			return temp2;
 		}
 		else {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
-		valid = false;
-		rhs = nullptr;
-		lhs = nullptr;
-		lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-		return make_shared<binary_expression>(*this);
+		shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+		ret->valid = false;
+		ret->rhs = nullptr;
+		ret->lhs = nullptr;
+		ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+		ret->binary_expression_pos = save;
+		return ret;
 	}
 
 	shared_ptr<binary_expression> binary_expression::exclusive_or_expression() {
 		source_token_list::iterator save = root->get_position();
 		if (save >= root->get_lexer()->get_source_token_list()->end()) {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
 		shared_ptr<binary_expression> bexpr = and_expression();
 		if (bexpr->get_valid()) {
 			source_token_list::iterator save1 = root->get_position();
+			shared_ptr<binary_expression> temp = make_shared<binary_expression>(root);
+			bool first_check = false;
 			if (save1 >= root->get_lexer()->get_source_token_list()->end()) {
-				valid = true;
-				lhs = bexpr;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				rhs = nullptr;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = true;
+				ret->lhs = bexpr;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->rhs = nullptr;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+				ret->binary_expression_pos = save;
+				return ret;
 			}
 			if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_BITWISE_EXCLUSIVE_OR) {
+				first_check = true;
 				source_token_list::iterator pre_loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -1606,14 +1810,15 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> exp_expr = and_expression();
 				if (exp_expr->get_valid()) {
-					valid = true;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = true;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_BITWISE_EXCLUSIVE_OR)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -1621,21 +1826,27 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = false;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_BITWISE_EXCLUSIVE_OR)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
 			}
+			if(!first_check)
+				return bexpr;
+			shared_ptr<binary_expression> temp2 = make_shared<binary_expression>(root);
+			bool second_check = false;
 			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_BITWISE_EXCLUSIVE_OR)) {
+				second_check = true;
 				source_token_list::iterator loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -1644,14 +1855,15 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> bexpr1 = exclusive_or_expression();
 				if (bexpr1->get_valid()) {
-					valid = true;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = bexpr1;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->valid = true;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs = bexpr1;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_BITWISE_EXCLUSIVE_OR)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -1659,68 +1871,91 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					rhs = bexpr1;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->valid = false;
+					temp2->rhs = bexpr1;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_BITWISE_EXCLUSIVE_OR)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
+				temp = make_shared<binary_expression>(root);
+				temp->valid = temp2->valid;
+				temp->rhs = temp2->rhs;
+				temp->lhs = temp2->lhs;
+				temp->lhs_kind = temp2->lhs_kind;
+				temp->rhs_kind = temp2->rhs_kind;
+				temp->operation_kind = temp2->operation_kind;
+				temp->expression_kind = temp2->expression_kind;
+				temp->binary_expression_pos = temp2->binary_expression_pos;
 			}
-			return make_shared<binary_expression>(*this);
+			if(!second_check)
+				return temp;
+			return temp2;
 		}
 		else {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
-		valid = false;
-		rhs = nullptr;
-		lhs = nullptr;
-		lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-		return make_shared<binary_expression>(*this);
+		shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+		ret->valid = false;
+		ret->rhs = nullptr;
+		ret->lhs = nullptr;
+		ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+		ret->binary_expression_pos = save;
+		return ret;
 	}
 
 	shared_ptr<binary_expression> binary_expression::inclusive_or_expression() {
 		source_token_list::iterator save = root->get_position();
 		if (save >= root->get_lexer()->get_source_token_list()->end()) {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
 		shared_ptr<binary_expression> bexpr = exclusive_or_expression();
 		if (bexpr->get_valid()) {
 			source_token_list::iterator save1 = root->get_position();
+			shared_ptr<binary_expression> temp = make_shared<binary_expression>(root);
+			bool first_check = false;
 			if (save1 >= root->get_lexer()->get_source_token_list()->end()) {
-				valid = true;
-				lhs = bexpr;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				rhs = nullptr;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = true;
+				ret->lhs = bexpr;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->rhs = nullptr;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+				ret->binary_expression_pos = save;
+				return ret;
 			}
 			if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_BITWISE_OR) {
+				first_check = true;
 				source_token_list::iterator pre_loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -1729,14 +1964,15 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> exp_expr = exclusive_or_expression();
 				if (exp_expr->get_valid()) {
-					valid = true;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = true;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_BITWISE_OR)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_OR;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_OR;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -1744,21 +1980,27 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = false;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_BITWISE_OR)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_OR;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_OR;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
 			}
+			if(!first_check)
+				return bexpr;
+			shared_ptr<binary_expression> temp2 = make_shared<binary_expression>(root);
+			bool second_check = false;
 			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_BITWISE_OR)) {
+				second_check = true;
 				source_token_list::iterator loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -1767,14 +2009,15 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> bexpr1 = exclusive_or_expression();
 				if (bexpr1->get_valid()) {
-					valid = true;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = bexpr1;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->valid = true;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs = bexpr1;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_BITWISE_OR)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_OR;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_OR;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -1782,69 +2025,91 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					rhs = bexpr1;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->valid = false;
+					temp2->rhs = bexpr1;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_BITWISE_OR)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_OR;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_OR;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
+				temp = make_shared<binary_expression>(root);
+				temp->valid = temp2->valid;
+				temp->rhs = temp2->rhs;
+				temp->lhs = temp2->lhs;
+				temp->lhs_kind = temp2->lhs_kind;
+				temp->rhs_kind = temp2->rhs_kind;
+				temp->operation_kind = temp2->operation_kind;
+				temp->expression_kind = temp2->expression_kind;
+				temp->binary_expression_pos = temp2->binary_expression_pos;
 			}
-			return make_shared<binary_expression>(*this);
+			if(!second_check)
+				return temp;
+			return temp2;
 		}
 		else {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
-		valid = false;
-		rhs = nullptr;
-		lhs = nullptr;
-		lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-		return make_shared<binary_expression>(*this);
+		shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+		ret->valid = false;
+		ret->rhs = nullptr;
+		ret->lhs = nullptr;
+		ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+		ret->binary_expression_pos = save;
+		return ret;
 	}
 
 	shared_ptr<binary_expression> binary_expression::logical_and_expression() {
 		source_token_list::iterator save = root->get_position();
-		binary_expression_pos = root->get_position();
 		if (save >= root->get_lexer()->get_source_token_list()->end()) {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
 		shared_ptr<binary_expression> bexpr = inclusive_or_expression();
 		if (bexpr->get_valid()) {
 			source_token_list::iterator save1 = root->get_position();
+			shared_ptr<binary_expression> temp = make_shared<binary_expression>(root);
+			bool first_check = false;
 			if (save1 >= root->get_lexer()->get_source_token_list()->end()) {
-				valid = true;
-				lhs = bexpr;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				rhs = nullptr;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = true;
+				ret->lhs = bexpr;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->rhs = nullptr;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+				ret->binary_expression_pos = save;
+				return ret;
 			}
 			if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_LOGICAL_AND) {
+				first_check = true;
 				source_token_list::iterator pre_loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -1853,14 +2118,15 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> exp_expr = inclusive_or_expression();
 				if (exp_expr->get_valid()) {
-					valid = true;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = true;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_LOGICAL_AND)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_LOGICAL_AND;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_LOGICAL_AND;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -1868,21 +2134,27 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = false;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_LOGICAL_AND)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_LOGICAL_AND;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_LOGICAL_AND;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
 			}
+			if(!first_check)
+				return bexpr;
+			shared_ptr<binary_expression> temp2 = make_shared<binary_expression>(root);
+			bool second_check = false;
 			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_LOGICAL_AND)) {
+				second_check = true;
 				source_token_list::iterator loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -1891,14 +2163,15 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> bexpr1 = inclusive_or_expression();
 				if (bexpr1->get_valid()) {
-					valid = true;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = bexpr1;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->valid = true;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs = bexpr1;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_LOGICAL_AND)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_LOGICAL_AND;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_LOGICAL_AND;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -1906,68 +2179,91 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					rhs = bexpr1;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->valid = false;
+					temp2->rhs = bexpr1;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_LOGICAL_AND)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_LOGICAL_AND;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_LOGICAL_AND;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
+				temp = make_shared<binary_expression>(root);
+				temp->valid = temp2->valid;
+				temp->rhs = temp2->rhs;
+				temp->lhs = temp2->lhs;
+				temp->lhs_kind = temp2->lhs_kind;
+				temp->rhs_kind = temp2->rhs_kind;
+				temp->operation_kind = temp2->operation_kind;
+				temp->expression_kind = temp2->expression_kind;
+				temp->binary_expression_pos = temp2->binary_expression_pos;
 			}
-			return make_shared<binary_expression>(*this);
+			if(!second_check)
+				return temp;
+			return temp2;
 		}
 		else {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
-		valid = false;
-		rhs = nullptr;
-		lhs = nullptr;
-		lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-		return make_shared<binary_expression>(*this);
+		shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+		ret->valid = false;
+		ret->rhs = nullptr;
+		ret->lhs = nullptr;
+		ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+		ret->binary_expression_pos = save;
+		return ret;
 	}
 
 	shared_ptr<binary_expression> binary_expression::logical_or_expression() {
 		source_token_list::iterator save = root->get_position();
 		if (save >= root->get_lexer()->get_source_token_list()->end()) {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
 		shared_ptr<binary_expression> bexpr = logical_and_expression();
 		if (bexpr->get_valid()) {
 			source_token_list::iterator save1 = root->get_position();
+			shared_ptr<binary_expression> temp = make_shared<binary_expression>(root);
+			bool first_check = false;
 			if (save1 >= root->get_lexer()->get_source_token_list()->end()) {
-				valid = true;
-				lhs = bexpr;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				rhs = nullptr;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = true;
+				ret->lhs = bexpr;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->rhs = nullptr;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+				ret->binary_expression_pos = save;
+				return ret;
 			}
 			if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_LOGICAL_OR) {
+				first_check = true;
 				source_token_list::iterator pre_loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -1976,14 +2272,15 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> exp_expr = logical_and_expression();
 				if (exp_expr->get_valid()) {
-					valid = true;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = true;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_LOGICAL_OR)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_LOGICAL_AND;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_LOGICAL_OR;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -1991,21 +2288,27 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = false;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = bexpr->get_position();
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_LOGICAL_OR)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_LOGICAL_AND;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_LOGICAL_OR;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
 			}
+			if(!first_check)
+				return bexpr;
+			shared_ptr<binary_expression> temp2 = make_shared<binary_expression>(root);
+			bool second_check = false;
 			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_LOGICAL_OR)) {
+				second_check = true;
 				source_token_list::iterator loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
 				if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
@@ -2014,14 +2317,15 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> bexpr1 = logical_and_expression();
 				if (bexpr1->get_valid()) {
-					valid = true;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = bexpr1;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->valid = true;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs = bexpr1;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_LOGICAL_OR)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_LOGICAL_AND;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_LOGICAL_OR;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -2029,66 +2333,86 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					rhs = bexpr1;
-					lhs = make_shared<binary_expression>(*this);
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->valid = false;
+					temp2->rhs = bexpr1;
+					temp2->lhs = temp;
+					temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp2->binary_expression_pos = temp->get_position();
 					if ((*loop_save)->get_token_kind() == token_kind::TOKEN_LOGICAL_OR)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_LOGICAL_AND;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_LOGICAL_OR;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
+				temp = make_shared<binary_expression>(root);
+				temp->valid = temp2->valid;
+				temp->rhs = temp2->rhs;
+				temp->lhs = temp2->lhs;
+				temp->lhs_kind = temp2->lhs_kind;
+				temp->rhs_kind = temp2->rhs_kind;
+				temp->operation_kind = temp2->operation_kind;
+				temp->expression_kind = temp2->expression_kind;
+				temp->binary_expression_pos = temp2->binary_expression_pos;
 			}
-			return make_shared<binary_expression>(*this);
+			if(!second_check)
+				return temp;
+			return temp2;
 		}
 		else {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
-		valid = false;
-		rhs = nullptr;
-		lhs = nullptr;
-		lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-		return make_shared<binary_expression>(*this);
+		shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+		ret->valid = false;
+		ret->rhs = nullptr;
+		ret->lhs = nullptr;
+		ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+		ret->binary_expression_pos = save;
+		return ret;
 	}
 
 	shared_ptr<binary_expression> binary_expression::conditional_expression() {
 		source_token_list::iterator save = root->get_position();
 		if (save >= root->get_lexer()->get_source_token_list()->end()) {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
 		shared_ptr<binary_expression> bexpr1 = logical_or_expression();
 		if (bexpr1->get_valid()) {
 			source_token_list::iterator save1 = root->get_position();
 			if (save1 >= root->get_lexer()->get_source_token_list()->end()) {
-				valid = true;
-				lhs = bexpr1;
-				rhs = nullptr;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = true;
+				ret->lhs = bexpr1;
+				ret->rhs = nullptr;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+				ret->binary_expression_pos = save;
+				return ret;
 			}
 			if ((*save1)->get_token_kind() == token_kind::TOKEN_QUESTION_MARK) {
 				root->set_position(root->get_position() + 1);
@@ -2101,7 +2425,7 @@ namespace karma_lang {
 				shared_ptr<binary_expression> bexpr2 = make_shared<binary_expression>(root)->parse_binary_expression();
 				if (bexpr2->get_valid()) {
 					shared_ptr<binary_expression> tmp = make_shared<binary_expression>(root);
-					tmp->binary_expression_pos = binary_expression_pos;
+					tmp->binary_expression_pos = bexpr1->get_position();
 					tmp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
 					tmp->lhs = bexpr1;
 					tmp->rhs = bexpr2;
@@ -2115,6 +2439,7 @@ namespace karma_lang {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unexpected_end_of_file, root->get_position() - 1, diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
+					shared_ptr<binary_expression> temp2 = make_shared<binary_expression>(root);
 					if ((*save3)->get_token_kind() == token_kind::TOKEN_COLON) {
 						root->set_position(root->get_position() + 1);
 						source_token_list::iterator save4 = root->get_position();
@@ -2124,29 +2449,32 @@ namespace karma_lang {
 							exit(0);
 						}
 						shared_ptr<binary_expression> bexpr3 = conditional_expression();
-						expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-						operation_kind = binary_operation_kind::BINARY_OPERATION_COLON;
-						rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-						lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-						lhs = tmp;
-						rhs = bexpr3;
-						valid = true;
-						return make_shared<binary_expression>(*this);
+						temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_COLON;
+						temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+						temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+						temp2->lhs = tmp;
+						temp2->rhs = bexpr3;
+						temp2->valid = true;
+						temp2->binary_expression_pos = tmp->get_position();
+						return temp2;
 					}
 					else {
-						valid = false;
-						lhs = tmp;
-						rhs = nullptr;
-						lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-						rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-						operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-						expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-						return make_shared<binary_expression>(*this);
+						temp2->valid = false;
+						temp2->lhs = tmp;
+						temp2->rhs = nullptr;
+						temp2->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+						temp2->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+						temp2->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+						temp2->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+						temp2->binary_expression_pos = tmp->get_position();
+						return temp2;
 					}
 				}
 				else {
 					shared_ptr<binary_expression> tmp = make_shared<binary_expression>(root);
-					tmp->binary_expression_pos = binary_expression_pos;
+					shared_ptr<binary_expression> temp = make_shared<binary_expression>(root);
+					tmp->binary_expression_pos = bexpr1->get_position();
 					tmp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
 					tmp->lhs = bexpr1;
 					tmp->rhs = bexpr2;
@@ -2154,14 +2482,15 @@ namespace karma_lang {
 					tmp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
 					tmp->operation_kind = binary_operation_kind::BINARY_OPERATION_QUESTION_MARK;
 					tmp->valid = false;
-					valid = false;
-					lhs = tmp;
-					rhs = nullptr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-					operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					return make_shared<binary_expression>(*this);
+					temp->valid = false;
+					temp->lhs = tmp;
+					temp->rhs = nullptr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->binary_expression_pos = tmp->get_position();
+					return temp;
 				}
 				source_token_list::iterator save3 = root->get_position();
 				if (save3 >= root->get_lexer()->get_source_token_list()->end()) {
@@ -2171,96 +2500,124 @@ namespace karma_lang {
 				}
 			}
 			else {
-				valid = true;
-				lhs = bexpr1;
-				rhs = nullptr;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = true;
+				ret->lhs = bexpr1;
+				ret->rhs = nullptr;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+				ret->binary_expression_pos = bexpr1->get_position();
+				return ret;
 			}
 		}
 		else {
-			valid = false;
-			rhs = nullptr;
-			lhs = bexpr1;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = bexpr1;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = bexpr1->get_position();
+			return ret;
 		}
-		valid = false;
-		rhs = nullptr;
-		lhs = nullptr;
-		rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-		return make_shared<binary_expression>(*this);
+		shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+		ret->valid = false;
+		ret->rhs = nullptr;
+		ret->lhs = nullptr;
+		ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+		ret->binary_expression_pos = save;
+		return ret;
 	}
 
 	shared_ptr<binary_expression> binary_expression::assignment_expression() {
 		source_token_list::iterator save = root->get_position();
 		if (save >= root->get_lexer()->get_source_token_list()->end()) {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
 		shared_ptr<unary_expression> uexpr = make_shared<unary_expression>(root)->parse_unary_expression();
 		if (uexpr->get_valid()) {
 			source_token_list::iterator save1 = root->get_position();
+			shared_ptr<binary_expression> temp = make_shared<binary_expression>(root);
 			if (save1 >= root->get_lexer()->get_source_token_list()->end()) {
-				valid = true;
-				rhs = nullptr;
-				lhs = uexpr;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				root->set_position(save);
+				shared_ptr<binary_expression> bexpr = conditional_expression();
+				if (bexpr->get_valid()) {
+					temp->valid = true;
+					temp->rhs = nullptr;
+					temp->lhs = bexpr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+					temp->binary_expression_pos = bexpr->get_position();
+					return temp;
+				}
+				else {
+					temp->valid = false;
+					temp->rhs = nullptr;
+					temp->lhs = bexpr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+					temp->binary_expression_pos = bexpr->get_position();
+					return temp;
+				}
 			}
 			if (((*save1)->get_token_kind() == token_kind::TOKEN_EXPONENT_EQUALS || (*save1)->get_token_kind() == token_kind::TOKEN_PLUS_EQUALS || (*save1)->get_token_kind() == token_kind::TOKEN_MINUS_EQUALS || (*save1)->get_token_kind() == token_kind::TOKEN_MULTIPLY_EQUALS ||
 						(*save1)->get_token_kind() == token_kind::TOKEN_DIVIDE_EQUALS || (*save1)->get_token_kind() == token_kind::TOKEN_MODULUS_EQUALS || (*save1)->get_token_kind() == token_kind::TOKEN_SHIFT_LEFT_EQUALS || (*save1)->get_token_kind() == token_kind::TOKEN_SHIFT_RIGHT_EQUALS ||
 						(*save1)->get_token_kind() == token_kind::TOKEN_BITWISE_AND_EQUALS || (*save1)->get_token_kind() == token_kind::TOKEN_BITWISE_OR_EQUALS || (*save1)->get_token_kind() == token_kind::TOKEN_BITWISE_EXCLUSIVE_OR_EQUALS || (*save1)->get_token_kind() == token_kind::TOKEN_EQUALS));
 			else if((*save1)->get_token_kind() == token_kind::TOKEN_NEW_LINE) {
-				valid = true;
-				rhs = nullptr;
-				lhs = uexpr;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				temp->valid = true;
+				temp->rhs = nullptr;
+				temp->lhs = uexpr;
+				temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
+				temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
+				temp->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+				temp->binary_expression_pos = uexpr->get_position();
+				return temp;
 			}
 			else {
 				root->set_position(save);
 				shared_ptr<binary_expression> bexpr = conditional_expression();
 				if (bexpr->get_valid()) {
-					valid = true;
-					rhs = nullptr;
-					lhs = bexpr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-					return make_shared<binary_expression>(*this);
+					temp->valid = true;
+					temp->rhs = nullptr;
+					temp->lhs = bexpr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+					temp->binary_expression_pos = bexpr->get_position();
+					return temp;
 				}
 				else {
-					valid = false;
-					rhs = nullptr;
-					lhs = bexpr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-					return make_shared<binary_expression>(*this);
+					temp->valid = false;
+					temp->rhs = nullptr;
+					temp->lhs = bexpr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+					temp->binary_expression_pos = bexpr->get_position();
+					return temp;
 				}
 			}
 			if ((*save1)->get_token_kind() == token_kind::TOKEN_EXPONENT_EQUALS || (*save1)->get_token_kind() == token_kind::TOKEN_PLUS_EQUALS || (*save1)->get_token_kind() == token_kind::TOKEN_MINUS_EQUALS || (*save1)->get_token_kind() == token_kind::TOKEN_MULTIPLY_EQUALS ||
@@ -2274,103 +2631,114 @@ namespace karma_lang {
 					exit(0);
 				}
 				shared_ptr<binary_expression> bexpr = assignment_expression();
-				lhs = uexpr;
-				rhs = bexpr;
-				valid = uexpr->get_valid() && bexpr->get_valid();
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				temp->lhs = uexpr;
+				temp->rhs = bexpr;
+				temp->valid = uexpr->get_valid() && bexpr->get_valid();
+				temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION;
+				temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
 				if ((*save2)->get_token_kind() == token_kind::TOKEN_EXPONENT_EQUALS)
-					operation_kind = binary_operation_kind::BINARY_OPERATION_EXPONENT_EQUALS;
+					temp->operation_kind = binary_operation_kind::BINARY_OPERATION_EXPONENT_EQUALS;
 				else if ((*save2)->get_token_kind() == token_kind::TOKEN_PLUS_EQUALS)
-					operation_kind = binary_operation_kind::BINARY_OPERATION_PLUS_EQUALS;
+					temp->operation_kind = binary_operation_kind::BINARY_OPERATION_PLUS_EQUALS;
 				else if ((*save2)->get_token_kind() == token_kind::TOKEN_MINUS_EQUALS)
-					operation_kind = binary_operation_kind::BINARY_OPERATION_MINUS_EQUALS;
+					temp->operation_kind = binary_operation_kind::BINARY_OPERATION_MINUS_EQUALS;
 				else if ((*save2)->get_token_kind() == token_kind::TOKEN_MULTIPLY_EQUALS)
-					operation_kind = binary_operation_kind::BINARY_OPERATION_MULTIPLY_EQUALS;
+					temp->operation_kind = binary_operation_kind::BINARY_OPERATION_MULTIPLY_EQUALS;
 				else if ((*save2)->get_token_kind() == token_kind::TOKEN_DIVIDE_EQUALS)
-					operation_kind = binary_operation_kind::BINARY_OPERATION_DIVIDE_EQUALS;
+					temp->operation_kind = binary_operation_kind::BINARY_OPERATION_DIVIDE_EQUALS;
 				else if ((*save2)->get_token_kind() == token_kind::TOKEN_MODULUS_EQUALS)
-					operation_kind = binary_operation_kind::BINARY_OPERATION_MODULUS_EQUALS;
+					temp->operation_kind = binary_operation_kind::BINARY_OPERATION_MODULUS_EQUALS;
 				else if ((*save2)->get_token_kind() == token_kind::TOKEN_SHIFT_LEFT_EQUALS)
-					operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT_EQUALS;
+					temp->operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT_EQUALS;
 				else if ((*save2)->get_token_kind() == token_kind::TOKEN_SHIFT_RIGHT_EQUALS)
-					operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT_EQUALS;
+					temp->operation_kind = binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT_EQUALS;
 				else if ((*save2)->get_token_kind() == token_kind::TOKEN_BITWISE_AND_EQUALS)
-					operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_AND_EQUALS;
+					temp->operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_AND_EQUALS;
 				else if ((*save2)->get_token_kind() == token_kind::TOKEN_BITWISE_OR_EQUALS)
-					operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_OR_EQUALS;
+					temp->operation_kind = binary_operation_kind::BINARY_OPERATION_BITWISE_OR_EQUALS;
 				else if ((*save2)->get_token_kind() == token_kind::TOKEN_BITWISE_EXCLUSIVE_OR_EQUALS)
-					operation_kind = binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR_EQUALS;
+					temp->operation_kind = binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR_EQUALS;
 				else if ((*save2)->get_token_kind() == token_kind::TOKEN_EQUALS)
-					operation_kind = binary_operation_kind::BINARY_OPERATION_EQUALS;
+					temp->operation_kind = binary_operation_kind::BINARY_OPERATION_EQUALS;
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 					exit(0);
 				}
-				return make_shared<binary_expression>(*this);
+				temp->binary_expression_pos = uexpr->get_position();
+				return temp;
 			}
 		}
 		else {
 			root->set_position(save);
 			shared_ptr<binary_expression> bexpr = conditional_expression();
 			if (bexpr->get_valid()) {
-				valid = true;
-				rhs = nullptr;
-				lhs = bexpr;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = true;
+				ret->rhs = nullptr;
+				ret->lhs = bexpr;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+				ret->pos = bexpr->get_position();
+				return ret;
 			}
 			else {
-				valid = false;
-				rhs = nullptr;
-				lhs = bexpr;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = false;
+				ret->rhs = nullptr;
+				ret->lhs = bexpr;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+				ret->binary_expression_pos = bexpr->get_position();
+				return ret;
 			}
 		}
-		valid = false;
-		rhs = nullptr;
-		lhs = nullptr;
-		rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-		return make_shared<binary_expression>(*this);
+		shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+		ret->valid = false;
+		ret->rhs = nullptr;
+		ret->lhs = nullptr;
+		ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+		ret->binary_expression_pos = save;
+		return ret;
 	}
 
 	shared_ptr<binary_expression> binary_expression::cast_expression() {
 		source_token_list::iterator save = root->get_position();
-		binary_expression_pos = root->get_position();
 		if (save >= root->get_lexer()->get_source_token_list()->end()) {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
 		shared_ptr<binary_expression> bexpr = assignment_expression();
 		if (bexpr->get_valid()) {
 			source_token_list::iterator save1 = root->get_position();
 			if (save1 >= root->get_lexer()->get_source_token_list()->end()) {
-				valid = true;
-				lhs = bexpr;
-				lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				rhs = nullptr;
-				rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-				expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-				operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-				return make_shared<binary_expression>(*this);
+				shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+				ret->valid = true;
+				ret->lhs = bexpr;
+				ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->rhs = nullptr;
+				ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+				ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+				ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+				ret->binary_expression_pos = bexpr->get_position();
+				return ret;
 			}
+			shared_ptr<binary_expression> temp = make_shared<binary_expression>(root);
 			if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_POINT) {
 				source_token_list::iterator pre_loop_save = root->get_position();
 				root->set_position(root->get_position() + 1);
@@ -2380,14 +2748,14 @@ namespace karma_lang {
 				}
 				shared_ptr<binary_expression> exp_expr = assignment_expression();
 				if (exp_expr->get_valid()) {
-					valid = true;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = true;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_POINT)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_POINT;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_POINT;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
@@ -2395,44 +2763,57 @@ namespace karma_lang {
 				}
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::malformed_binary_expression, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					valid = false;
-					lhs = bexpr;
-					lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					rhs = exp_expr;
-					rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
-					expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->valid = false;
+					temp->lhs = bexpr;
+					temp->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->rhs = exp_expr;
+					temp->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
+					temp->expression_kind = binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION;
 					if ((*pre_loop_save)->get_token_kind() == token_kind::TOKEN_POINT)
-						operation_kind = binary_operation_kind::BINARY_OPERATION_POINT;
+						temp->operation_kind = binary_operation_kind::BINARY_OPERATION_POINT;
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position() >= root->get_lexer()->get_source_token_list()->end() ? root->get_position() - 1 : root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						exit(0);
 					}
 				}
+				temp->binary_expression_pos = bexpr->get_position();
+				return temp;
 			}
-			return make_shared<binary_expression>(*this);
+			return bexpr;
 		}
 		else {
-			valid = false;
-			rhs = nullptr;
-			lhs = nullptr;
-			lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-			operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-			return make_shared<binary_expression>(*this);
+			shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+			ret->valid = false;
+			ret->rhs = nullptr;
+			ret->lhs = nullptr;
+			ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+			ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+			ret->binary_expression_pos = save;
+			return ret;
 		}
-		valid = false;
-		rhs = nullptr;
-		lhs = nullptr;
-		lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
-		operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
-		return make_shared<binary_expression>(*this);
+		shared_ptr<binary_expression> ret = make_shared<binary_expression>(root);
+		ret->valid = false;
+		ret->rhs = nullptr;
+		ret->lhs = nullptr;
+		ret->lhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->rhs_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->expression_kind = binary_expression_kind::BINARY_EXPRESSION_NONE;
+		ret->operation_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+		ret->binary_expression_pos = save;
+		return ret;
 	}
 
 	shared_ptr<binary_expression> binary_expression::parse_binary_expression() {
-		return cast_expression();
+		shared_ptr<binary_expression> bexpr = cast_expression();
+		lhs = bexpr->lhs;
+		rhs = bexpr->rhs;
+		lhs_kind = bexpr->lhs_kind;
+		rhs_kind = bexpr->rhs_kind;
+		expression_kind = bexpr->expression_kind;
+		operation_kind = bexpr->operation_kind;
+		return bexpr;
 	}
 
 	sequence::sequence(shared_ptr<root_node> r) : root_node(*r), sequence_pos(r->get_position()) {

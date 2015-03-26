@@ -328,7 +328,7 @@ namespace karma_lang {
 		public:
 			symbol(type_information ti, immut_kind ik, shared_ptr<literal> ident, function_kind fk, vector<type_information> fa, shared_ptr<symbol_table> st);
 			~symbol();
-			const type_information get_type_information();
+			type_information get_type_information();
 			const immut_kind get_immut_kind();
 			const function_kind get_function_kind();
 			shared_ptr<literal> get_identifier();
@@ -345,6 +345,7 @@ namespace karma_lang {
 			shared_ptr<symbol> operator[](int i);
 			vector<shared_ptr<symbol>> find_all_symbols(shared_ptr<literal> lit);
 			shared_ptr<symbol> add_symbol(shared_ptr<symbol> sym);
+			vector<shared_ptr<symbol>> find_all_symbols(shared_ptr<annotated_literal> alit);
 	};
 
 	class linearized_postfix_expression {

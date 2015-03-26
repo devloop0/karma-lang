@@ -27,7 +27,7 @@ namespace karma_lang {
 	const string diagnostic_messages::expected_only_one_immut = "Expected only one 'immut' qualifier; defaulting to one 'immut'.";
 	const string diagnostic_messages::repeated_declaration_ignoring_this_one = "Repeated variable declaration here.";
 	const string diagnostic_messages::originally_declared_here =  "Originally declared here.";
-	const string diagnostic_messages::incompatible_types = "Incompatible types with this binary expression. Expression beginning given here.";
+	const string diagnostic_messages::incompatible_types = "Incompatible types with this expression; expected compatible types.";
 	const string diagnostic_messages::unknown_symbol = "Unknown symbol found here. (Did you forget to declare it somewhere)?: ";
 	const string diagnostic_messages::expected_at_least_one_element_in_sequence = "Expected at least one element in the list, tuple, or dictionary to its deduce type; defaulting to 'int'.";
 	const string diagnostic_messages::expected_same_type_for_all_elements_in_list_or_dictionary = "Expected all elements in the list or dictionary to have the same type.";
@@ -39,4 +39,9 @@ namespace karma_lang {
 	const string diagnostic_messages::unequal_but_compatible_types = "The types of this binary expression are unequal but compatible; continuing.";
 	const string diagnostic_messages::expected_lvalue = "For an assignment expression, expected to find an lvalue.";
 	const string diagnostic_messages::immut_value_cannot_be_modified = "An immutable variable cannot be modified.";
+	const string diagnostic_messages::unequal_but_compatible_types_list_dict = "Unequal, but compatible types; warning for lists or dictionaries.";
+	const string diagnostic_messages::expected_lvalue_for_increments_and_decrements = "For increments and decrements, an lvalue is expected.";
+	const string diagnostic_messages::expected_boolean = "Expected a boolean expression here.";
+	const string diagnostic_messages::instruction_not_supported = "Instruction not supported; terminating.";
+	const string diagnostic_messages::tuples_cannot_be_modified = "Tuples can be read from, but cannot be modified or written to.";
 }

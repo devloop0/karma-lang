@@ -6,6 +6,7 @@ namespace karma_lang {
 
 	diagnostics_reporter::diagnostics_reporter(shared_ptr<source_token_list> stl) {
 		stlist = stl;
+		error_count = 0;
 	}
 
 	diagnostics_reporter::~diagnostics_reporter() {
@@ -13,6 +14,8 @@ namespace karma_lang {
 	}
 
 	shared_ptr<token> diagnostics_reporter::print(string message, source_token_list::iterator current_pos, karma_lang::diagnostics_reporter_kind kind) {
+		if(kind == diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR)
+			error_count++;
 #ifdef WIN32
 		HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 		bool colored = true;
@@ -100,5 +103,9 @@ namespace karma_lang {
 #endif
 		cerr << "\n\n";	
 		return *current_pos;
+	}
+
+	const int diagnostics_reporter::get_error_count() {
+		return error_count;
 	}
 }
