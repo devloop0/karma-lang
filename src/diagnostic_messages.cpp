@@ -44,4 +44,5 @@ namespace karma_lang {
 	const string diagnostic_messages::expected_boolean = "Expected a boolean expression here.";
 	const string diagnostic_messages::instruction_not_supported = "Instruction not supported; terminating.";
 	const string diagnostic_messages::tuples_cannot_be_modified = "Tuples can be read from, but cannot be modified or written to.";
+	const string diagnostic_messages::expected_boolean_for_ternary_expression_condition = "Expected a boolean expression for a ternary expression condition.";
 }

@@ -56,6 +56,7 @@ namespace karma_lang {
 			const static string expected_boolean;
 			const static string instruction_not_supported;
 			const static string tuples_cannot_be_modified;
+			const static string expected_boolean_for_ternary_expression_condition;
 	};
 }
 

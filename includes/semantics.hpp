@@ -183,6 +183,25 @@ namespace karma_lang {
 			type_information get_forced_type_information();
 	};
 
+	class annotated_ternary_expression : public annotated_root_node {
+		shared_ptr<annotated_root_node> condition;
+		shared_ptr<annotated_root_node> true_path;
+		shared_ptr<annotated_root_node> false_path;
+		source_token_list::iterator ternary_expression_pos;
+		type_information t_inf;
+		type_information forced_t_inf;
+		public:
+			annotated_ternary_expression(shared_ptr<annotated_root_node> arn, shared_ptr<ternary_expression> texpr, shared_ptr<annotated_root_node> c, shared_ptr<annotated_root_node> tp, shared_ptr<annotated_root_node> fp,
+					type_information ti, type_information fti);
+			~annotated_ternary_expression();
+			shared_ptr<annotated_root_node> get_condition();
+			shared_ptr<annotated_root_node> get_true_path();
+			shared_ptr<annotated_root_node> get_false_path();
+			source_token_list::iterator get_position();
+			type_information get_type_information();
+			type_information get_forced_type_information();
+	};
+
 	class annotated_binary_expression : public annotated_root_node {
 		shared_ptr<annotated_root_node> lhs;
 		shared_ptr<annotated_root_node> rhs;
@@ -376,6 +395,7 @@ namespace karma_lang {
 		shared_ptr<annotated_sequence> analyze_list_expression(shared_ptr<sequence> seq);
 		shared_ptr<annotated_sequence> analyze_tuple_expression(shared_ptr<sequence> seq);
 		shared_ptr<annotated_dictionary> analyze_dictionary_expression(shared_ptr<dictionary> dict);
+		shared_ptr<annotated_ternary_expression> analyze_ternary_expression(shared_ptr<ternary_expression> texpr);
 
 		public:
 			analyze_ast(shared_ptr<root_node> r);

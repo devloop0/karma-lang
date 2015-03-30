@@ -38,10 +38,9 @@ namespace karma_lang {
 	const string vm_instruction_list::list = "list";
 	const string vm_instruction_list::tupl = "tupl";
 	const string vm_instruction_list::sequ = "sequ";
-	const string vm_instruction_list::subsl = "subsl";
-	const string vm_instruction_list::subsll = "subsll";
+	const string vm_instruction_list::subs = "subs";
 	const string vm_instruction_list::dict = "dict";
-	const string vm_instruction_list::subsd = "subsd";
+	const string vm_instruction_list::subss = "subss";
 
 	code_generation_symbol_table::code_generation_symbol_table() {
 		raw_string_list = vector<string>();
@@ -157,338 +156,6 @@ namespace karma_lang {
 		return ret + s;
 	}
 
-	vector<string> code_generation_utilities::integer_float_check(int& tab_count, int& number, int& label_count, string name, string instruction) {
-		vector<string> ret;
-		int store = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, name));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int store2 = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "0"));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int store3 = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1.0"));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, store));
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, store, store2));
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, number, store3));
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::lor, number, store));
-		ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, number, label_count));
-		ret.push_back(code_generation_utilities().generate_exit_instruction(tab_count));
-		ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
-		number++;
-		tab_count++;
-		if(instruction != "")
-			ret.push_back(instruction);
-		tab_count--;
-		label_count++;
-		return ret;
-	}
-
-	vector<string> code_generation_utilities::integer_float_check(int& tab_count, int& number, int& label_count, int one, string instruction) {
-		vector<string> ret;
-		int store = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, one));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int store2 = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "0"));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int store3 = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1.0"));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, store));
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, store, store2));
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, number, store3));
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::lor, number, store));
-		ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, number, label_count));
-		ret.push_back(code_generation_utilities().generate_exit_instruction(tab_count));
-		ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
-		number++;
-		tab_count++;
-		if(instruction != "")
-			ret.push_back(instruction);
-		tab_count--;
-		label_count++;
-		return ret;
-	}
-	vector<string> code_generation_utilities::integer_check(int& tab_count, int& number, int& label_count, string name, string instruction) {
-		vector<string> ret;
-		int store = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, name));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int store2 = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "0"));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, store, store2));
-		ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store, label_count));
-		ret.push_back(code_generation_utilities().generate_exit_instruction(tab_count));
-		ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
-		tab_count++;
-		if(instruction != "")
-			ret.push_back(instruction);
-		tab_count--;
-		label_count++;
-		return ret;
-	}
-
-	vector<string> code_generation_utilities::integer_check(int& tab_count, int& number, int& label_count, int one, string instruction) {
-		vector<string> ret;
-		int store = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, one));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int store2 = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "0"));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, store, store2));
-		ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store, label_count));
-		ret.push_back(code_generation_utilities().generate_exit_instruction(tab_count));
-		ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
-		tab_count++;
-		if(instruction != "")
-			ret.push_back(instruction);
-		tab_count--;
-		label_count++;
-		return ret;
-	}
-
-	vector<string> code_generation_utilities::boolean_check(int& tab_count, int& number, int& label_count, string name, string instruction) {
-		vector<string> ret;
-		int store = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, name));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int store2 = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "true"));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, store, store2));
-		ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store, label_count));
-		ret.push_back(code_generation_utilities().generate_exit_instruction(tab_count));
-		ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
-		tab_count++;
-		if(instruction != "")
-			ret.push_back(instruction);
-		tab_count--;
-		label_count++;
-		return ret;
-	}
-
-	vector<string> code_generation_utilities::boolean_check(int& tab_count, int& number, int& label_count, int one, string instruction) {
-		vector<string> ret;
-		int store = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, one));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int store2 = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "true"));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, store, store2));
-		ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store, label_count));
-		ret.push_back(code_generation_utilities().generate_exit_instruction(tab_count));
-		ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
-		tab_count++;
-		if(instruction != "")
-			ret.push_back(instruction);
-		tab_count--;
-		label_count++;
-		return ret;
-	}
-
-	vector<string> code_generation_utilities::subscript_check(int& tab_count, int& number, int& label_count, int one, string instruction) {
-		vector<string> ret;
-		int store = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, one));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int temp = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
-		number++;
-		vector<int> indices;
-		indices.push_back(temp);
-		int store2 = number;
-		ret.push_back(code_generation_utilities().generate_sequence_instruction(tab_count, vm_instruction_list::list, number, indices));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int store3 = number;
-		ret.push_back(code_generation_utilities().generate_sequence_instruction(tab_count, vm_instruction_list::tupl, number, indices));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int temp2 = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
-		indices.push_back(temp2);
-		number++;
-		int store5 = number;
-		ret.push_back(code_generation_utilities().generate_sequence_instruction(tab_count, vm_instruction_list::dict, number, indices));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int store4 = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, store));
-		number++;
-		int store6 = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, store));
-		number++;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, store, store2));
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, store4, store3));
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::lor, store, store4));
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, store6, store5));
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::lor, store, store6));
-		ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store, label_count));
-		ret.push_back(code_generation_utilities().generate_exit_instruction(tab_count));
-		ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
-		tab_count++;
-		if(instruction != "")
-			ret.push_back(instruction);
-		tab_count--;
-		label_count++;
-		return ret;
-	}
-
-	vector<string> code_generation_utilities::subscript_check(int& tab_count, int& number, int& label_count, string name, string instruction) {
-		vector<string> ret;
-		int store = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, name));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int temp = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
-		number++;
-		vector<int> indices;
-		indices.push_back(temp);
-		int store2 = number;
-		ret.push_back(code_generation_utilities().generate_sequence_instruction(tab_count, vm_instruction_list::list, number, indices));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int store3 = number;
-		ret.push_back(code_generation_utilities().generate_sequence_instruction(tab_count, vm_instruction_list::tupl, number, indices));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int temp2 = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
-		indices.push_back(temp2);
-		number++;
-		int store5 = number;
-		ret.push_back(code_generation_utilities().generate_sequence_instruction(tab_count, vm_instruction_list::dict, number, indices));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int store4 = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, store));
-		number++;
-		int store6 = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, store));
-		number++;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, store, store2));
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, store4, store3));
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::lor, store, store4));
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, store6, store5));
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::lor, store, store6));
-		ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store, label_count));
-		ret.push_back(code_generation_utilities().generate_exit_instruction(tab_count));
-		ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
-		tab_count++;
-		if(instruction != "")
-			ret.push_back(instruction);
-		tab_count--;
-		label_count++;
-		return ret;
-	}
-
-	vector<string> code_generation_utilities::dict_check(int& tab_count, int& number, int& label_count, int one, vector<string> instruction_list, bool yes) {
-		vector<string> ret;
-		int store = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, one));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int temp = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
-		number++;
-		int temp2 = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
-		number++;
-		vector<int> indices;
-		indices.push_back(temp);
-		indices.push_back(temp2);
-		int store2 = number;
-		ret.push_back(code_generation_utilities().generate_sequence_instruction(tab_count, vm_instruction_list::dict, store2, indices));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, store2));
-		number++;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, store, store2));
-		if(yes);
-		else
-			ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::bneg, store));
-		ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store, label_count));
-		if(instruction_list.size() == 0)
-			ret.push_back(code_generation_utilities().generate_exit_instruction(tab_count));
-		else 
-			for(int i = 0; i < instruction_list.size(); i++)
-				ret.push_back(instruction_list[i]);
-		ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
-		label_count++;
-		return ret;
-	}
-
-	vector<string> code_generation_utilities::dict_check(int& tab_count, int& number, int& label_count, string var, vector<string> instruction_list, bool yes) {
-		vector<string> ret;
-		int store = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, var));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int temp = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
-		number++;
-		int temp2 = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
-		number++;
-		vector<int> indices;
-		indices.push_back(temp);
-		indices.push_back(temp2);
-		int store2 = number;
-		ret.push_back(code_generation_utilities().generate_sequence_instruction(tab_count, vm_instruction_list::dict, store2, indices));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, store2));
-		number++;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, store, store2));
-		if(yes);
-		else
-			ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::bneg, store));
-		ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store, label_count));
-		ret.push_back(code_generation_utilities().generate_exit_instruction(tab_count));
-		if(instruction_list.size() == 0)
-			ret.push_back(code_generation_utilities().generate_exit_instruction(tab_count));
-		else
-			for(int i = 0; i < instruction_list.size(); i++) 
-				ret.push_back(instruction_list[i]);
-		ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
-		label_count++;
-		return ret;
-	}
-
-	vector<string> code_generation_utilities::variable_check(int& tab_count, int& number, int& label_count, int one, int two, bool compatible) {
-		vector<string> ret;
-		int store = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, one));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		int store2 = number;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, two));
-		ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, number));
-		number++;
-		ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, compatible ? vm_instruction_list::cequ : vm_instruction_list::sequ, store, store2));
-		ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store, label_count));
-		ret.push_back(code_generation_utilities().generate_exit_instruction(tab_count));
-		ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
-		label_count++;
-		return ret;
-	}
-
 	string code_generation_utilities::generate_sequence_instruction(int tab, string op, int one, vector<int> indices) {
 		string ret;
 		for(int i = 0; i < tab; i++)
@@ -499,27 +166,19 @@ namespace karma_lang {
 		return ret;
 	}
 
-	string code_generation_utilities::generate_subsl_instruction(int tab, int store, string var, int one, int two, int three) {
+	string code_generation_utilities::generate_subss_instruction(int tab, int store, string var, int one, int two, int three) {
 		string ret;
 		for(int i = 0; i < tab; i++)
 			ret += "\t";
-		ret += vm_instruction_list::subsl + " r" + to_string(store) + " " + var + " r" + to_string(one) + " r" + to_string(two) + " r" + to_string(three);
+		ret += vm_instruction_list::subss + " r" + to_string(store) + " " + var + " r" + to_string(one) + " r" + to_string(two) + " r" + to_string(three);
 		return ret;
 	}
 
-	string code_generation_utilities::generate_subsd_instruction(int tab, int store, string var, int one, int two, int three) {
+	string code_generation_utilities::generate_subs_instruction(int tab, int store, string var, int one, int two, int three) {
 		string ret;
 		for(int i = 0; i < tab; i++)
 			ret += "\t";
-		ret += vm_instruction_list::subsd + " r" + to_string(store) + " " + var + " r" + to_string(one) + " r" + to_string(two) + " r" + to_string(three);
-		return ret;
-	}
-
-	string code_generation_utilities::generate_subsll_instruction(int tab, int store, string var, int one, int two, int three) {
-		string ret;
-		for(int i = 0; i < tab; i++)
-			ret += "\t";
-		ret += vm_instruction_list::subsll + " r" + to_string(store) + " " + var + " r" + to_string(one) + " r" + to_string(two) + " r" + to_string(three);
+		ret += vm_instruction_list::subs + " r" + to_string(store) + " " + var + " r" + to_string(one) + " r" + to_string(two) + " r" + to_string(three);
 		return ret;
 	}
 
@@ -587,11 +246,8 @@ namespace karma_lang {
 					ret.push_back(insn1);
 				}
 				else {
-					if(aseq->get_sequence_kind() == sequence_kind::SEQUENCE_LIST) {
-						vector<string> checks = code_generation_utilities().variable_check(tab_count, number, label_count, store, store_inner, true);
-						ret.insert(ret.end(), checks.begin(), checks.end());
+					if(aseq->get_sequence_kind() == sequence_kind::SEQUENCE_LIST)
 						ret.push_back(insn1);
-					}
 				}
 				list_indices.push_back(store_inner);
 			}
@@ -622,11 +278,8 @@ namespace karma_lang {
 					insn1 = code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, key_store, store_inner);
 					ret.push_back(insn1);
 				}
-				else {
-					vector<string> checks = code_generation_utilities().variable_check(tab_count, number, label_count, key_store, store_inner, true);
-					ret.insert(ret.end(), checks.begin(), checks.end());
+				else
 					ret.push_back(insn1);
-				}
 				key_indices.push_back(store_inner);
 			}
 			for(int i = 0; i < value_list.size(); i++) {
@@ -637,11 +290,8 @@ namespace karma_lang {
 					insn2 = code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, value_store, store_inner);
 					ret.push_back(insn2);
 				}
-				else {
-					vector<string> checks = code_generation_utilities().variable_check(tab_count, number, label_count, value_store, store_inner, true);
-					ret.insert(ret.end(), checks.begin(), checks.end());
+				else
 					ret.push_back(insn2);
-				}
 				value_indices.push_back(store_inner);
 			}
 			if(key_indices.size() != value_indices.size()) {
@@ -688,14 +338,10 @@ namespace karma_lang {
 				else
 					instruction = code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::dec, full_name);
 				pok = pokl[i];
-				vector<string> temp = code_generation_utilities().integer_check(tab_count, number, label_count, full_name, instruction);
-				ret.insert(ret.end(), temp.begin(), temp.end());
 			}
 			else if(pokl[i] == postfix_operation_kind::POSTFIX_SUBSCRIPT) {
 				if(full_name == "")
 					full_name = apoexpr->get_type_information().get_literal()->get_raw_literal()->get_raw_string();
-				vector<string> subscriptable = code_generation_utilities().subscript_check(tab_count, number, label_count, full_name, "");
-				ret.insert(ret.end(), subscriptable.begin(), subscriptable.end());
 				if(apoexpr->get_raw_annotated_primary_expression()->get_sequence() == nullptr) {
 				}
 				shared_ptr<annotated_subscript> asubscr = static_pointer_cast<annotated_subscript>(apoexpr->get_annotated_root_node_list()[i]);
@@ -716,11 +362,7 @@ namespace karma_lang {
 						int store3 = number;
 						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store3, "1"));
 						number++;
-						vector<string> temp;
-						temp.push_back(code_generation_utilities().generate_subsd_instruction(tab_count, store, full_name, store1, store2, store3));
-						vector<string> temp2 = code_generation_utilities().dict_check(tab_count, number, label_count, full_name, temp, true);
-						ret.insert(ret.end(), temp2.begin(), temp2.end());
-						ret.push_back(code_generation_utilities().generate_subsl_instruction(tab_count, store, full_name, store1, store2, store3));
+						ret.push_back(code_generation_utilities().generate_subs_instruction(tab_count, store, full_name, store1, store2, store3));
 						full_name += "/r" + to_string(store1) + "/r" + to_string(store2) + "/r" + to_string(store3);
 					}
 					else {
@@ -736,19 +378,11 @@ namespace karma_lang {
 						int store3 = number;
 						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
 						number++;
-						vector<string> temp1;
-						temp1.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store2, "0"));
-						temp1.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store3, "0"));
-						temp1.push_back(code_generation_utilities().generate_subsd_instruction(tab_count, store, full_name, store1, store2, store3));
-						vector<string> temp2 = code_generation_utilities().dict_check(tab_count, number, label_count, full_name, temp1, true);
-						ret.insert(ret.end(), temp2.begin(), temp2.end());
-						ret.push_back(code_generation_utilities().generate_subsl_instruction(tab_count, store, full_name, store1, store2, store3));
+						ret.push_back(code_generation_utilities().generate_subs_instruction(tab_count, store, full_name, store1, store2, store3));
 						full_name += "/r" + to_string(store1) + "/r" + to_string(store2) + "/r" + to_string(store3);
 					}
 				}
 				else if(sck == subscript_colon_kind::SUBSCRIPT_COLON_ONE) {
-					vector<string> not_dict = code_generation_utilities().dict_check(tab_count, number, label_count, full_name, vector<string>(), false);
-					ret.insert(ret.end(), not_dict.begin(), not_dict.end());
 					int store1 = -1;
 					int store2 = -1;
 					if(start == nullptr) {
@@ -774,12 +408,10 @@ namespace karma_lang {
 					int store3 = number;
 					ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
 					number++;
-					ret.push_back(code_generation_utilities().generate_subsll_instruction(tab_count, store, full_name, store1, store2, store3));
+					ret.push_back(code_generation_utilities().generate_subss_instruction(tab_count, store, full_name, store1, store2, store3));
 					full_name += "/r" + to_string(store1) + "/r" + to_string(store2) + "/r" + to_string(store3);
 				}
 				else if(sck == subscript_colon_kind::SUBSCRIPT_COLON_TWO) {
-					vector<string> not_dict = code_generation_utilities().dict_check(tab_count, number, label_count, full_name, vector<string>(), false);
-					ret.insert(ret.end(), not_dict.begin(), not_dict.end());
 					int store1 = -1;
 					int store2 = -1;
 					int store3 = -1;
@@ -813,7 +445,7 @@ namespace karma_lang {
 						vector<string> temp = descend_binary_expression(step).first;
 						ret.insert(ret.end(), temp.begin(), temp.end());
 					}
-					ret.push_back(code_generation_utilities().generate_subsll_instruction(tab_count, store, full_name, store1, store2, store3));
+					ret.push_back(code_generation_utilities().generate_subss_instruction(tab_count, store, full_name, store1, store2, store3));
 					full_name += "/r" + to_string(store1) + "/r" + to_string(store2) + "/r" + to_string(store3);
 				}
 			}
@@ -835,30 +467,22 @@ namespace karma_lang {
 		vector<string> ret = get<0>(tup);
 		string name = get<1>(tup);
 		postfix_operation_kind op = get<2>(tup);
-		if(auexpr->get_unary_operation_kind() == unary_operation_kind::UNARY_OPERATION_MINUS) {
-			string insn1 = code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::neg, store_begin);
-			vector<string> temp = code_generation_utilities().integer_float_check(tab_count, number, label_count, name, insn1);
-			ret.insert(ret.end(), temp.begin(), temp.end());
-		}
-		else if(auexpr->get_unary_operation_kind() == unary_operation_kind::UNARY_OPERATION_COMPLEMENT) {
-			string insn1 = code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::cmpl, store_begin);
-			vector<string> temp = code_generation_utilities().integer_check(tab_count, number, label_count, name, insn1);
-			ret.insert(ret.end(), temp.begin(), temp.end());
-		}
-		else if(auexpr->get_unary_operation_kind() == unary_operation_kind::UNARY_OPERATION_NOT) {
-			string insn1 = code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::bneg, store_begin);
-			vector<string> temp = code_generation_utilities().boolean_check(tab_count, number, label_count, name, insn1);
-			ret.insert(ret.end(), temp.begin(), temp.end());
-		}
+		string insn1;
+		if(auexpr->get_unary_operation_kind() == unary_operation_kind::UNARY_OPERATION_MINUS)
+			insn1 = code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::neg, store_begin);
+		else if(auexpr->get_unary_operation_kind() == unary_operation_kind::UNARY_OPERATION_COMPLEMENT)
+			insn1 = code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::cmpl, store_begin);
+		else if(auexpr->get_unary_operation_kind() == unary_operation_kind::UNARY_OPERATION_NOT)
+			insn1 = code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::bneg, store_begin);
 		else if(auexpr->get_unary_operation_kind() == unary_operation_kind::UNARY_OPERATION_DECREMENT || auexpr->get_unary_operation_kind() == unary_operation_kind::UNARY_OPERATION_INCREMENT) {
-			string insn1;
 			if(auexpr->get_unary_operation_kind() == unary_operation_kind::UNARY_OPERATION_DECREMENT)
 				insn1 = code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::dec, name);
 			else
 				insn1 = code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::inc, name);
-			vector<string> temp = code_generation_utilities().integer_check(tab_count, number, label_count, name, insn1);
-			ret.insert(ret.begin(), temp.begin(), temp.end());
 		}
+		if(insn1 == "");
+		else
+			ret.push_back(insn1);
 		return make_tuple(ret, name, op);
 	}
 
@@ -870,6 +494,10 @@ namespace karma_lang {
 		postfix_operation_kind pok_rhs = postfix_operation_kind::POSTFIX_OPERATION_NONE;
 		string lhs_name = "";
 		string rhs_name = "";
+		tuple<int, int, int> lhs_ternary;
+		tuple<int, int, int> rhs_ternary;
+		bool lt_check = false;
+		bool rt_check = false;
 		vector<string> ret;
 		if(abexpr->get_lhs_kind() == binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION) {
 			pair<vector<string>, vector<string>> pai = descend_binary_expression(static_pointer_cast<annotated_binary_expression>(abexpr->get_lhs()));
@@ -882,12 +510,33 @@ namespace karma_lang {
 			lhs_name = get<1>(tup);
 			pok_lhs = get<2>(tup);
 		}
+		else if(abexpr->get_lhs_kind() == binary_expression_kind::BINARY_EXPRESSION_TERNARY_EXPRESSION) {
+			pair<vector<string>, tuple<int, int, int>> pai = descend_ternary_expression(static_pointer_cast<annotated_ternary_expression>(abexpr->get_lhs()));
+			ret = pai.first;
+			lt_check = true;
+			lhs_ternary = pai.second;
+		}
 		else {
 			d_reporter->print(diagnostic_messages::unreachable, abexpr->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 			exit(1);
 		}
 		int store2 = number;
 		if(abexpr->get_rhs_kind() == binary_expression_kind::BINARY_EXPRESSION_NONE) {
+			int prev_store = store;
+			if(lt_check) {
+				store = number;
+				ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
+				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<1>(lhs_ternary)));
+				number++;
+				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "true"));
+				ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, number, label_count + 1));
+				ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
+				label_count++;
+				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store, get<2>(lhs_ternary)));
+				ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
+				label_count++;
+				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, prev_store, store));
+			}
 			vector<string> temp;
 			rhs_name = lhs_name;
 			temp.push_back(lhs_name);
@@ -898,6 +547,12 @@ namespace karma_lang {
 			pair<vector<string>, vector<string>> temp = descend_binary_expression(static_pointer_cast<annotated_binary_expression>(abexpr->get_rhs()));
 			ret.insert(ret.end(), temp.first.begin(), temp.first.end());
 			rhs_name = temp.second[1];
+		}
+		else if(abexpr->get_rhs_kind() == binary_expression_kind::BINARY_EXPRESSION_TERNARY_EXPRESSION) {
+			pair<vector<string>, tuple<int, int, int>> pai = descend_ternary_expression(static_pointer_cast<annotated_ternary_expression>(abexpr->get_rhs()));
+			ret.insert(ret.end(), pai.first.begin(), pai.first.end());
+			rt_check = true;
+			rhs_ternary = pai.second;
 		}
 		else {
 			tuple<vector<string>, string, postfix_operation_kind> tup = descend_unary_expression(static_pointer_cast<annotated_unary_expression>(abexpr->get_rhs()));
@@ -917,72 +572,57 @@ namespace karma_lang {
 			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store2, rhs_name));
 			number++;
 		}
-		vector<string> checks = code_generation_utilities().variable_check(tab_count, number, label_count, store, store2, true);
-		ret.insert(ret.end(), checks.begin(), checks.end());
-		if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_PLUS || abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_MINUS ||
-				abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_MULTIPLY || abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_DIVIDE ||
-				abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_EXPONENT) {
-			vector<string> additional_checks = code_generation_utilities().integer_float_check(tab_count, number, label_count, store, "");
-			ret.insert(ret.end(), additional_checks.begin(), additional_checks.end());
-			if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_PLUS)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::add, store, store2));
-			else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_MINUS)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sub, store, store2));
-			else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_MULTIPLY)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mul, store, store2));
-			else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_DIVIDE)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::div, store, store2));
-			else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_EXPONENT)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::exp, store, store2));
-			else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_LESS_THAN)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::lt, store, store2));
-			else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_GREATER_THAN)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::gt, store, store2));
-			else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_LESS_THAN_OR_EQUAL_TO)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::lte, store, store2));
-			else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_GREATER_THAN_OR_EQUAL_TO)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::gte, store, store2));
+		if(lt_check) {
+			int prev_store = store;
+			store = number;
+			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
+			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<1>(lhs_ternary)));
+			number++;
+			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "true"));
+			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, number, label_count + 1));
+			ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
+			label_count++;
+			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store, get<2>(lhs_ternary)));
+			ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
+			label_count++;
+			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, prev_store, store));
 		}
-		else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT || abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT ||
-				abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_BITWISE_AND || abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_BITWISE_OR ||
-				abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR || abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_MODULUS) {
-			vector<string> additional_checks = code_generation_utilities().integer_check(tab_count, number, label_count, store, "");
-			ret.insert(ret.end(), additional_checks.begin(), additional_checks.end());
-			if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_MODULUS)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mod, store, store2));
-			else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::shl, store, store2));
-			else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::shr, store, store2));
-			else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_BITWISE_AND)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::band, store, store2));
-			else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_BITWISE_OR)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::bor, store, store2));
-			else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::exor, store, store2));
+		if(rt_check) {
+			int prev_store = store2;
+			store2 = number;
+			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
+			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<1>(lhs_ternary)));
+			number++;
+			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "true"));
+			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, number, label_count + 1));
+			ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
+			label_count++;
+			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store2, get<2>(lhs_ternary)));
+			ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
+			label_count++;
+			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, prev_store, store2));
 		}
-		else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_LOGICAL_AND || abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_LOGICAL_OR) {
-			vector<string> additional_checks = code_generation_utilities().boolean_check(tab_count, number, label_count, store, "");
-			ret.insert(ret.end(), additional_checks.begin(), additional_checks.end());
-			if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_LOGICAL_AND)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::land, store, store2));
-			else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_LOGICAL_OR)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::lor, store, store2));
-		}
-		else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_EQUALS_EQUALS)
-			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, store, store2));
-		else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_NOT_EQUAL)
-			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::snequ, store, store2));
-		else if(abexpr->get_binary_operation_kind() == binary_operation_kind::BINARY_OPERATION_EQUALS)
-			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, lhs_name, store2));
-		else {
-			d_reporter->print(diagnostic_messages::instruction_not_supported, abexpr->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-			exit(1);
-		}
+		binary_operation_kind bopk = abexpr->get_binary_operation_kind();
+		ret.push_back(code_generation_utilities().generate_binary_operation_instruction(tab_count, bopk, store, lhs_name, store2));
 		vector<string> temp;
 		temp.push_back(lhs_name);
 		temp.push_back(rhs_name);
 		return make_pair(ret, temp);
+	}
+
+	pair<vector<string>, tuple<int, int, int>> generate_code::descend_ternary_expression(shared_ptr<annotated_ternary_expression> atexpr) {
+		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
+		if(atexpr->get_type_information() == bad)
+			return make_pair(vector<string>(), make_tuple(-1, -1, -1));
+		int store1 = number;
+		vector<string> ret = descend_binary_expression(static_pointer_cast<annotated_binary_expression>(atexpr->get_condition())).first;
+		int store2 = number;
+		vector<string> temp1 = descend_binary_expression(static_pointer_cast<annotated_binary_expression>(atexpr->get_true_path())).first;
+		ret.insert(ret.end(), temp1.begin(), temp1.end());
+		int store3 = number;
+		vector<string> temp2 = descend_binary_expression(static_pointer_cast<annotated_binary_expression>(atexpr->get_false_path())).first;
+		ret.insert(ret.end(), temp2.begin(), temp2.end());
+		return make_pair(ret, make_tuple(store1, store2, store3));
 	}
 
 	vector<string> generate_code::descend_declaration(shared_ptr<annotated_declaration> adecl) {
@@ -1011,5 +651,52 @@ namespace karma_lang {
 			instruction_list.insert(instruction_list.end(), temp.begin(), temp.end());
 		}
 		return instruction_list;
+	}
+
+	string code_generation_utilities::generate_binary_operation_instruction(int tab_count, binary_operation_kind bopk, int store, string name, int store2) {
+		if(bopk == binary_operation_kind::BINARY_OPERATION_PLUS)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::add, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_MINUS)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sub, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_MULTIPLY)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mul, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_DIVIDE)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::div, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_EXPONENT)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::exp, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_LESS_THAN)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::lt, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_GREATER_THAN)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::gt, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_LESS_THAN_OR_EQUAL_TO)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::lte, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_GREATER_THAN_OR_EQUAL_TO)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::gte, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_MODULUS)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mod, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::shl, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::shr, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_BITWISE_AND)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::band, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_BITWISE_OR)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::bor, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::exor, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_LOGICAL_AND)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::land, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_LOGICAL_OR)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::lor, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_EQUALS_EQUALS)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_NOT_EQUAL)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::snequ, store, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_EQUALS)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, name, store2));
+		else if(bopk == binary_operation_kind::BINARY_OPERATION_POINT)
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::cast, store, store2));
+		else
+			return "";
 	}
 }

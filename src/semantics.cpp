@@ -176,7 +176,8 @@ namespace karma_lang {
 	const immut_kind symbol::get_immut_kind() {
 		return i_kind;
 	}
-const function_kind symbol::get_function_kind() {
+
+	const function_kind symbol::get_function_kind() {
 		return f_kind;
 	}
 
@@ -254,11 +255,17 @@ const function_kind symbol::get_function_kind() {
 	const bool analyze_ast::perform_semantic_analysis() {
 		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
 		bool ret = true;
+		if(root->get_diagnostics_reporter()->get_error_count() > 0)
+			ret = false;
 		vector<shared_ptr<statement>> stmt_list = root->get_statement_list();
 		for(int i = 0; i < stmt_list.size(); i++) {
-			shared_ptr<annotated_statement> astmt = analyze_statement(stmt_list[i]);
-			if(astmt->get_type_information() == bad) ret = false;
-			ann_root_node->add_annotated_statement(astmt);
+			if(!stmt_list[i]->get_valid())
+				ret = false;
+			else {
+				shared_ptr<annotated_statement> astmt = analyze_statement(stmt_list[i]);
+				if(astmt->get_type_information() == bad) ret = false;
+				ann_root_node->add_annotated_statement(astmt);
+			}
 		}
 		return ret;
 	}
@@ -341,6 +348,12 @@ const function_kind symbol::get_function_kind() {
 			lhs = static_pointer_cast<annotated_unary_expression>(bexpr_lhs)->get_type_information();
 			lhs_forced = static_pointer_cast<annotated_unary_expression>(bexpr_lhs)->get_forced_type_information();
 		}
+		else if(bexpr->get_lhs_kind() == binary_expression_kind::BINARY_EXPRESSION_TERNARY_EXPRESSION) {
+			shared_ptr<ternary_expression> texpr = static_pointer_cast<ternary_expression>(bexpr->get_lhs());
+			bexpr_lhs = analyze_ternary_expression(texpr);
+			lhs = static_pointer_cast<annotated_ternary_expression>(bexpr_lhs)->get_type_information();
+			lhs_forced = static_pointer_cast<annotated_ternary_expression>(bexpr_lhs)->get_forced_type_information();
+		}
 		else
 			return make_shared<annotated_binary_expression>(ann_root_node, bexpr, nullptr, nullptr, bad, bad, bad, bad, bad, bad);
 		if(bexpr->get_rhs_kind() == binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION) {
@@ -354,6 +367,12 @@ const function_kind symbol::get_function_kind() {
 			bexpr_rhs = analyze_binary_expression(bexpr1);
 			rhs = static_pointer_cast<annotated_binary_expression>(bexpr_rhs)->get_type_information();
 			rhs_forced = static_pointer_cast<annotated_binary_expression>(bexpr_rhs)->get_forced_type_information();
+		}
+		else if(bexpr->get_rhs_kind() == binary_expression_kind::BINARY_EXPRESSION_TERNARY_EXPRESSION) {
+			shared_ptr<ternary_expression> texpr = static_pointer_cast<ternary_expression>(bexpr->get_rhs());
+			bexpr_rhs = analyze_ternary_expression(texpr);
+			rhs = static_pointer_cast<annotated_ternary_expression>(bexpr_rhs)->get_type_information();
+			rhs_forced = static_pointer_cast<annotated_ternary_expression>(bexpr_rhs)->get_forced_type_information();
 		}
 		else {
 			bexpr_rhs = nullptr;
@@ -389,10 +408,35 @@ const function_kind symbol::get_function_kind() {
 				if(results[results.size() - 1]->get_type_information().get_type_kind() == type_kind::TYPE_TUPLE) {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::tuples_cannot_be_modified, bexpr->get_lhs()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 					root->get_diagnostics_reporter()->print(diagnostic_messages::originally_declared_here, results[results.size() - 1]->get_identifier()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_NOTE);
+					return make_shared<annotated_binary_expression>(ann_root_node, bexpr, nullptr, nullptr, bad, bad, bad, bad, bad, bad);
 				}
 			}
 		}
 		return make_shared<annotated_binary_expression>(ann_root_node, bexpr, bexpr_lhs, bexpr_rhs, lhs, lhs_forced, rhs, rhs_forced, t_inf, bad);
+	}
+
+	shared_ptr<annotated_ternary_expression> analyze_ast::analyze_ternary_expression(shared_ptr<ternary_expression> texpr) {
+		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
+		if(!texpr->get_valid())
+			return make_shared<annotated_ternary_expression>(ann_root_node, texpr, nullptr, nullptr, nullptr, bad, bad);
+		type_information _boolean(type_kind::TYPE_BOOLEAN, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
+		type_information _int(type_kind::TYPE_INT, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
+		type_information _float(type_kind::TYPE_DECIMAL, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
+		shared_ptr<annotated_binary_expression> abexpr1 = analyze_binary_expression(static_pointer_cast<binary_expression>(texpr->get_condition()));
+		shared_ptr<annotated_binary_expression> abexpr2 = analyze_binary_expression(static_pointer_cast<binary_expression>(texpr->get_true_path()));
+		shared_ptr<annotated_binary_expression> abexpr3 = analyze_binary_expression(static_pointer_cast<binary_expression>(texpr->get_false_path()));
+		if(abexpr1->get_type_information() == _boolean || abexpr1->get_type_information().get_type_kind() == type_kind::TYPE_ANY);
+		else {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_boolean_for_ternary_expression_condition, texpr->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			return make_shared<annotated_ternary_expression>(ann_root_node, texpr, nullptr, nullptr, nullptr, bad, bad);
+		}
+		if(abexpr2->get_type_information() == abexpr3->get_type_information() || abexpr2->get_type_information().get_type_kind() == type_kind::TYPE_ANY || abexpr3->get_type_information().get_type_kind() == type_kind::TYPE_ANY ||
+				(abexpr2->get_type_information() == _int && abexpr3->get_type_information() == _float) || (abexpr2->get_type_information() == _float && abexpr3->get_type_information() == _int));
+		else {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::incompatible_types, texpr->get_true_path()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			return make_shared<annotated_ternary_expression>(ann_root_node, texpr, nullptr, nullptr, nullptr, bad, bad);
+		}
+		return make_shared<annotated_ternary_expression>(ann_root_node, texpr, abexpr1, abexpr2, abexpr3, type_information(abexpr2->get_type_information(), value_kind::VALUE_RVALUE), bad);
 	}
 
 	shared_ptr<annotated_unary_expression> analyze_ast::analyze_unary_expression(shared_ptr<unary_expression> uexpr) {
@@ -993,29 +1037,6 @@ const function_kind symbol::get_function_kind() {
 			else
 				return bad;
 		}
-		else if(b_kind == binary_operation_kind::BINARY_OPERATION_QUESTION_MARK) {
-			if(lhs == _boolean || lhs.get_type_kind() == type_kind::TYPE_ANY)
-				return rhs;
-			return bad;
-		}
-		else if(b_kind == binary_operation_kind::BINARY_OPERATION_COLON) {
-			if(lhs == _int || lhs == _float || lhs.get_type_kind() == _any.get_type_kind()) {
-				if(rhs == _int || rhs == _float || rhs.get_type_kind() == _any.get_type_kind()) {
-					if(lhs.get_type_kind() == _any.get_type_kind() || rhs.get_type_kind() == _any.get_type_kind())
-						return _any;
-					else if(lhs == _float || rhs == _float)
-						return _float;
-					else
-						return _int;
-				}
-				else
-					return bad;
-			}
-			else if(lhs == rhs)
-				return type_information(lhs, value_kind::VALUE_RVALUE);
-			else
-				return bad;
-		}
 		else if(b_kind == binary_operation_kind::BINARY_OPERATION_POINT) {
 			if(lhs == _int || lhs == _float) {
 				if(rhs == _pure_int)
@@ -1534,5 +1555,41 @@ const function_kind symbol::get_function_kind() {
 
 	source_token_list::iterator annotated_statement::get_position() {
 		return statement_pos;
+	}
+
+	annotated_ternary_expression::annotated_ternary_expression(shared_ptr<annotated_root_node> arn, shared_ptr<ternary_expression> texpr, shared_ptr<annotated_root_node> c,
+			shared_ptr<annotated_root_node> tp, shared_ptr<annotated_root_node> fp, type_information ti, type_information fti) : annotated_root_node(*arn), ternary_expression_pos(texpr->get_position()), t_inf(ti),
+			forced_t_inf(fti) {
+		condition = c;
+		true_path = tp;
+		false_path = fp;
+	}
+
+	annotated_ternary_expression::~annotated_ternary_expression() {
+
+	}
+
+	shared_ptr<annotated_root_node> annotated_ternary_expression::get_condition() {
+		return condition;
+	}
+
+	shared_ptr<annotated_root_node> annotated_ternary_expression::get_true_path() {
+		return true_path;
+	}
+
+	shared_ptr<annotated_root_node> annotated_ternary_expression::get_false_path() {
+		return false_path;
+	}
+
+	source_token_list::iterator annotated_ternary_expression::get_position() {
+		return ternary_expression_pos;
+	}
+
+	type_information annotated_ternary_expression::get_type_information() {
+		return t_inf;
+	}
+
+	type_information annotated_ternary_expression::get_forced_type_information() {
+		return forced_t_inf;
 	}
 }

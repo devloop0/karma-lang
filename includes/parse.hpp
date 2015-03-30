@@ -30,6 +30,7 @@ namespace karma_lang {
 	class function_argument_list;
 	class declaration;
 	class statement;
+	class ternary_expression;
 
 	class parser {
 		protected:
@@ -164,11 +165,11 @@ namespace karma_lang {
 		BINARY_OPERATION_PLUS_EQUALS, BINARY_OPERATION_MINUS_EQUALS, BINARY_OPERATION_MULTIPLY_EQUALS, BINARY_OPERATION_DIVIDE_EQUALS,
 		BINARY_OPERATION_MODULUS_EQUALS, BINARY_OPERATION_SHIFT_LEFT_EQUALS, BINARY_OPERATION_SHIFT_RIGHT_EQUALS,
 		BINARY_OPERATION_BITWISE_AND_EQUALS, BINARY_OPERATION_BITWISE_OR_EQUALS, BINARY_OPERATION_EXCLUSIVE_OR_EQUALS,
-		BINARY_OPERATION_EXPONENT_EQUALS, BINARY_OPERATION_QUESTION_MARK, BINARY_OPERATION_COLON, BINARY_OPERATION_COMMA, BINARY_OPERATION_POINT, BINARY_OPERATION_NONE
+		BINARY_OPERATION_EXPONENT_EQUALS, BINARY_OPERATION_COMMA, BINARY_OPERATION_POINT, BINARY_OPERATION_NONE
 	};
 
 	enum binary_expression_kind {
-		BINARY_EXPRESSION_UNARY_EXPRESSION, BINARY_EXPRESSION_BINARY_EXPRESSION, BINARY_EXPRESSION_NONE
+		BINARY_EXPRESSION_UNARY_EXPRESSION, BINARY_EXPRESSION_BINARY_EXPRESSION, BINARY_EXPRESSION_TERNARY_EXPRESSION, BINARY_EXPRESSION_NONE
 	};
 
 	class binary_expression : public root_node {
@@ -180,21 +181,23 @@ namespace karma_lang {
 		binary_operation_kind operation_kind;
 		bool valid;
 		source_token_list::iterator binary_expression_pos;
+		
+		protected:
+			shared_ptr<binary_expression> exponent_expression();
+			shared_ptr<binary_expression> multiplicative_expression();
+			shared_ptr<binary_expression> additive_expression();
+			shared_ptr<binary_expression> shift_expression();
+			shared_ptr<binary_expression> relational_expression();
+			shared_ptr<binary_expression> equality_expression();
+			shared_ptr<binary_expression> and_expression();
+			shared_ptr<binary_expression> exclusive_or_expression();
+			shared_ptr<binary_expression> inclusive_or_expression();
+			shared_ptr<binary_expression> logical_and_expression();
+			shared_ptr<binary_expression> logical_or_expression();
+			shared_ptr<binary_expression> conditional_expression();
+			shared_ptr<binary_expression> assignment_expression();
+			shared_ptr<binary_expression> cast_expression();
 
-		shared_ptr<binary_expression> exponent_expression();
-		shared_ptr<binary_expression> multiplicative_expression();
-		shared_ptr<binary_expression> additive_expression();
-		shared_ptr<binary_expression> shift_expression();
-		shared_ptr<binary_expression> relational_expression();
-		shared_ptr<binary_expression> equality_expression();
-		shared_ptr<binary_expression> and_expression();
-		shared_ptr<binary_expression> exclusive_or_expression();
-		shared_ptr<binary_expression> inclusive_or_expression();
-		shared_ptr<binary_expression> logical_and_expression();
-		shared_ptr<binary_expression> logical_or_expression();
-		shared_ptr<binary_expression> conditional_expression();
-		shared_ptr<binary_expression> assignment_expression();
-		shared_ptr<binary_expression> cast_expression();
 		public:
 			binary_expression(shared_ptr<root_node> r);
 			~binary_expression();
@@ -207,6 +210,23 @@ namespace karma_lang {
 			const bool get_valid();
 			source_token_list::iterator get_position();
 			shared_ptr<binary_expression> parse_binary_expression();
+	};
+
+	class ternary_expression : public binary_expression {
+		shared_ptr<root_node> condition;
+		shared_ptr<root_node> true_path;
+		shared_ptr<root_node> false_path;
+		bool valid;
+		source_token_list::iterator ternary_expression_pos;
+		public:
+			ternary_expression(shared_ptr<root_node> r);
+			~ternary_expression();
+			shared_ptr<root_node> get_condition();
+			shared_ptr<root_node> get_true_path();
+			shared_ptr<root_node> get_false_path();
+			const bool get_valid();
+			source_token_list::iterator get_position();
+			shared_ptr<ternary_expression> parse_ternary_expression();
 	};
 
 	enum sequence_kind {

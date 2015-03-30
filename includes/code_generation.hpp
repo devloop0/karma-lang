@@ -68,10 +68,9 @@ namespace karma_lang {
 			const static string list;
 			const static string tupl;
 			const static string sequ;
-			const static string subsl;
-			const static string subsll;
+			const static string subs;
+			const static string subss;
 			const static string dict;
-			const static string subsd;
 	};
 
 	class code_generation_symbol_table {
@@ -99,22 +98,10 @@ namespace karma_lang {
 			string generate_jump_instruction(int tab, int one, string two);
 			string generate_jump_instruction(int tab, string one, int two);
 			string generate_exit_instruction(int tab);
-			vector<string> integer_check(int& tab_count, int& number, int& label_count, string name, string instruction);
-			vector<string> integer_check(int& tab_count, int& number, int& label_count, int one, string instruction);
-			vector<string> integer_float_check(int& tab_count, int& number, int& label_count, string name, string instruction);
-			vector<string> integer_float_check(int& tab_count, int& number, int& label_count, int one, string instruction);
-			vector<string> boolean_check(int& tab_count, int& number, int& label_count, string name, string instruction);
-			vector<string> boolean_check(int& tab_count, int& number, int& label_count, int one, string instruction);
-			vector<string> subscript_check(int& tab_count, int& number, int& label_count, int one, string instruction);
-			vector<string> subscript_check(int& tab_count, int& number, int& label_count, string name, string instruction);
-			vector<string> variable_check(int& tab_count, int& number, int& label_count, int one, int two, bool compatible);
-			vector<string> integer_float_type_equality_check(int& tab_count, int& number, int& label_count, int one, int two, string instruction);
 			string generate_sequence_instruction(int tab, string op, int one, vector<int> indices);
-			string generate_subsl_instruction(int tab, int store, string var, int one, int two, int three);
-			string generate_subsll_instruction(int tab, int store, string var, int one, int two, int three);
-			string generate_subsd_instruction(int tab, int store, string var, int one, int two, int three);
-			vector<string> dict_check(int& tab_count, int& number, int& label_count, int one, vector<string> instruction_list, bool yes);
-			vector<string> dict_check(int& tab_count, int& number, int& label_count, string one, vector<string> instruction_list, bool yes);
+			string generate_subs_instruction(int tab, int store, string var, int one, int two, int three);
+			string generate_subss_instruction(int tab, int store, string var, int one, int two, int three);
+			string generate_binary_operation_instruction(int tab, binary_operation_kind bopk, int store, string name, int store2);
 	};
 
 	class generate_code {
@@ -135,6 +122,7 @@ namespace karma_lang {
 		pair<vector<string>, vector<string>> descend_binary_expression(shared_ptr<annotated_binary_expression> abexpr);
 		vector<string> descend_declaration(shared_ptr<annotated_declaration> adecl);
 		vector<string> descend_statement(shared_ptr<annotated_statement> astmt);
+		pair<vector<string>, tuple<int, int, int>> descend_ternary_expression(shared_ptr<annotated_ternary_expression> atexpr);
 
 		public:
 			generate_code(shared_ptr<analyze_ast> aa);
