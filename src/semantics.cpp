@@ -431,7 +431,10 @@ namespace karma_lang {
 			return make_shared<annotated_ternary_expression>(ann_root_node, texpr, nullptr, nullptr, nullptr, bad, bad);
 		}
 		if(abexpr2->get_type_information() == abexpr3->get_type_information() || abexpr2->get_type_information().get_type_kind() == type_kind::TYPE_ANY || abexpr3->get_type_information().get_type_kind() == type_kind::TYPE_ANY ||
-				(abexpr2->get_type_information() == _int && abexpr3->get_type_information() == _float) || (abexpr2->get_type_information() == _float && abexpr3->get_type_information() == _int));
+				(abexpr2->get_type_information() == _int && abexpr3->get_type_information() == _float) || (abexpr2->get_type_information() == _float && abexpr3->get_type_information() == _int)) {
+			if((abexpr2->get_type_information() == _int && abexpr3->get_type_information() == _float) || (abexpr2->get_type_information() == _float && abexpr3->get_type_information() == _int))
+				root->get_diagnostics_reporter()->print(diagnostic_messages::unequal_but_compatible_types, abexpr2->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_WARNING);
+		}
 		else {
 			root->get_diagnostics_reporter()->print(diagnostic_messages::incompatible_types, texpr->get_true_path()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 			return make_shared<annotated_ternary_expression>(ann_root_node, texpr, nullptr, nullptr, nullptr, bad, bad);

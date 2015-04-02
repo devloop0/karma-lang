@@ -39,7 +39,7 @@ namespace karma_lang {
 	const string diagnostic_messages::unequal_but_compatible_types = "The types of this binary expression are unequal but compatible; continuing.";
 	const string diagnostic_messages::expected_lvalue = "For an assignment expression, expected to find an lvalue.";
 	const string diagnostic_messages::immut_value_cannot_be_modified = "An immutable variable cannot be modified.";
-	const string diagnostic_messages::unequal_but_compatible_types_list_dict = "Unequal, but compatible types; warning for lists or dictionaries.";
+	const string diagnostic_messages::unequal_but_compatible_types_list_dict = "Unequal, but compatible types; warning for lists and dictionaries.";
 	const string diagnostic_messages::expected_lvalue_for_increments_and_decrements = "For increments and decrements, an lvalue is expected.";
 	const string diagnostic_messages::expected_boolean = "Expected a boolean expression here.";
 	const string diagnostic_messages::instruction_not_supported = "Instruction not supported; terminating.";

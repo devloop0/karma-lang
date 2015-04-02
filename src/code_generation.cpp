@@ -94,7 +94,7 @@ namespace karma_lang {
 	}
 
 	string code_generation_utilities::generate_binary_instruction(int tab, string op, int one, string two) {
-		string s = op + " r" + to_string(one) + " " + two;
+		string s = op + " r" + to_string(one) + " " + "[" + two + "]";
 		string ret;
 		for(int i = 0; i < tab; i++)
 			ret += "\t";
@@ -102,7 +102,7 @@ namespace karma_lang {
 	}
 
 	string code_generation_utilities::generate_unary_instruction(int tab, string op, string var) {
-		string s = op + " " + var;
+		string s = op + " " + "[" + var + "]";
 		string ret;
 		for(int i = 0; i < tab; i++)
 			ret += "\t";
@@ -110,7 +110,7 @@ namespace karma_lang {
 	}
 
 	string code_generation_utilities::generate_binary_instruction(int tab, string op, string var, int one) {
-		string s = op + " " + var + " r" + to_string(one);
+		string s = op + " [" + var + "] r" + to_string(one);
 		string ret;
 		for(int i = 0; i < tab; i++)
 			ret += "\t";
@@ -141,7 +141,7 @@ namespace karma_lang {
 	}
 
 	string code_generation_utilities::generate_jump_instruction(int tab, string one, int two) {
-		string s = vm_instruction_list::jmp + one + " .L" + to_string(two);
+		string s = vm_instruction_list::jmp + " [" + one + "] .L" + to_string(two);
 		string ret;
 		for(int i = 0; i < tab; i++)
 			ret += "\t";
@@ -170,7 +170,7 @@ namespace karma_lang {
 		string ret;
 		for(int i = 0; i < tab; i++)
 			ret += "\t";
-		ret += vm_instruction_list::subss + " r" + to_string(store) + " " + var + " r" + to_string(one) + " r" + to_string(two) + " r" + to_string(three);
+		ret += vm_instruction_list::subss + " r" + to_string(store) + " [" + var + "] r" + to_string(one) + " r" + to_string(two) + " r" + to_string(three);
 		return ret;
 	}
 
@@ -178,7 +178,7 @@ namespace karma_lang {
 		string ret;
 		for(int i = 0; i < tab; i++)
 			ret += "\t";
-		ret += vm_instruction_list::subs + " r" + to_string(store) + " " + var + " r" + to_string(one) + " r" + to_string(two) + " r" + to_string(three);
+		ret += vm_instruction_list::subs + " r" + to_string(store) + " [" + var + "] r" + to_string(one) + " r" + to_string(two) + " r" + to_string(three);
 		return ret;
 	}
 
@@ -528,8 +528,7 @@ namespace karma_lang {
 				ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
 				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<1>(lhs_ternary)));
 				number++;
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "true"));
-				ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, number, label_count + 1));
+				ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "true", label_count + 1));
 				ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
 				label_count++;
 				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store, get<2>(lhs_ternary)));
@@ -578,8 +577,7 @@ namespace karma_lang {
 			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
 			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<1>(lhs_ternary)));
 			number++;
-			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "true"));
-			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, number, label_count + 1));
+			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "true", label_count + 1));
 			ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
 			label_count++;
 			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store, get<2>(lhs_ternary)));
@@ -593,8 +591,7 @@ namespace karma_lang {
 			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
 			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<1>(lhs_ternary)));
 			number++;
-			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "true"));
-			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, number, label_count + 1));
+			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "true", label_count + 1));
 			ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
 			label_count++;
 			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store2, get<2>(lhs_ternary)));
