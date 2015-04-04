@@ -38,6 +38,9 @@ It was decided that for code generation, a virtual machine would be used to inte
 var -> x = 1 # A variable (x), equal to one
 var immut -> x = 1 # An immutable variable (x), equal to one
 
+var -> aa = 1 + 2 ** 2 # Support for operator predecence parsing for expressions
+var -> bb = aa *> [2.3] # [2.3] is the type of the expression inside of the bracket *> is casting the expression on the left-hand side to the to the expression on the right-hand side Note, it will be an error if there is not a type-of expression on the right-hand side.
+
 var -> y = '2' 
 y = "2"
 # Both of the previous examples are strings
