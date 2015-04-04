@@ -564,11 +564,13 @@ namespace karma_lang {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::expected_lvalue_for_increments_and_decrements, op->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 					return make_pair(bad, nullptr);
 				}
-				vector<shared_ptr<symbol>> sym_results = sym_table->find_all_symbols(prev.get_literal());
-				if(sym_results[sym_results.size() - 1]->get_immut_kind() == immut_kind::IMMUT_YES) {
-					root->get_diagnostics_reporter()->print(diagnostic_messages::immut_value_cannot_be_modified, op->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					root->get_diagnostics_reporter()->print(diagnostic_messages::originally_declared_here, op->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_NOTE);
-					return make_pair(bad, nullptr);
+				if(prev.get_literal() != nullptr) {
+					vector<shared_ptr<symbol>> sym_results = sym_table->find_all_symbols(prev.get_literal());
+					if(sym_results[sym_results.size() - 1]->get_immut_kind() == immut_kind::IMMUT_YES) {
+						root->get_diagnostics_reporter()->print(diagnostic_messages::immut_value_cannot_be_modified, op->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+						root->get_diagnostics_reporter()->print(diagnostic_messages::originally_declared_here, op->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_NOTE);
+						return make_pair(bad, nullptr);
+					}
 				}
 				type_information temp = type_information(prev, value_kind::VALUE_RVALUE);
 				if(prev == _any)

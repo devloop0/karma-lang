@@ -170,6 +170,10 @@ namespace karma_lang {
 		return ret;
 	}
 
+	string code_generation_utilities::generate_temp_name(int one) {
+		return "__temp__" + to_string(one);
+	}
+
 	generate_code::generate_code(shared_ptr<analyze_ast> aa) {
 		ann_root_node = aa->get_annotated_root_node();
 		code_gen_sym_table = make_shared<code_generation_symbol_table>();
@@ -177,6 +181,7 @@ namespace karma_lang {
 		number = 0;
 		tab_count = 0;
 		label_count = 0;
+		temp_count = 0;
 		sym_table = aa->get_symbol_table();
 		d_reporter = aa->get_annotated_root_node()->get_diagnostics_reporter();
 	}
@@ -218,8 +223,7 @@ namespace karma_lang {
 		}
 		else if(aprexpr->get_primary_expression_kind() == primary_expression_kind::PRIMARY_EXPRESSION_SEQUENCE) {
 			int orig = number;
-			int store = number + 1;
-			number += 2;
+			number++;
 			string insn1;
 			shared_ptr<annotated_sequence> aseq = aprexpr->get_sequence();
 			vector<shared_ptr<annotated_binary_expression>> abexpr_list = aseq->get_annotated_binary_expression_list();
@@ -234,7 +238,10 @@ namespace karma_lang {
 			sequence_kind seq_kind = aseq->get_sequence_kind();
 			string temp = code_generation_utilities().generate_sequence_instruction(tab_count, seq_kind == sequence_kind::SEQUENCE_TUPLE ? vm_instruction_list::tupl : vm_instruction_list::list, orig, list_indices);
 			ret.push_back(temp);
-			return make_pair(ret, "");
+			string s = code_generation_utilities().generate_temp_name(temp_count);
+			temp_count++;
+			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, s, orig));
+			return make_pair(ret, s);
 		}
 		else if(aprexpr->get_primary_expression_kind() == primary_expression_kind::PRIMARY_EXPRESSION_DICTIONARY) {
 			int orig = number;
@@ -278,7 +285,10 @@ namespace karma_lang {
 			}
 			string temp = code_generation_utilities().generate_sequence_instruction(tab_count, vm_instruction_list::dict, orig, total_indices);
 			ret.push_back(temp);
-			return make_pair(ret, "");
+			string s = code_generation_utilities().generate_temp_name(temp_count);
+			temp_count++;
+			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, s, orig));
+			return make_pair(ret, s);
 		}
 		d_reporter->print(diagnostic_messages::unreachable, aprexpr->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 		exit(1);
@@ -308,9 +318,11 @@ namespace karma_lang {
 				pok = pokl[i];
 			}
 			else if(pokl[i] == postfix_operation_kind::POSTFIX_SUBSCRIPT) {
-				if(full_name == "")
-					full_name = apoexpr->get_type_information().get_literal()->get_raw_literal()->get_raw_string();
-				if(apoexpr->get_raw_annotated_primary_expression()->get_sequence() == nullptr) {
+				if(full_name == "") {
+					if(apoexpr->get_type_information().get_literal() != nullptr)
+						full_name = apoexpr->get_type_information().get_literal()->get_raw_literal()->get_raw_string();
+					else
+						full_name = "r" + to_string(number);
 				}
 				shared_ptr<annotated_subscript> asubscr = static_pointer_cast<annotated_subscript>(apoexpr->get_annotated_root_node_list()[i]);
 				subscript_colon_kind sck = asubscr->get_subscript_colon_kind();
@@ -336,16 +348,7 @@ namespace karma_lang {
 						int store1 = number;
 						vector<string> temp = descend_binary_expression(start).first;
 						ret.insert(ret.end(), temp.begin(), temp.end());
-						int store2 = number;
-						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, store1));
-						number++;
-						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
-						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::add, store2, number));
-						number++;
-						int store3 = number;
-						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
-						number++;
-						full_name += "/r" + to_string(store1) + "/r" + to_string(store2) + "/r" + to_string(store3);
+						full_name += "|r" + to_string(store1);
 					}
 				}
 				else if(sck == subscript_colon_kind::SUBSCRIPT_COLON_ONE) {

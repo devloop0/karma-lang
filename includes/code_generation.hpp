@@ -97,6 +97,7 @@ namespace karma_lang {
 			string generate_exit_instruction(int tab);
 			string generate_sequence_instruction(int tab, string op, int one, vector<int> indices);
 			string generate_binary_operation_instruction(int tab, binary_operation_kind bopk, int store, string name, int store2, string rname);
+			string generate_temp_name(int one);
 	};
 
 	class generate_code {
@@ -109,6 +110,7 @@ namespace karma_lang {
 		int number;
 		int label_count;
 		int tab_count;
+		int temp_count;
 
 		pair<vector<string>, string> descend_literal(shared_ptr<annotated_literal> alit);
 		pair<vector<string>, string> descend_primary_expression(shared_ptr<annotated_primary_expression> prexpr);
