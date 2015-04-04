@@ -20,9 +20,8 @@ namespace karma_lang {
 	const string vm_instruction_list::sub = "sub";
 	const string vm_instruction_list::shl = "shl";
 	const string vm_instruction_list::shr = "shr";
-	const string vm_instruction_list::cequ = "cequ";
-	const string vm_instruction_list::snequ = "snequ";
-	const string vm_instruction_list::cnequ = "cnequ";
+	const string vm_instruction_list::equ = "equ";
+	const string vm_instruction_list::nequ = "nequ";
 	const string vm_instruction_list::lt = "lt";
 	const string vm_instruction_list::lte = "lte";
 	const string vm_instruction_list::gt = "gt";
@@ -37,10 +36,7 @@ namespace karma_lang {
 	const string vm_instruction_list::jmp = "jmp";
 	const string vm_instruction_list::list = "list";
 	const string vm_instruction_list::tupl = "tupl";
-	const string vm_instruction_list::sequ = "sequ";
-	const string vm_instruction_list::subs = "subs";
 	const string vm_instruction_list::dict = "dict";
-	const string vm_instruction_list::subss = "subss";
 
 	code_generation_symbol_table::code_generation_symbol_table() {
 		raw_string_list = vector<string>();
@@ -94,7 +90,7 @@ namespace karma_lang {
 	}
 
 	string code_generation_utilities::generate_binary_instruction(int tab, string op, int one, string two) {
-		string s = op + " r" + to_string(one) + " " + "[" + two + "]";
+		string s = op + " r" + to_string(one) + " [" + two + "]";
 		string ret;
 		for(int i = 0; i < tab; i++)
 			ret += "\t";
@@ -102,7 +98,7 @@ namespace karma_lang {
 	}
 
 	string code_generation_utilities::generate_unary_instruction(int tab, string op, string var) {
-		string s = op + " " + "[" + var + "]";
+		string s = op + " [" + var + "]";
 		string ret;
 		for(int i = 0; i < tab; i++)
 			ret += "\t";
@@ -111,6 +107,14 @@ namespace karma_lang {
 
 	string code_generation_utilities::generate_binary_instruction(int tab, string op, string var, int one) {
 		string s = op + " [" + var + "] r" + to_string(one);
+		string ret;
+		for(int i = 0; i < tab; i++)
+			ret += "\t";
+		return ret + s;
+	}
+
+	string code_generation_utilities::generate_binary_instruction(int tab, string op, string one, string two) {
+		string s = op + " [" + one + "] [" + two + "]";
 		string ret;
 		for(int i = 0; i < tab; i++)
 			ret += "\t";
@@ -166,22 +170,6 @@ namespace karma_lang {
 		return ret;
 	}
 
-	string code_generation_utilities::generate_subss_instruction(int tab, int store, string var, int one, int two, int three) {
-		string ret;
-		for(int i = 0; i < tab; i++)
-			ret += "\t";
-		ret += vm_instruction_list::subss + " r" + to_string(store) + " [" + var + "] r" + to_string(one) + " r" + to_string(two) + " r" + to_string(three);
-		return ret;
-	}
-
-	string code_generation_utilities::generate_subs_instruction(int tab, int store, string var, int one, int two, int three) {
-		string ret;
-		for(int i = 0; i < tab; i++)
-			ret += "\t";
-		ret += vm_instruction_list::subs + " r" + to_string(store) + " [" + var + "] r" + to_string(one) + " r" + to_string(two) + " r" + to_string(three);
-		return ret;
-	}
-
 	generate_code::generate_code(shared_ptr<analyze_ast> aa) {
 		ann_root_node = aa->get_annotated_root_node();
 		code_gen_sym_table = make_shared<code_generation_symbol_table>();
@@ -218,7 +206,7 @@ namespace karma_lang {
 				aprexpr->get_primary_expression_kind() == primary_expression_kind::PRIMARY_EXPRESSION_PARENTHESIZED_EXPRESSION) {
 			int store = number;
 			vector<string> ret = descend_binary_expression(aprexpr->get_raw_parenthesized_expression()).first;
-			string name = descend_binary_expression(aprexpr->get_raw_parenthesized_expression()).second[0];
+			string name = "";
 			if(aprexpr->get_primary_expression_kind() == primary_expression_kind::PRIMARY_EXPRESSION_PARENTHESIZED_EXPRESSION)
 				return make_pair(ret, name);
 			else {
@@ -241,14 +229,6 @@ namespace karma_lang {
 				int store_inner = number;
 				vector<string> insn_list = descend_binary_expression(abexpr_list[i]).first;
 				ret.insert(ret.end(), insn_list.begin(), insn_list.end());
-				if(i == 0) {
-					insn1 = code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store, store_inner);
-					ret.push_back(insn1);
-				}
-				else {
-					if(aseq->get_sequence_kind() == sequence_kind::SEQUENCE_LIST)
-						ret.push_back(insn1);
-				}
 				list_indices.push_back(store_inner);
 			}
 			sequence_kind seq_kind = aseq->get_sequence_kind();
@@ -274,24 +254,12 @@ namespace karma_lang {
 				int store_inner = number;
 				vector<string> insn_list = descend_binary_expression(key_list[i]).first;
 				ret.insert(ret.end(), insn_list.begin(), insn_list.end());
-				if(i == 0) {
-					insn1 = code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, key_store, store_inner);
-					ret.push_back(insn1);
-				}
-				else
-					ret.push_back(insn1);
 				key_indices.push_back(store_inner);
 			}
 			for(int i = 0; i < value_list.size(); i++) {
 				int store_inner = number;
 				vector<string> insn_list = descend_binary_expression(value_list[i]).first;
 				ret.insert(ret.end(), insn_list.begin(), insn_list.end());
-				if(i == 0) {
-					insn2 = code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, value_store, store_inner);
-					ret.push_back(insn2);
-				}
-				else
-					ret.push_back(insn2);
 				value_indices.push_back(store_inner);
 			}
 			if(key_indices.size() != value_indices.size()) {
@@ -362,7 +330,6 @@ namespace karma_lang {
 						int store3 = number;
 						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store3, "1"));
 						number++;
-						ret.push_back(code_generation_utilities().generate_subs_instruction(tab_count, store, full_name, store1, store2, store3));
 						full_name += "/r" + to_string(store1) + "/r" + to_string(store2) + "/r" + to_string(store3);
 					}
 					else {
@@ -378,7 +345,6 @@ namespace karma_lang {
 						int store3 = number;
 						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
 						number++;
-						ret.push_back(code_generation_utilities().generate_subs_instruction(tab_count, store, full_name, store1, store2, store3));
 						full_name += "/r" + to_string(store1) + "/r" + to_string(store2) + "/r" + to_string(store3);
 					}
 				}
@@ -408,7 +374,6 @@ namespace karma_lang {
 					int store3 = number;
 					ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
 					number++;
-					ret.push_back(code_generation_utilities().generate_subss_instruction(tab_count, store, full_name, store1, store2, store3));
 					full_name += "/r" + to_string(store1) + "/r" + to_string(store2) + "/r" + to_string(store3);
 				}
 				else if(sck == subscript_colon_kind::SUBSCRIPT_COLON_TWO) {
@@ -445,7 +410,6 @@ namespace karma_lang {
 						vector<string> temp = descend_binary_expression(step).first;
 						ret.insert(ret.end(), temp.begin(), temp.end());
 					}
-					ret.push_back(code_generation_utilities().generate_subss_instruction(tab_count, store, full_name, store1, store2, store3));
 					full_name += "/r" + to_string(store1) + "/r" + to_string(store2) + "/r" + to_string(store3);
 				}
 			}
@@ -521,7 +485,17 @@ namespace karma_lang {
 			exit(1);
 		}
 		int store2 = number;
+		vector<string> temp2;
 		if(abexpr->get_rhs_kind() == binary_expression_kind::BINARY_EXPRESSION_NONE) {
+			//Takes advantage of the fact that multiple binary expressions are generated per binary expression; as a result, 
+			//by generating code for the expression here, correct postfix and prefix increments and decrements can be generated.
+			//If code generation starts failing, trying moving this after the assignment.
+			if(lhs_name == "");
+			else
+				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store, lhs_name));
+			if(rhs_name == "");
+			else
+				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store2, rhs_name));
 			int prev_store = store;
 			if(lt_check) {
 				store = number;
@@ -536,6 +510,10 @@ namespace karma_lang {
 				label_count++;
 				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, prev_store, store));
 			}
+			if(pok_lhs == postfix_operation_kind::POSTFIX_OPERATION_INCREMENT)
+				ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::inc, lhs_name));
+			else if(pok_lhs == postfix_operation_kind::POSTFIX_OPERATION_DECREMENT)
+				ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::dec, lhs_name));
 			vector<string> temp;
 			rhs_name = lhs_name;
 			temp.push_back(lhs_name);
@@ -544,33 +522,28 @@ namespace karma_lang {
 		}
 		else if(abexpr->get_rhs_kind() == binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION) {
 			pair<vector<string>, vector<string>> temp = descend_binary_expression(static_pointer_cast<annotated_binary_expression>(abexpr->get_rhs()));
-			ret.insert(ret.end(), temp.first.begin(), temp.first.end());
-			rhs_name = temp.second[1];
+			temp2 = temp.first;
+			rhs_name = temp.second[0];
 		}
 		else if(abexpr->get_rhs_kind() == binary_expression_kind::BINARY_EXPRESSION_TERNARY_EXPRESSION) {
 			pair<vector<string>, tuple<int, int, int>> pai = descend_ternary_expression(static_pointer_cast<annotated_ternary_expression>(abexpr->get_rhs()));
-			ret.insert(ret.end(), pai.first.begin(), pai.first.end());
+			temp2 = pai.first;
 			rt_check = true;
 			rhs_ternary = pai.second;
 		}
 		else {
 			tuple<vector<string>, string, postfix_operation_kind> tup = descend_unary_expression(static_pointer_cast<annotated_unary_expression>(abexpr->get_rhs()));
-			ret.insert(ret.end(), get<0>(tup).begin(), get<0>(tup).end());
+			temp2 = get<0>(tup);
 			rhs_name = get<1>(tup);
 			pok_rhs = get<2>(tup);
 		}
-		if(lhs_name == "");
-		else {
-			store = number;
-			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store, lhs_name));
-			number++;
-		}
-		if(rhs_name == "");
-		else {
-			store2 = number;
-			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store2, rhs_name));
-			number++;
-		}
+		int prev_store = store;
+		int prev_store2 = store2;
+		binary_operation_kind bopk = abexpr->get_binary_operation_kind();
+		if(bopk == binary_operation_kind::BINARY_OPERATION_EQUALS)
+			ret.insert(ret.begin(), temp2.begin(), temp2.end());
+		else
+			ret.insert(ret.end(), temp2.begin(), temp2.end());
 		if(lt_check) {
 			int prev_store = store;
 			store = number;
@@ -599,11 +572,18 @@ namespace karma_lang {
 			label_count++;
 			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, prev_store, store2));
 		}
-		binary_operation_kind bopk = abexpr->get_binary_operation_kind();
-		ret.push_back(code_generation_utilities().generate_binary_operation_instruction(tab_count, bopk, store, lhs_name, store2));
+		ret.push_back(code_generation_utilities().generate_binary_operation_instruction(tab_count, bopk, store, lhs_name, store2, rhs_name));
+		if(pok_lhs == postfix_operation_kind::POSTFIX_OPERATION_INCREMENT)
+			ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::inc, lhs_name));
+		else if(pok_lhs == postfix_operation_kind::POSTFIX_OPERATION_DECREMENT)
+			ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::dec, lhs_name));
+		if(pok_rhs == postfix_operation_kind::POSTFIX_OPERATION_INCREMENT)
+			ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::inc, rhs_name));
+		else if(pok_rhs == postfix_operation_kind::POSTFIX_OPERATION_DECREMENT)
+			ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::dec, rhs_name));
 		vector<string> temp;
-		temp.push_back(lhs_name);
-		temp.push_back(rhs_name);
+		temp.push_back("");
+		temp.push_back("");
 		return make_pair(ret, temp);
 	}
 
@@ -650,7 +630,7 @@ namespace karma_lang {
 		return instruction_list;
 	}
 
-	string code_generation_utilities::generate_binary_operation_instruction(int tab_count, binary_operation_kind bopk, int store, string name, int store2) {
+	string code_generation_utilities::generate_binary_operation_instruction(int tab_count, binary_operation_kind bopk, int store, string name, int store2, string rname) {
 		if(bopk == binary_operation_kind::BINARY_OPERATION_PLUS)
 			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::add, store, store2));
 		else if(bopk == binary_operation_kind::BINARY_OPERATION_MINUS)
@@ -686,9 +666,9 @@ namespace karma_lang {
 		else if(bopk == binary_operation_kind::BINARY_OPERATION_LOGICAL_OR)
 			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::lor, store, store2));
 		else if(bopk == binary_operation_kind::BINARY_OPERATION_EQUALS_EQUALS)
-			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sequ, store, store2));
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::equ, store, store2));
 		else if(bopk == binary_operation_kind::BINARY_OPERATION_NOT_EQUAL)
-			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::snequ, store, store2));
+			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::nequ, store, store2));
 		else if(bopk == binary_operation_kind::BINARY_OPERATION_EQUALS)
 			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, name, store2));
 		else if(bopk == binary_operation_kind::BINARY_OPERATION_POINT)

@@ -641,7 +641,7 @@ namespace karma_lang {
 							subscr->get_final() == nullptr ? nullptr : analyze_binary_expression(subscr->get_final()), subscr->get_step() == nullptr ? nullptr : analyze_binary_expression(subscr->get_step()),
 							subscr->get_start() == nullptr ? bad : analyze_binary_expression(subscr->get_start())->get_type_information(), subscr->get_final() == nullptr ? bad : analyze_binary_expression(subscr->get_final())->get_type_information(),
 							subscr->get_step() == nullptr ? bad : analyze_binary_expression(subscr->get_step())->get_type_information());
-					return make_pair(type_information(*(prev.get_value_information()), value_kind::VALUE_LVALUE), asubscr);
+					return make_pair(type_information(type_information(*(prev.get_value_information()), value_kind::VALUE_LVALUE), prev.get_literal()), asubscr);
 				}
 				else if(prev == _list || prev == _tuple || prev == _string) {
 					if(subscr->get_start() == nullptr);

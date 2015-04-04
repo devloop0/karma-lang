@@ -50,9 +50,8 @@ namespace karma_lang {
 			const static string sub;
 			const static string shl;
 			const static string shr;
-			const static string cequ;
-			const static string snequ;
-			const static string cnequ;
+			const static string equ;
+			const static string nequ;
 			const static string gt;
 			const static string lt;
 			const static string gte;
@@ -67,9 +66,6 @@ namespace karma_lang {
 			const static string jmp;
 			const static string list;
 			const static string tupl;
-			const static string sequ;
-			const static string subs;
-			const static string subss;
 			const static string dict;
 	};
 
@@ -93,15 +89,14 @@ namespace karma_lang {
 			string generate_binary_instruction(int tab, string op, int one, string two);
 			string generate_unary_instruction(int tab, string op, string var);
 			string generate_binary_instruction(int tab, string op, string var, int one);
+			string generate_binary_instruction(int tab, string op, string one, string two);
 			string generate_label_instruction(int tab, int label);
 			string generate_jump_instruction(int tab, int one, int two);
 			string generate_jump_instruction(int tab, int one, string two);
 			string generate_jump_instruction(int tab, string one, int two);
 			string generate_exit_instruction(int tab);
 			string generate_sequence_instruction(int tab, string op, int one, vector<int> indices);
-			string generate_subs_instruction(int tab, int store, string var, int one, int two, int three);
-			string generate_subss_instruction(int tab, int store, string var, int one, int two, int three);
-			string generate_binary_operation_instruction(int tab, binary_operation_kind bopk, int store, string name, int store2);
+			string generate_binary_operation_instruction(int tab, binary_operation_kind bopk, int store, string name, int store2, string rname);
 	};
 
 	class generate_code {
