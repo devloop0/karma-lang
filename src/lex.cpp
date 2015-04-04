@@ -58,7 +58,7 @@ namespace karma_lang {
 				}
 				else if(source[i + 1] == '>') {
 					i++, cols++;
-					shared_ptr<token> tok = make_shared<token>(tabs, save, cols + 1, "->", file, line_number, token_kind::TOKEN_POINT);
+					shared_ptr<token> tok = make_shared<token>(tabs, save, cols + 1, "->", file, line_number, token_kind::TOKEN_POINT_DECL);
 					tok_list.push_back(tok);
 				}
 				else {
@@ -86,6 +86,11 @@ namespace karma_lang {
 						tok_list.push_back(tok);
 					}
 
+				}
+				else if(source[i + 1] == '>') {
+					i++, cols++;
+					shared_ptr<token> tok = make_shared<token>(tabs, save, cols + 1, "*>", file, line_number, token_kind::TOKEN_POINT);
+					tok_list.push_back(tok);
 				}
 				else {
 					shared_ptr<token> tok = make_shared<token>(tabs, save, cols + 1, "*", file, line_number, token_kind::TOKEN_MULTIPLY);

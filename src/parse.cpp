@@ -3523,7 +3523,7 @@ namespace karma_lang {
 				root->get_diagnostics_reporter()->print(diagnostic_messages::unexpected_end_of_file, root->get_position() - 1, diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 				exit(0);
 			}
-			if((*(root->get_position()))->get_token_kind() != token_kind::TOKEN_POINT) {
+			if((*(root->get_position()))->get_token_kind() != token_kind::TOKEN_POINT_DECL) {
 				root->get_diagnostics_reporter()->print(diagnostic_messages::expected_a_point_to, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 				valid = false;
 				identifier = nullptr;
