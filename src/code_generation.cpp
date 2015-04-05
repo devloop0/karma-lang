@@ -235,6 +235,11 @@ namespace karma_lang {
 				ret.insert(ret.end(), insn_list.begin(), insn_list.end());
 				list_indices.push_back(store_inner);
 			}
+			if(abexpr_list.size() == 0) {
+				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
+				list_indices.push_back(number);
+				number++;
+			}
 			sequence_kind seq_kind = aseq->get_sequence_kind();
 			string temp = code_generation_utilities().generate_sequence_instruction(tab_count, seq_kind == sequence_kind::SEQUENCE_TUPLE ? vm_instruction_list::tupl : vm_instruction_list::list, orig, list_indices);
 			ret.push_back(temp);
