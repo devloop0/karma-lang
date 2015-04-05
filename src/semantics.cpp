@@ -880,7 +880,7 @@ namespace karma_lang {
 		vector<shared_ptr<binary_expression>> kl = dict->get_key_list();
 		vector<shared_ptr<binary_expression>> vl = dict->get_value_list();
 		if(kl.size() == 0 || vl.size() == 0) {
-			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_at_least_one_element_in_sequence, dict->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_at_least_one_element_in_sequence, dict->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_WARNING);
 			shared_ptr<type_information> inner_value = make_shared<type_information>(type_kind::TYPE_INT, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 			shared_ptr<type_information> inner_key = make_shared<type_information>(type_kind::TYPE_INT, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 			type_information ret(type_kind::TYPE_DICT, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE, inner_key, inner_value);
