@@ -193,7 +193,13 @@ namespace karma_lang {
 	pair<vector<string>, string> generate_code::descend_literal(shared_ptr<annotated_literal> alit) {
 		if(alit->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return make_pair(vector<string>(), "");
-		string s = code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, alit->get_raw_literal()->get_raw_string());
+		string temp = alit->get_raw_literal()->get_raw_string();
+		string temp2;
+		if(alit->get_raw_literal()->get_token_kind() == token_kind::TOKEN_IDENTIFIER)
+			temp2 = temp;
+		else
+			temp2 = "$" + temp;
+		string s = code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, temp2);
 		number++;
 		vector<string> ret;
 		ret.push_back(s);
@@ -342,7 +348,7 @@ namespace karma_lang {
 						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store1, "0"));
 						number++;
 						int store2 = number;
-						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store2, full_name + ".size"));
+						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store2, full_name + "@size"));
 						number++;
 						int store3 = number;
 						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store3, "1"));
@@ -371,7 +377,7 @@ namespace karma_lang {
 					}
 					if(end == nullptr) {
 						store2 = number;
-						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, full_name + ".size"));
+						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, full_name + "@size"));
 						number++;
 					}
 					else {
@@ -400,7 +406,7 @@ namespace karma_lang {
 					}
 					if(end == nullptr) {
 						store2 = number;
-						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, full_name + ".size"));
+						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, full_name + "@size"));
 						number++;
 					}
 					else {

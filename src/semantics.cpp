@@ -1021,8 +1021,6 @@ namespace karma_lang {
 				else
 					return bad;
 			}
-			else if(lhs == rhs)
-				return lhs;
 			return bad;
 		}
 		else if(b_kind == binary_operation_kind::BINARY_OPERATION_LOGICAL_AND || b_kind == binary_operation_kind::BINARY_OPERATION_LOGICAL_OR) {
@@ -1083,6 +1081,8 @@ namespace karma_lang {
 				return _boolean;
 			else if(lhs.get_type_kind() == _any.get_type_kind() || rhs.get_type_kind() == _any.get_type_kind())
 				return _any;
+			else
+				return bad;
 		}
 		else {
 			if(lhs == _int || lhs == _float) {
@@ -1095,7 +1095,7 @@ namespace karma_lang {
 					return bad;
 			}
 			else if(lhs == _nil)
-				return _nil;
+				return bad;
 			else if(rhs == _nil)
 				return lhs;
 			else if(lhs.get_type_kind() == _any.get_type_kind() || rhs.get_type_kind() == _any.get_type_kind())
