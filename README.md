@@ -28,7 +28,7 @@ It was decided that for code generation, a virtual machine would be used to inte
         2. ~~C code (easier, but harder in the future (convulted exception support and maybe, generic support).~~
         3. ~~VM (easiest of all, especially in the long run, but severe performance hit).~~ 
  2. Optimizations (control flow graph, SSA, etc.)
-    	* Additionallly, the compiler also generates repeated instructions, due to increments and decrements. The first part of the optimization module should be a rudimentary peep-hole optimization to remove duplicate instructions.
+    * Additionally, the compiler also generates repeated instructions, due to increments and decrements. The first part of the optimization module should be a rudimentary peep-hole optimization to remove duplicate instructions.
 
 ---
 ###Language sample
