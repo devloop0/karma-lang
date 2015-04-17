@@ -777,6 +777,8 @@ namespace karma_lang {
 		}
 		else if(prek == primary_expression_kind::PRIMARY_EXPRESSION_BRACKETED_EXPRESSION) {
 			type_information temp = analyze_binary_expression(prexpr->get_raw_parenthesized_expression())->get_type_information();
+			if(temp.get_type_pure_kind() == type_pure_kind::TYPE_PURE_YES)
+				root->get_diagnostics_reporter()->print(diagnostic_messages::already_a_pure_type_ignoring, prexpr->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_WARNING);
 			t_inf = type_information(temp.get_type_kind(), type_pure_kind::TYPE_PURE_YES, temp.get_type_class_kind(), value_kind::VALUE_RVALUE);
 			abexpr = analyze_binary_expression(prexpr->get_raw_parenthesized_expression());
 		}
@@ -995,13 +997,14 @@ namespace karma_lang {
 		type_information _pure_int(type_kind::TYPE_INT, type_pure_kind::TYPE_PURE_YES, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 		type_information _pure_float(type_kind::TYPE_DECIMAL, type_pure_kind::TYPE_PURE_YES, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 		type_information _pure_nil(type_kind::TYPE_NIL, type_pure_kind::TYPE_PURE_YES, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
+		type_information _pure_any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_YES, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 		if(b_kind == binary_operation_kind::BINARY_OPERATION_PLUS || b_kind == binary_operation_kind::BINARY_OPERATION_MINUS || b_kind == binary_operation_kind::BINARY_OPERATION_MULTIPLY || b_kind == binary_operation_kind::BINARY_OPERATION_DIVIDE ||
 				b_kind == binary_operation_kind::BINARY_OPERATION_MODULUS || b_kind == binary_operation_kind::BINARY_OPERATION_EXPONENT) {
-			if(lhs == _int || lhs == _float || lhs.get_type_kind() == _any.get_type_kind()) {
-				if(rhs == _int || rhs == _float || rhs.get_type_kind() == _any.get_type_kind()) {
+			if(lhs == _int || lhs == _float || lhs == _any) {
+				if(rhs == _int || rhs == _float || rhs == _any) {
 					if(lhs == _int && rhs == _int)
 						return _int;
-					else if(lhs.get_type_kind() == type_kind::TYPE_ANY || rhs.get_type_kind() == type_kind::TYPE_ANY)
+					else if(lhs == _any || rhs == _any)
 						return _any;
 					else
 						return _float;
@@ -1013,10 +1016,10 @@ namespace karma_lang {
 		}
 		else if(b_kind == binary_operation_kind::BINARY_OPERATION_GREATER_THAN || b_kind == binary_operation_kind::BINARY_OPERATION_LESS_THAN || b_kind == binary_operation_kind::BINARY_OPERATION_GREATER_THAN_OR_EQUAL_TO ||
 				b_kind == binary_operation_kind::BINARY_OPERATION_LESS_THAN_OR_EQUAL_TO) {
-			if(lhs == _int || lhs == _float || lhs.get_type_kind() == _any.get_type_kind()) {
-				if(rhs == _int || rhs == _float || lhs.get_type_kind() == _any.get_type_kind())
+			if(lhs == _int || lhs == _float || lhs == _any) {
+				if(rhs == _int || rhs == _float || lhs == _any)
 					return _boolean;
-				else if(lhs.get_type_kind() == type_kind::TYPE_ANY || rhs.get_type_kind() == type_kind::TYPE_ANY)
+				else if(lhs == _any || rhs == _any)
 					return _any;
 				else
 					return bad;
@@ -1024,18 +1027,18 @@ namespace karma_lang {
 			return bad;
 		}
 		else if(b_kind == binary_operation_kind::BINARY_OPERATION_LOGICAL_AND || b_kind == binary_operation_kind::BINARY_OPERATION_LOGICAL_OR) {
-			if((lhs == _boolean || lhs.get_type_kind() == _any.get_type_kind()) && (rhs == _boolean || rhs.get_type_kind() == _any.get_type_kind()))
+			if((lhs == _boolean || lhs == _any) && (rhs == _boolean || rhs == _any))
 				return _boolean;
-			else if(lhs.get_type_kind() == type_kind::TYPE_ANY || rhs.get_type_kind() == type_kind::TYPE_ANY)
+			else if(lhs == _any || rhs == _any)
 				return _any;
 			else
 				return bad;
 		}
 		else if(b_kind == binary_operation_kind::BINARY_OPERATION_BITWISE_AND || b_kind == binary_operation_kind::BINARY_OPERATION_BITWISE_OR || b_kind == binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT || b_kind == binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT ||
 				b_kind == binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR) {
-			if(lhs.get_type_kind() == type_kind::TYPE_ANY || rhs.get_type_kind() == type_kind::TYPE_ANY)
+			if(lhs == _any || rhs == _any)
 				return _any;
-			if((lhs.get_type_kind() == _any.get_type_kind() || lhs == _int) && (rhs == _int || rhs.get_type_kind() == _any.get_type_kind()))
+			if((lhs == _any || lhs == _int) && (rhs == _int || rhs == _any))
 				return _int;
 			else
 				return bad;
@@ -1046,20 +1049,48 @@ namespace karma_lang {
 					return _int;
 				else if(rhs == _pure_float)
 					return _float;
-				else if(rhs.get_type_kind() == _any.get_type_kind())
+				else if(rhs == _any || rhs == _pure_any)
+					return _any;
+				else
+					return bad;
+			}
+			else if(lhs == _pure_int || lhs == _pure_float) {
+				if(rhs == _pure_int)
+					return _pure_int;
+				else if(rhs == _pure_float)
+					return _pure_float;
+				else if(rhs == _any || rhs == _pure_any)
+					return _pure_any;
+				else
+					return bad;
+			}
+			else if(rhs == _pure_any) {
+				if(lhs.get_type_pure_kind() == type_pure_kind::TYPE_PURE_NO)
+					return _any;
+				else if(lhs.get_type_pure_kind() == type_pure_kind::TYPE_PURE_YES)
+					return _pure_any;
+				else
+					return bad;
+			}
+			else if(lhs == _pure_any) {
+				if(rhs == _any || rhs == _pure_any)
+					return lhs;
+				else if(rhs.get_type_pure_kind() == type_pure_kind::TYPE_PURE_YES)
 					return rhs;
 				else
 					return bad;
 			}
 			else if(rhs == _pure_nil)
 				return bad;
-			else if(lhs.get_type_kind() == _any.get_type_kind()) {
+			else if(lhs == _any) {
 				if(rhs == _pure_int)
 					return _int;
 				else if(rhs == _pure_float)
 					return _float;
-				else if(rhs.get_type_kind() == _any.get_type_kind())
-					return rhs;
+				else if(rhs == _any || rhs == _pure_any)
+					return _pure_any;
+				else if(rhs.get_type_pure_kind() == type_pure_kind::TYPE_PURE_YES)
+					return type_information(rhs.get_type_kind(), lhs.get_type_pure_kind(), lhs.get_type_class_kind());
 				else
 					return bad;
 			}
@@ -1072,14 +1103,14 @@ namespace karma_lang {
 			if(lhs == _int || lhs == _float || lhs == _nil) {
 				if(rhs == _int || rhs == _float || rhs == _nil)
 					return _boolean;
-				else if(lhs.get_type_kind() == type_kind::TYPE_ANY || rhs.get_type_kind() == type_kind::TYPE_ANY)
+				else if(lhs == _any || rhs == _any)
 					return _any;
 				else
 					return bad;
 			}
 			else if(lhs == _nil || rhs == _nil)
 				return _boolean;
-			else if(lhs.get_type_kind() == _any.get_type_kind() || rhs.get_type_kind() == _any.get_type_kind())
+			else if(lhs == _any || rhs == _any)
 				return _any;
 			else
 				return bad;
@@ -1089,7 +1120,7 @@ namespace karma_lang {
 				if(rhs == _int || rhs == _float || rhs == _nil) {
 					return lhs;
 				}
-				else if(rhs.get_type_kind() == _any.get_type_kind())
+				else if(rhs == _any)
 					return lhs;
 				else
 					return bad;
@@ -1098,7 +1129,7 @@ namespace karma_lang {
 				return bad;
 			else if(rhs == _nil)
 				return lhs;
-			else if(lhs.get_type_kind() == _any.get_type_kind() || rhs.get_type_kind() == _any.get_type_kind())
+			else if(lhs == _any || rhs == _any)
 				return lhs;
 			else if(lhs == rhs)
 				return lhs;
