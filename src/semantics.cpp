@@ -428,7 +428,7 @@ namespace karma_lang {
 		shared_ptr<annotated_binary_expression> abexpr3 = analyze_binary_expression(static_pointer_cast<binary_expression>(texpr->get_false_path()));
 		if(abexpr1->get_type_information() == _boolean || abexpr1->get_type_information().get_type_kind() == type_kind::TYPE_ANY);
 		else {
-			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_boolean_for_ternary_expression_condition, texpr->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_boolean_for_ternary_expression_condition, texpr->get_condition()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 			return make_shared<annotated_ternary_expression>(ann_root_node, texpr, nullptr, nullptr, nullptr, bad, bad);
 		}
 		if(abexpr2->get_type_information() == abexpr3->get_type_information() || abexpr2->get_type_information().get_type_kind() == type_kind::TYPE_ANY || abexpr3->get_type_information().get_type_kind() == type_kind::TYPE_ANY ||
