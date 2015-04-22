@@ -626,8 +626,6 @@ namespace karma_lang {
 							subscr->get_final() == nullptr ? nullptr : analyze_binary_expression(subscr->get_final()), subscr->get_step() == nullptr ? nullptr : analyze_binary_expression(subscr->get_step()),
 							subscr->get_start() == nullptr ? bad : analyze_binary_expression(subscr->get_start())->get_type_information(), subscr->get_final() == nullptr ? bad : analyze_binary_expression(subscr->get_final())->get_type_information(),
 							subscr->get_step() == nullptr ? bad : analyze_binary_expression(subscr->get_step())->get_type_information());
-					if(subscr->get_final() != nullptr || subscr->get_step() != nullptr || subscr->get_subscript_colon_kind() == subscript_colon_kind::SUBSCRIPT_COLON_ONE || subscr->get_subscript_colon_kind() == subscript_colon_kind::SUBSCRIPT_COLON_TWO)
-						return make_pair(type_information(type_information(type_kind::TYPE_LIST, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_LVALUE), prev.get_literal()), asubscr);
 					return make_pair(temp, asubscr);
 				}
 				else if(prev == _dict) {
