@@ -422,6 +422,7 @@ namespace karma_lang {
 		type_information _boolean(type_kind::TYPE_BOOLEAN, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 		type_information _int(type_kind::TYPE_INT, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 		type_information _float(type_kind::TYPE_DECIMAL, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
+		type_information _any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 		shared_ptr<annotated_binary_expression> abexpr1 = analyze_binary_expression(static_pointer_cast<binary_expression>(texpr->get_condition()));
 		shared_ptr<annotated_binary_expression> abexpr2 = analyze_binary_expression(static_pointer_cast<binary_expression>(texpr->get_true_path()));
 		shared_ptr<annotated_binary_expression> abexpr3 = analyze_binary_expression(static_pointer_cast<binary_expression>(texpr->get_false_path()));
@@ -434,6 +435,18 @@ namespace karma_lang {
 				(abexpr2->get_type_information() == _int && abexpr3->get_type_information() == _float) || (abexpr2->get_type_information() == _float && abexpr3->get_type_information() == _int)) {
 			if((abexpr2->get_type_information() == _int && abexpr3->get_type_information() == _float) || (abexpr2->get_type_information() == _float && abexpr3->get_type_information() == _int))
 				root->get_diagnostics_reporter()->print(diagnostic_messages::unequal_but_compatible_types, abexpr2->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_WARNING);
+			if(abexpr2->get_type_information() == abexpr3->get_type_information() || abexpr2->get_type_information() == _any || abexpr3->get_type_information() == _any) {
+				type_information t_inf = abexpr2->get_type_information();
+				if(abexpr2->get_type_information() != _any)
+					t_inf = abexpr2->get_type_information();
+				else
+					t_inf = abexpr3->get_type_information();
+				return make_shared<annotated_ternary_expression>(ann_root_node, texpr, abexpr1, abexpr2, abexpr3, type_information(t_inf, value_kind::VALUE_RVALUE), bad);
+			}
+			else {
+				root->get_diagnostics_reporter()->print(diagnostic_messages::incompatible_types, texpr->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+				return make_shared<annotated_ternary_expression>(ann_root_node, texpr, nullptr, nullptr, nullptr, bad, bad);
+			}
 		}
 		else {
 			root->get_diagnostics_reporter()->print(diagnostic_messages::incompatible_types, texpr->get_true_path()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
@@ -1006,8 +1019,9 @@ namespace karma_lang {
 				if(rhs == _int || rhs == _float || rhs == _any) {
 					if(lhs == _int && rhs == _int)
 						return _int;
-					else if(lhs == _any || rhs == _any)
-						return _any;
+					else if(lhs == _any || rhs == _any) {
+						return _float;
+					}
 					else
 						return _float;
 				}
@@ -1022,7 +1036,7 @@ namespace karma_lang {
 				if(rhs == _int || rhs == _float || lhs == _any)
 					return _boolean;
 				else if(lhs == _any || rhs == _any)
-					return _any;
+					return _boolean;
 				else
 					return bad;
 			}
@@ -1032,7 +1046,7 @@ namespace karma_lang {
 			if((lhs == _boolean || lhs == _any) && (rhs == _boolean || rhs == _any))
 				return _boolean;
 			else if(lhs == _any || rhs == _any)
-				return _any;
+				return _boolean;
 			else
 				return bad;
 		}
