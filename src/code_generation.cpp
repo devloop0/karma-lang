@@ -516,7 +516,7 @@ namespace karma_lang {
 				ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
 				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<2>(lhs_ternary)));
 				number++;
-				ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "true", label_count + 1));
+				ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "$true", label_count + 1));
 				ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
 				label_count++;
 				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store, get<1>(lhs_ternary)));
@@ -561,7 +561,7 @@ namespace karma_lang {
 			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
 			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<2>(lhs_ternary)));
 			number++;
-			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "true", label_count + 1));
+			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "$true", label_count + 1));
 			ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
 			label_count++;
 			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store, get<1>(lhs_ternary)));
@@ -575,7 +575,7 @@ namespace karma_lang {
 			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
 			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<2>(lhs_ternary)));
 			number++;
-			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "true", label_count + 1));
+			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "$true", label_count + 1));
 			ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
 			label_count++;
 			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store2, get<1>(lhs_ternary)));
