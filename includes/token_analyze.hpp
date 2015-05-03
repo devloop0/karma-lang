@@ -24,10 +24,12 @@ namespace karma_lang {
 	class token_analyzer {
 		shared_ptr<lexer> lex;
 		shared_ptr<diagnostics_reporter> dreporter;
+		int error_count;
 		public:
 			token_analyzer(shared_ptr<lexer> l);
 			~token_analyzer();
 			shared_ptr<token> analyze_source_token_list();
+			const int get_error_count();
 	};
 }
 

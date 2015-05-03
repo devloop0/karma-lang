@@ -27,6 +27,10 @@ int main(int argc, char* argv[]) {
 	}
 	token_analyzer t(make_shared<lexer>(l));
 	t.analyze_source_token_list();
+	if (t.get_error_count() > 0) {
+		cout << "Errors; not generating code.";
+		exit(1);
+	}
 	shared_ptr<root_node> root =  make_shared<root_node>(make_shared<lexer>(l), make_shared<diagnostics_reporter>(l.get_source_token_list()));
 	shared_ptr<parser> p = make_shared<parser>(root);
 	vector<shared_ptr<statement>> stmt_list = root->parse_program(p);

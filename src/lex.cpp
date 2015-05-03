@@ -453,7 +453,11 @@ namespace karma_lang {
 					i++, cols++;
 				}
 				acc += source[i];
-				shared_ptr<token> tok = make_shared<token>(tabs, save, cols + 1, acc, file, line_number, token_kind::TOKEN_STRING);
+				shared_ptr<token> tok;
+				if (source[i] == c)
+					tok = make_shared<token>(tabs, save, cols + 1, acc, file, line_number, token_kind::TOKEN_STRING);
+				else
+					tok = make_shared<token>(tabs, save, cols + 1, acc, file, line_number, token_kind::TOKEN_ERROR);
 				tok_list.push_back(tok);
 			}
 					   break;

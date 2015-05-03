@@ -7,6 +7,7 @@ namespace karma_lang {
 	token_analyzer::token_analyzer(shared_ptr<lexer> l) {
 		lex = l;
 		dreporter = make_shared<diagnostics_reporter>(lex->get_source_token_list());
+		error_count = 0;
 	}	
 
 	token_analyzer::~token_analyzer() {
@@ -17,10 +18,15 @@ namespace karma_lang {
 		shared_ptr<token> tok = nullptr;
 		for(source_token_list::iterator it = lex->get_source_token_list()->begin(); it < lex->get_source_token_list()->end(); ++it) {
 			if((*it)->get_token_kind() == token_kind::TOKEN_ERROR) {
+				error_count++;
 				dreporter->print(diagnostic_messages::malformed_token, it, diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 				tok = *it;
 			}
 		}
 		return tok;
+	}
+
+	const int token_analyzer::get_error_count() {
+		return error_count;
 	}
 }
