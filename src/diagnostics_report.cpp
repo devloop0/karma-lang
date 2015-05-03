@@ -20,7 +20,7 @@ namespace karma_lang {
 		HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 		bool colored = true;
 		if (handle == INVALID_HANDLE_VALUE) {
-			cerr << "Could not output colored diagnostics. Defaulting to regular, non-colored input. (Perhaps you do not have the file kernel32.dll)?\n\n";
+			cerr << "Could not output colored diagnostics. Defaulting to regular, non-colored output. (Perhaps you do not have the file kernel32.dll)?\n\n";
 			colored = false;
 		}
 		if (colored) {
@@ -85,7 +85,7 @@ namespace karma_lang {
 		HANDLE handle2 = GetStdHandle(STD_OUTPUT_HANDLE);
 		bool colored2 = true;
 		if (handle2 == INVALID_HANDLE_VALUE) {
-			cerr << "Could not output colored diagnostics. Defaulting to regular, non-colored input. (Perhaps you do not have the file kernel32.dll)?\n\n";
+			cerr << "Could not output colored diagnostics. Defaulting to regular, non-colored output. (Perhaps you do not have the file kernel32.dll)?\n\n";
 			colored2 = false;
 		}
 		if (colored2) {
@@ -95,9 +95,8 @@ namespace karma_lang {
 			cerr << "^";
 			SetConsoleTextAttribute(handle2, console_screen_buffer_info2.wAttributes);
 		}
-		else {
+		else
 			cerr << "^";
-		}
 #else
 		cerr << "\033[32m^\033[0m";
 #endif

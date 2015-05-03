@@ -12,6 +12,7 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
+#include <tuple>
 
 using std::cout;
 using std::string;
