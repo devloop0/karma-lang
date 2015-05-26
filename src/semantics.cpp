@@ -1126,8 +1126,10 @@ namespace karma_lang {
 			}
 			else if(lhs == _nil || rhs == _nil)
 				return _boolean;
-			else if(lhs == _any || rhs == _any)
+			else if (lhs == _any || rhs == _any)
 				return _any;
+			else if (lhs == rhs)
+				return _boolean;
 			else
 				return bad;
 		}

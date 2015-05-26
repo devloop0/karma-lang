@@ -96,7 +96,7 @@ namespace karma_lang {
 			string generate_jump_instruction(int tab, string one, int two);
 			string generate_exit_instruction(int tab);
 			string generate_sequence_instruction(int tab, string op, int one, vector<int> indices);
-			string generate_binary_operation_instruction(int tab, binary_operation_kind bopk, int store, string name, int store2);
+			string generate_binary_operation_instruction(int tab, binary_operation_kind bopk, int store, string name, int store2, string name2);
 			string generate_temp_name(int one);
 	};
 

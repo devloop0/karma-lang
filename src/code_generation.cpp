@@ -583,7 +583,7 @@ namespace karma_lang {
 			label_count++;
 			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, prev_store, store2));
 		}
-		ret.push_back(code_generation_utilities().generate_binary_operation_instruction(tab_count, bopk, store, lhs_name, store2));
+		ret.push_back(code_generation_utilities().generate_binary_operation_instruction(tab_count, bopk, store, lhs_name, store2, rhs_name));
 		if(pok_lhs == postfix_operation_kind::POSTFIX_OPERATION_INCREMENT)
 			ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::inc, lhs_name));
 		else if(pok_lhs == postfix_operation_kind::POSTFIX_OPERATION_DECREMENT)
@@ -593,8 +593,8 @@ namespace karma_lang {
 		else if(pok_rhs == postfix_operation_kind::POSTFIX_OPERATION_DECREMENT)
 			ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::dec, rhs_name));
 		vector<string> temp;
-		temp.push_back("");
-		temp.push_back("");
+		temp.push_back(lhs_name);
+		temp.push_back(rhs_name);
 		return make_pair(ret, temp);
 	}
 
@@ -641,7 +641,7 @@ namespace karma_lang {
 		return instruction_list;
 	}
 
-	string code_generation_utilities::generate_binary_operation_instruction(int tab_count, binary_operation_kind bopk, int store, string name, int store2) {
+	string code_generation_utilities::generate_binary_operation_instruction(int tab_count, binary_operation_kind bopk, int store, string name, int store2, string name2) {
 		if(bopk == binary_operation_kind::BINARY_OPERATION_PLUS)
 			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::add, store, store2));
 		else if(bopk == binary_operation_kind::BINARY_OPERATION_MINUS)
@@ -680,30 +680,78 @@ namespace karma_lang {
 			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::equ, store, store2));
 		else if(bopk == binary_operation_kind::BINARY_OPERATION_NOT_EQUAL)
 			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::nequ, store, store2));
-		else if (bopk == binary_operation_kind::BINARY_OPERATION_EQUALS)
-			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, name, store2));
-		else if (bopk == binary_operation_kind::BINARY_OPERATION_PLUS_EQUALS)
-			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::add, name, store2));
-		else if (bopk == binary_operation_kind::BINARY_OPERATION_MINUS_EQUALS)
-			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sub, name, store2));
-		else if (bopk == binary_operation_kind::BINARY_OPERATION_MULTIPLY_EQUALS)
-			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mul, name, store2));
-		else if (bopk == binary_operation_kind::BINARY_OPERATION_DIVIDE_EQUALS)
-			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::div, name, store2));
-		else if (bopk == binary_operation_kind::BINARY_OPERATION_EXPONENT_EQUALS)
-			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::exp, name, store2));
-		else if (bopk == binary_operation_kind::BINARY_OPERATION_MODULUS_EQUALS)
-			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mod, name, store2));
-		else if (bopk == binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT_EQUALS)
-			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::shl, name, store2));
-		else if (bopk == binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT_EQUALS)
-			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::shr, name, store2));
-		else if (bopk == binary_operation_kind::BINARY_OPERATION_BITWISE_AND_EQUALS)
-			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::band, name, store2));
-		else if (bopk == binary_operation_kind::BINARY_OPERATION_BITWISE_OR_EQUALS)
-			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::bor, name, store2));
-		else if (bopk == binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR_EQUALS)
-			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::exor, name, store2));
+		else if (bopk == binary_operation_kind::BINARY_OPERATION_EQUALS) {
+			if (name2 == "")
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, name, store2));
+			else
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, name, name2));
+		}
+		else if (bopk == binary_operation_kind::BINARY_OPERATION_PLUS_EQUALS) {
+			if (name2 == "")
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::add, name, store2));
+			else
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::add, name, name2));
+		}
+		else if (bopk == binary_operation_kind::BINARY_OPERATION_MINUS_EQUALS) {
+			if (name2 == "")
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sub, name, store2));
+			else
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sub, name, name2));
+		}
+		else if (bopk == binary_operation_kind::BINARY_OPERATION_MULTIPLY_EQUALS) {
+			if (name2 == "")
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mul, name, store2));
+			else
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mul, name, name2));
+		}
+		else if (bopk == binary_operation_kind::BINARY_OPERATION_DIVIDE_EQUALS) {
+			if (name2 == "")
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::div, name, store2));
+			else
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::div, name, name2));
+		}
+		else if (bopk == binary_operation_kind::BINARY_OPERATION_EXPONENT_EQUALS) {
+			if (name2 == "")
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::exp, name, store2));
+			else
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::exp, name, name2));
+		}
+		else if (bopk == binary_operation_kind::BINARY_OPERATION_MODULUS_EQUALS) {
+			if (name2 == "")
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mod, name, store2));
+			else
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mod, name, name2));
+		}
+		else if (bopk == binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT_EQUALS) {
+			if (name2 == "")
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::shl, name, store2));
+			else
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::shl, name, name2));
+		}
+		else if (bopk == binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT_EQUALS) {
+			if (name2 == "")
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::shr, name, store2));
+			else
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::shr, name, name2));
+		}
+		else if (bopk == binary_operation_kind::BINARY_OPERATION_BITWISE_AND_EQUALS) {
+			if (name2 == "")
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::band, name, store2));
+			else
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::band, name, name2));
+		}
+		else if (bopk == binary_operation_kind::BINARY_OPERATION_BITWISE_OR_EQUALS) {
+			if (name2 == "")
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::bor, name, store2));
+			else
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::bor, name, name2));
+		}
+		else if (bopk == binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR_EQUALS) {
+			if (name2 == "")
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::exor, name, store2));
+			else
+				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::exor, name, name2));
+		}
 		else if (bopk == binary_operation_kind::BINARY_OPERATION_POINT)
 			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::cast, store, store2));
 		else
