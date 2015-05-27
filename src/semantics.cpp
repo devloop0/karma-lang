@@ -1130,6 +1130,8 @@ namespace karma_lang {
 				return _any;
 			else if (lhs == rhs)
 				return _boolean;
+			else if (lhs.get_type_pure_kind() == type_pure_kind::TYPE_PURE_YES && rhs.get_type_pure_kind() == type_pure_kind::TYPE_PURE_YES)
+				return _boolean;
 			else
 				return bad;
 		}
