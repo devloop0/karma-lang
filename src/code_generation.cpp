@@ -477,10 +477,12 @@ namespace karma_lang {
 		bool lt_check = false;
 		bool rt_check = false;
 		vector<string> ret;
+		binary_operation_kind lhs_bop_kind = binary_operation_kind::BINARY_OPERATION_NONE;
 		if(abexpr->get_lhs_kind() == binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION) {
 			pair<vector<string>, vector<string>> pai = descend_binary_expression(static_pointer_cast<annotated_binary_expression>(abexpr->get_lhs()));
 			ret = pai.first;
 			lhs_name = pai.second[0];
+			lhs_bop_kind = static_pointer_cast<annotated_binary_expression>(abexpr->get_lhs())->get_binary_operation_kind();
 		}
 		else if(abexpr->get_lhs_kind() == binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION) {
 			tuple<vector<string>, string, postfix_operation_kind> tup = descend_unary_expression(static_pointer_cast<annotated_unary_expression>(abexpr->get_lhs()));
@@ -504,11 +506,17 @@ namespace karma_lang {
 			//Takes advantage of the fact that multiple binary expressions are generated per binary expression; as a result, 
 			//by generating code for the expression here, correct postfix and prefix increments and decrements can be generated.
 			//If code generation starts failing, trying moving this after the assignment.
-			if(lhs_name == "");
-			else
+			bool bop_bool = lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_EQUALS || lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_DIVIDE_EQUALS ||
+				lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_BITWISE_OR_EQUALS || lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_BITWISE_AND_EQUALS ||
+				lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR_EQUALS || lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_EXPONENT_EQUALS ||
+				lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_MINUS_EQUALS || lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_MODULUS_EQUALS ||
+				lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_MULTIPLY_EQUALS || lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_PLUS_EQUALS ||
+				lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT_EQUALS || lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT_EQUALS;
+			if (lhs_name == "");
+			else if(bop_bool)
 				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store, lhs_name));
-			if(rhs_name == "");
-			else
+			if (rhs_name == "");
+			else if (bop_bool)
 				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store2, rhs_name));
 			int prev_store = store;
 			if(lt_check) {
