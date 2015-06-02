@@ -29,7 +29,6 @@ namespace karma_lang {
 	const string diagnostic_messages::originally_declared_here =  "Originally declared here.";
 	const string diagnostic_messages::incompatible_types = "Incompatible types with this expression; expected compatible types.";
 	const string diagnostic_messages::unknown_symbol = "Unknown symbol found here. (Did you forget to declare it somewhere)?: ";
-	const string diagnostic_messages::expected_at_least_one_element_in_sequence = "Expected at least one element in the list, tuple, or dictionary to its deduce type; defaulting to 'int'.";
 	const string diagnostic_messages::expected_same_type_for_all_elements_in_list_or_dictionary = "Expected all elements in the list or dictionary to have the same type.";
 	const string diagnostic_messages::subscript_applicable_only_for_sequences_and_dictionaries = "Subscripts are only applicable for lists, dictionaries, strings, and tuples.";
 	const string diagnostic_messages::empty_subscript_defaulting_to_whole_sequence = "Empty subscript; defaulting to whole sequence.";
@@ -43,7 +42,6 @@ namespace karma_lang {
 	const string diagnostic_messages::expected_lvalue_for_increments_and_decrements = "For increments and decrements, an lvalue is expected.";
 	const string diagnostic_messages::expected_boolean = "Expected a boolean expression here.";
 	const string diagnostic_messages::instruction_not_supported = "Instruction not supported; terminating.";
-	const string diagnostic_messages::tuples_cannot_be_modified = "Tuples can be read from, but cannot be modified or written to.";
 	const string diagnostic_messages::expected_boolean_for_ternary_expression_condition = "Expected a boolean expression for a ternary expression condition.";
 	const string diagnostic_messages::already_a_pure_type_ignoring = "Expression is already a pure type; continuing.";
 }

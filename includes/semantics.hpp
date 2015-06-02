@@ -63,9 +63,11 @@ namespace karma_lang {
 		shared_ptr<type_information> value_information;
 		vector<shared_ptr<type_information>> tuple_information;
 		shared_ptr<literal> lit;
+		string class_name;
 		public:
 			type_information(type_kind tk, type_pure_kind tpk, type_class_kind ck);
 			type_information(type_kind tk, type_pure_kind tpk, type_class_kind ck, value_kind vk);
+			type_information(type_kind tk, type_pure_kind tpk, type_class_kind ck, value_kind vk, string cn);
 			type_information(type_kind tk, type_pure_kind tpk, type_class_kind ck, value_kind vk, shared_ptr<type_information> li);
 			type_information(type_kind tk, type_pure_kind tpk, type_class_kind ck, value_kind vk, shared_ptr<type_information> ki, shared_ptr<type_information> vi);
 			type_information(type_kind tk, type_pure_kind tpk, type_class_kind ck, value_kind vk, vector<shared_ptr<type_information>> ti);
@@ -84,6 +86,7 @@ namespace karma_lang {
 			shared_ptr<type_information> get_value_information();
 			vector<shared_ptr<type_information>> get_tuple_information();
 			shared_ptr<literal> get_literal();
+			string get_class_name();
 	};
 
 	class annotated_binary_expression;

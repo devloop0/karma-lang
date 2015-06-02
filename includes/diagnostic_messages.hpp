@@ -41,7 +41,6 @@ namespace karma_lang {
 			const static string originally_declared_here;
 			const static string incompatible_types;
 			const static string unknown_symbol;
-			const static string expected_at_least_one_element_in_sequence;
 			const static string expected_same_type_for_all_elements_in_list_or_dictionary;
 			const static string subscript_applicable_only_for_sequences_and_dictionaries;
 			const static string empty_subscript_defaulting_to_whole_sequence;
@@ -55,7 +54,6 @@ namespace karma_lang {
 			const static string expected_lvalue_for_increments_and_decrements;
 			const static string expected_boolean;
 			const static string instruction_not_supported;
-			const static string tuples_cannot_be_modified;
 			const static string expected_boolean_for_ternary_expression_condition;
 			const static string already_a_pure_type_ignoring;
 	};

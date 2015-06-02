@@ -15,6 +15,7 @@ namespace karma_lang {
 		return_type_information = nullptr;
 		tuple_information = vector<shared_ptr<type_information>>();
 		lit = nullptr;
+		class_name = "";
 	}
 
 	type_information::type_information(type_kind tk, type_pure_kind tpk, type_class_kind ck, value_kind vk) {
@@ -28,6 +29,7 @@ namespace karma_lang {
 		return_type_information = nullptr;
 		tuple_information = vector<shared_ptr<type_information>>();
 		lit = nullptr;
+		class_name = "";
 	}
 
 	type_information::type_information(type_kind tk, type_pure_kind tpk, type_class_kind ck, value_kind vk, shared_ptr<type_information> li) {
@@ -41,6 +43,7 @@ namespace karma_lang {
 		return_type_information = nullptr;
 		tuple_information = vector<shared_ptr<type_information>>();
 		lit = nullptr;
+		class_name = "";
 	}
 
 	type_information::type_information(type_kind tk, type_pure_kind tpk, type_class_kind ck, value_kind vk, shared_ptr<type_information> ki, shared_ptr<type_information> vi) {
@@ -54,6 +57,7 @@ namespace karma_lang {
 		return_type_information = nullptr;
 		tuple_information = vector<shared_ptr<type_information>>();
 		lit = nullptr;
+		class_name = "";
 	}
 
 	type_information::type_information(type_kind tk, type_pure_kind tpk, type_class_kind ck, value_kind vk, vector<shared_ptr<type_information>> ti) {
@@ -67,6 +71,7 @@ namespace karma_lang {
 		return_type_information = nullptr;
 		tuple_information = ti;
 		lit = nullptr;
+		class_name = "";
 	}
 
 	type_information::type_information(type_kind tk, type_pure_kind tpk, type_class_kind ck, value_kind vk, type_information rti) {
@@ -80,6 +85,7 @@ namespace karma_lang {
 		tuple_information = vector<shared_ptr<type_information>>();
 		return_type_information = make_shared<type_information>(rti);
 		lit = nullptr;
+		class_name = "";
 	}
 
 	type_information::type_information(type_information t_inf, value_kind vk) {
@@ -93,6 +99,7 @@ namespace karma_lang {
 		tuple_information = t_inf.tuple_information;
 		return_type_information = t_inf.return_type_information;
 		lit = t_inf.lit;
+		class_name = t_inf.class_name;
 	}
 
 	type_information::type_information(type_information t_inf, shared_ptr<literal> l) {
@@ -106,6 +113,21 @@ namespace karma_lang {
 		tuple_information = t_inf.tuple_information;
 		return_type_information = t_inf.return_type_information;
 		lit = l;
+		class_name = t_inf.class_name;
+	}
+
+	type_information::type_information(type_kind tk, type_pure_kind tpk, type_class_kind ck, value_kind vk, string cn) {
+		t_kind = tk;
+		tp_kind = tpk;
+		c_kind = ck;
+		v_kind = vk;
+		list_information = nullptr;
+		key_information = nullptr;
+		value_information = nullptr;
+		tuple_information = vector<shared_ptr<type_information>>();
+		return_type_information = nullptr;
+		lit = nullptr;
+		class_name = cn;
 	}
 
 	type_information::~type_information() {
@@ -155,6 +177,10 @@ namespace karma_lang {
 
 	vector<shared_ptr<type_information>> type_information::get_tuple_information() {
 		return tuple_information;
+	}
+
+	string type_information::get_class_name() {
+		return class_name;
 	}
 
 	symbol::symbol(type_information ti, immut_kind ik, shared_ptr<literal> ident, function_kind fk, vector<type_information> fa, shared_ptr<symbol_table> st) : t_inf(ti) {
@@ -405,11 +431,6 @@ namespace karma_lang {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::originally_declared_here, results[results.size() - 1]->get_identifier()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_NOTE);
 					return make_shared<annotated_binary_expression>(ann_root_node, bexpr, nullptr, nullptr, bad, bad, bad, bad, bad, bad);
 				}
-				if(results[results.size() - 1]->get_type_information().get_type_kind() == type_kind::TYPE_TUPLE) {
-					root->get_diagnostics_reporter()->print(diagnostic_messages::tuples_cannot_be_modified, bexpr->get_lhs()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					root->get_diagnostics_reporter()->print(diagnostic_messages::originally_declared_here, results[results.size() - 1]->get_identifier()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_NOTE);
-					return make_shared<annotated_binary_expression>(ann_root_node, bexpr, nullptr, nullptr, bad, bad, bad, bad, bad, bad);
-				}
 			}
 		}
 		return make_shared<annotated_binary_expression>(ann_root_node, bexpr, bexpr_lhs, bexpr_rhs, lhs, lhs_forced, rhs, rhs_forced, t_inf, bad);
@@ -571,6 +592,7 @@ namespace karma_lang {
 		type_information _tuple(type_kind::TYPE_TUPLE, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 		type_information _dict(type_kind::TYPE_DICT, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 		type_information _string(type_kind::TYPE_STRING, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
+		type_information _nil(type_kind::TYPE_NIL, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 		if(pok == postfix_operation_kind::POSTFIX_OPERATION_INCREMENT || pok == postfix_operation_kind::POSTFIX_OPERATION_DECREMENT) {
 			if(prev == _int || prev == _any) {
 				if(prev.get_value_kind() != value_kind::VALUE_LVALUE) {
@@ -648,7 +670,9 @@ namespace karma_lang {
 					}
 					type_information t_inf = analyze_binary_expression(subscr->get_start())->get_type_information();
 					shared_ptr<type_information> key_inf = prev.get_key_information();
-					if(t_inf != *key_inf && t_inf.get_type_kind() != _any.get_type_kind()) {
+					if (t_inf == *key_inf || t_inf == _any || *key_inf == _any);
+					else if (t_inf == _nil && (key_inf->get_type_pure_kind() == type_pure_kind::TYPE_PURE_NO));
+					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::expected_dictionary_subscript_to_equal_its_key_type, subscr->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						return make_pair(bad, nullptr);
 					}
@@ -662,7 +686,8 @@ namespace karma_lang {
 					if(subscr->get_start() == nullptr);
 					else {
 						type_information t_inf = analyze_binary_expression(subscr->get_start())->get_type_information();
-						if(t_inf != _int && t_inf.get_type_kind() != _any.get_type_kind()) {
+						if (t_inf == _int || t_inf == _any || t_inf == _nil);
+						else {
 							root->get_diagnostics_reporter()->print(diagnostic_messages::expected_subscript_for_sequence_to_be_integer, subscr->get_start()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 							return make_pair(bad, nullptr);
 						}
@@ -670,7 +695,8 @@ namespace karma_lang {
 					if(subscr->get_final() == nullptr);
 					else {
 						type_information t_inf = analyze_binary_expression(subscr->get_final())->get_type_information();
-						if(t_inf != _int && t_inf.get_type_kind() != _any.get_type_kind()) {
+						if (t_inf == _int || t_inf == _any || t_inf == _nil);
+						else {
 							root->get_diagnostics_reporter()->print(diagnostic_messages::expected_subscript_for_sequence_to_be_integer, subscr->get_final()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 							return make_pair(bad, nullptr);
 						}
@@ -678,7 +704,8 @@ namespace karma_lang {
 					if(subscr->get_step() == nullptr);
 					else {
 						type_information t_inf = analyze_binary_expression(subscr->get_step())->get_type_information();
-						if(t_inf != _int && t_inf.get_type_kind() != _any.get_type_kind()) {
+						if (t_inf == _int || t_inf == _any || t_inf == _nil);
+						else {
 							root->get_diagnostics_reporter()->print(diagnostic_messages::expected_subscript_for_sequence_to_be_integer, subscr->get_step()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 							return make_pair(bad, nullptr);
 						}
@@ -853,11 +880,10 @@ namespace karma_lang {
 			return make_shared<annotated_sequence>(ann_root_node, seq, vector<shared_ptr<annotated_binary_expression>>(), vector<type_information>(), bad);
 		type_information _int(type_kind::TYPE_INT, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 		type_information _float(type_kind::TYPE_DECIMAL, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
+		type_information _nil(type_kind::TYPE_NIL, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 		vector<shared_ptr<binary_expression>> bexpr_list = seq->get_expression_list();
 		if(bexpr_list.size() == 0) {
-			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_at_least_one_element_in_sequence, seq->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_WARNING);
-			shared_ptr<type_information> inner = make_shared<type_information>(type_kind::TYPE_INT, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
-			type_information ret(type_kind::TYPE_LIST, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE, inner);
+			type_information ret(type_kind::TYPE_LIST, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 			return make_shared<annotated_sequence>(ann_root_node, seq, vector<shared_ptr<annotated_binary_expression>>(), vector<type_information>(), ret);
 		}
 		vector<shared_ptr<annotated_binary_expression>> abexpr_list;
@@ -871,6 +897,7 @@ namespace karma_lang {
 			type_information in_t_inf = analyze_binary_expression(bexpr_list[i])->get_type_information();
 			t_inf_list.push_back(in_t_inf);
 			if(t_inf.get_type_kind() == type_kind::TYPE_ANY || t_inf == in_t_inf || in_t_inf.get_type_kind() == type_kind::TYPE_ANY);
+			else if ((t_inf == _nil && in_t_inf.get_type_pure_kind() == type_pure_kind::TYPE_PURE_NO) || (in_t_inf == _nil && t_inf.get_type_pure_kind() == type_pure_kind::TYPE_PURE_NO));
 			else if((t_inf == _int && in_t_inf == _float) || (t_inf == _float && in_t_inf == _int)) {
 				root->get_diagnostics_reporter()->print(diagnostic_messages::unequal_but_compatible_types_list_dict, bexpr_list[i]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_WARNING);
 				root->get_diagnostics_reporter()->print(diagnostic_messages::originally_declared_here, bexpr_list[0]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_NOTE);
@@ -894,13 +921,11 @@ namespace karma_lang {
 					vector<type_information>(), bad);
 		type_information _int(type_kind::TYPE_INT, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 		type_information _float(type_kind::TYPE_DECIMAL, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
+		type_information _nil(type_kind::TYPE_NIL, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 		vector<shared_ptr<binary_expression>> kl = dict->get_key_list();
 		vector<shared_ptr<binary_expression>> vl = dict->get_value_list();
 		if(kl.size() == 0 || vl.size() == 0) {
-			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_at_least_one_element_in_sequence, dict->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_WARNING);
-			shared_ptr<type_information> inner_value = make_shared<type_information>(type_kind::TYPE_INT, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
-			shared_ptr<type_information> inner_key = make_shared<type_information>(type_kind::TYPE_INT, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
-			type_information ret(type_kind::TYPE_DICT, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE, inner_key, inner_value);
+			type_information ret(type_kind::TYPE_DICT, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 			return make_shared<annotated_dictionary>(ann_root_node, dict, vector<shared_ptr<annotated_binary_expression>>(), vector<shared_ptr<annotated_binary_expression>>(), vector<type_information>(),
 					vector<type_information>(), ret);
 		}
@@ -921,6 +946,7 @@ namespace karma_lang {
 			klist.push_back(analyze_binary_expression(kl[i]));
 			ktlist.push_back(in_kt_inf);
 			if(kt_inf.get_type_kind() == type_kind::TYPE_ANY || kt_inf == in_kt_inf || in_kt_inf.get_type_kind() == type_kind::TYPE_ANY);
+			else if ((kt_inf == _nil && in_kt_inf.get_type_pure_kind() == type_pure_kind::TYPE_PURE_NO) || (in_kt_inf == _nil && kt_inf.get_type_pure_kind() == type_pure_kind::TYPE_PURE_NO));
 			else if((kt_inf == _int && in_kt_inf == _float) || (kt_inf == _float && in_kt_inf == _int)) {
 				root->get_diagnostics_reporter()->print(diagnostic_messages::unequal_but_compatible_types_list_dict, kl[i]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_WARNING);
 				root->get_diagnostics_reporter()->print(diagnostic_messages::originally_declared_here, kl[0]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_NOTE);
@@ -937,6 +963,7 @@ namespace karma_lang {
 			vlist.push_back(analyze_binary_expression(vl[i]));
 			vtlist.push_back(in_vt_inf);
 			if(vt_inf.get_type_kind() == type_kind::TYPE_ANY || vt_inf == in_vt_inf || in_vt_inf.get_type_kind() == type_kind::TYPE_ANY);
+			else if ((vt_inf == _nil && in_vt_inf.get_type_pure_kind() == type_pure_kind::TYPE_PURE_NO) || (in_vt_inf == _nil && vt_inf.get_type_pure_kind() == type_pure_kind::TYPE_PURE_NO));
 			else if((vt_inf == _int && in_vt_inf == _float) || (vt_inf == _float && in_vt_inf == _int)) {
 				root->get_diagnostics_reporter()->print(diagnostic_messages::unequal_but_compatible_types_list_dict, vl[i]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_WARNING);
 				root->get_diagnostics_reporter()->print(diagnostic_messages::originally_declared_here, vl[0]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_NOTE);
@@ -960,9 +987,8 @@ namespace karma_lang {
 			return make_shared<annotated_sequence>(ann_root_node, seq, vector<shared_ptr<annotated_binary_expression>>(), vector<type_information>(), bad);
 		vector<shared_ptr<binary_expression>> bexpr_list = seq->get_expression_list();
 		if(bexpr_list.size() == 0) {
-			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_at_least_one_element_in_sequence, seq->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_WARNING);
 			shared_ptr<type_information> inner = make_shared<type_information>(type_kind::TYPE_INT, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
-			type_information ret(type_kind::TYPE_TUPLE, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE, inner);
+			type_information ret(type_kind::TYPE_TUPLE, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 			return make_shared<annotated_sequence>(ann_root_node, seq, vector<shared_ptr<annotated_binary_expression>>(), vector<type_information>(), ret);
 		}
 		vector<shared_ptr<type_information>> inner;

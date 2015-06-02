@@ -190,42 +190,38 @@ namespace karma_lang {
 
 	}
 
-	pair<vector<string>, string> generate_code::descend_literal(shared_ptr<annotated_literal> alit) {
+	pair<string, int> generate_code::descend_literal(shared_ptr<annotated_literal> alit) {
 		if(alit->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
-			return make_pair(vector<string>(), "");
+			return make_pair("", number);
 		string temp = alit->get_raw_literal()->get_raw_string();
 		string temp2;
-		if(alit->get_raw_literal()->get_token_kind() == token_kind::TOKEN_IDENTIFIER)
-			temp2 = temp;
+		if (alit->get_raw_literal()->get_token_kind() == token_kind::TOKEN_IDENTIFIER);
 		else
-			temp2 = "$" + temp;
-		string s = code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, temp2);
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "$" + temp));
 		number++;
-		vector<string> ret;
-		ret.push_back(s);
-		return make_pair(ret, alit->get_literal_kind() == literal_kind::LITERAL_IDENTIFIER ? alit->get_raw_literal()->get_raw_string() : "");
+		return make_pair(alit->get_literal_kind() == literal_kind::LITERAL_IDENTIFIER ? alit->get_raw_literal()->get_raw_string() : "", number - 1);
 	}
 
-	pair<vector<string>, string> generate_code::descend_primary_expression(shared_ptr<annotated_primary_expression> aprexpr) {
-		if(aprexpr->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
-			return make_pair(vector<string>(), "");
+	pair<string, int> generate_code::descend_primary_expression(shared_ptr<annotated_primary_expression> aprexpr) {
+		if (aprexpr->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
+			return make_pair("", number);
 		if(aprexpr->get_primary_expression_kind() == primary_expression_kind::PRIMARY_EXPRESSION_LITERAL) {
-			pair<vector<string>, string> ret = descend_literal(aprexpr->get_raw_literal());
-			return ret;
+			pair<string, int> ret = descend_literal(aprexpr->get_raw_literal());
+			return make_pair(ret.first, ret.second);
 		}
 		else if(aprexpr->get_primary_expression_kind() == primary_expression_kind::PRIMARY_EXPRESSION_BRACKETED_EXPRESSION ||
 				aprexpr->get_primary_expression_kind() == primary_expression_kind::PRIMARY_EXPRESSION_PARENTHESIZED_EXPRESSION) {
 			int store = number;
-			vector<string> ret = descend_binary_expression(aprexpr->get_raw_parenthesized_expression()).first;
-			string name = "";
-			if(aprexpr->get_primary_expression_kind() == primary_expression_kind::PRIMARY_EXPRESSION_PARENTHESIZED_EXPRESSION)
-				return make_pair(ret, name);
+			vector<string> temp = descend_binary_expression(aprexpr->get_raw_parenthesized_expression());
+			string name = temp[0];
+			if (aprexpr->get_primary_expression_kind() == primary_expression_kind::PRIMARY_EXPRESSION_PARENTHESIZED_EXPRESSION)
+				return make_pair(name, store);
 			else {
 				string insn1 = code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, store);
-				ret.push_back(insn1);
-				return make_pair(ret, name);
+				instruction_list.push_back(insn1);
+				return make_pair(name, store);
 			}
-			return make_pair(ret, name);
+			return make_pair(name, store);
 		}
 		else if(aprexpr->get_primary_expression_kind() == primary_expression_kind::PRIMARY_EXPRESSION_SEQUENCE) {
 			int orig = number;
@@ -234,25 +230,18 @@ namespace karma_lang {
 			shared_ptr<annotated_sequence> aseq = aprexpr->get_sequence();
 			vector<shared_ptr<annotated_binary_expression>> abexpr_list = aseq->get_annotated_binary_expression_list();
 			vector<int> list_indices;
-			vector<string> ret;
 			for(int i = 0; i < abexpr_list.size(); i++) {
 				int store_inner = number;
-				vector<string> insn_list = descend_binary_expression(abexpr_list[i]).first;
-				ret.insert(ret.end(), insn_list.begin(), insn_list.end());
+				descend_binary_expression(abexpr_list[i]);
 				list_indices.push_back(store_inner);
-			}
-			if(abexpr_list.size() == 0) {
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
-				list_indices.push_back(number);
-				number++;
 			}
 			sequence_kind seq_kind = aseq->get_sequence_kind();
 			string temp = code_generation_utilities().generate_sequence_instruction(tab_count, seq_kind == sequence_kind::SEQUENCE_TUPLE ? vm_instruction_list::tupl : vm_instruction_list::list, orig, list_indices);
-			ret.push_back(temp);
+			instruction_list.push_back(temp);
 			string s = code_generation_utilities().generate_temp_name(temp_count);
 			temp_count++;
-			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, s, orig));
-			return make_pair(ret, s);
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, s, orig));
+			return make_pair(s, orig);
 		}
 		else if(aprexpr->get_primary_expression_kind() == primary_expression_kind::PRIMARY_EXPRESSION_DICTIONARY) {
 			int orig = number;
@@ -267,17 +256,14 @@ namespace karma_lang {
 			shared_ptr<annotated_dictionary> adict = aprexpr->get_dictionary();
 			vector<shared_ptr<annotated_binary_expression>> key_list = adict->get_key_list();
 			vector<shared_ptr<annotated_binary_expression>> value_list = adict->get_value_list();
-			vector<string> ret;
 			for(int i = 0; i < key_list.size(); i++) {
 				int store_inner = number;
-				vector<string> insn_list = descend_binary_expression(key_list[i]).first;
-				ret.insert(ret.end(), insn_list.begin(), insn_list.end());
+				descend_binary_expression(key_list[i]);
 				key_indices.push_back(store_inner);
 			}
 			for(int i = 0; i < value_list.size(); i++) {
 				int store_inner = number;
-				vector<string> insn_list = descend_binary_expression(value_list[i]).first;
-				ret.insert(ret.end(), insn_list.begin(), insn_list.end());
+				descend_binary_expression(value_list[i]);
 				value_indices.push_back(store_inner);
 			}
 			if(key_indices.size() != value_indices.size()) {
@@ -285,7 +271,7 @@ namespace karma_lang {
 				exit(1);
 			}
 			if(key_indices.size() == 0) {
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
+				instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "$1"));
 				key_indices.push_back(number);
 				value_indices.push_back(number);
 				number++;
@@ -295,37 +281,33 @@ namespace karma_lang {
 				total_indices.push_back(value_indices[i]);
 			}
 			string temp = code_generation_utilities().generate_sequence_instruction(tab_count, vm_instruction_list::dict, orig, total_indices);
-			ret.push_back(temp);
+			instruction_list.push_back(temp);
 			string s = code_generation_utilities().generate_temp_name(temp_count);
 			temp_count++;
-			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, s, orig));
-			return make_pair(ret, s);
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, s, orig));
+			return make_pair(s, orig);
 		}
 		d_reporter->print(diagnostic_messages::unreachable, aprexpr->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 		exit(1);
 	}
 
-	tuple<vector<string>, string, postfix_operation_kind> generate_code::descend_postfix_expression(shared_ptr<annotated_linearized_postfix_expression> apoexpr) {
+	tuple<string, postfix_operation_kind, int> generate_code::descend_postfix_expression(shared_ptr<annotated_linearized_postfix_expression> apoexpr) {
 		type_information _any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 		if(apoexpr->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
-			return make_tuple(vector<string>(), "", postfix_operation_kind::POSTFIX_OPERATION_NONE);
+			return make_tuple("", postfix_operation_kind::POSTFIX_OPERATION_NONE, number);
 		if(apoexpr->get_postfix_operation_kind_list().size() != apoexpr->get_annotated_root_node_list().size())
-			return make_tuple(vector<string>(), "", postfix_operation_kind::POSTFIX_OPERATION_NONE);
+			return make_tuple("", postfix_operation_kind::POSTFIX_OPERATION_NONE, number);
 		vector<postfix_operation_kind> pokl = apoexpr->get_postfix_operation_kind_list();
 		vector<shared_ptr<annotated_root_node>> arnl = apoexpr->get_annotated_root_node_list();
-		pair<vector<string>, string> pai = descend_primary_expression(apoexpr->get_raw_annotated_primary_expression());
-		vector<string> ret = pai.first;
-		string full_name = pai.second;
+		tuple<string, int> pai = descend_primary_expression(apoexpr->get_raw_annotated_primary_expression());
+		string full_name = get<0>(pai);
+		string orig_full_name = full_name;
+		int first = get<1>(pai);
 		postfix_operation_kind pok = postfix_operation_kind::POSTFIX_OPERATION_NONE;
 		for(int i = 0; i < pokl.size(); i++) {
 			if(pokl[i] == postfix_operation_kind::POSTFIX_OPERATION_DECREMENT || pokl[i] == postfix_operation_kind::POSTFIX_OPERATION_INCREMENT) {
 				if(full_name == "")
 					full_name = apoexpr->get_type_information().get_literal()->get_raw_literal()->get_raw_string();
-				string instruction;
-				if(pokl[i] == postfix_operation_kind::POSTFIX_OPERATION_INCREMENT)
-					instruction = code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::inc, full_name);
-				else
-					instruction = code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::dec, full_name);
 				pok = pokl[i];
 			}
 			else if(pokl[i] == postfix_operation_kind::POSTFIX_SUBSCRIPT) {
@@ -345,20 +327,19 @@ namespace karma_lang {
 				if(sck == subscript_colon_kind::SUBSCRIPT_COLON_ZERO) {
 					if(start == nullptr) {
 						int store1 = number;
-						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store1, "0"));
+						instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store1, "$0"));
 						number++;
 						int store2 = number;
-						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store2, full_name + "@size"));
+						instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store2, full_name + "@size"));
 						number++;
 						int store3 = number;
-						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store3, "1"));
+						instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store3, "$1"));
 						number++;
 						full_name += "/r" + to_string(store1) + "/r" + to_string(store2) + "/r" + to_string(store3);
 					}
 					else {
 						int store1 = number;
-						vector<string> temp = descend_binary_expression(start).first;
-						ret.insert(ret.end(), temp.begin(), temp.end());
+						descend_binary_expression(start);
 						full_name += "|r" + to_string(store1);
 					}
 				}
@@ -367,26 +348,24 @@ namespace karma_lang {
 					int store2 = -1;
 					if(start == nullptr) {
 						store1 = number;
-						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "0"));
+						instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "$0"));
 						number++;
 					}
 					else {
 						store1 = number;
-						vector<string> temp = descend_binary_expression(start).first;
-						ret.insert(ret.end(), temp.begin(), temp.end());
+						descend_binary_expression(start);
 					}
 					if(end == nullptr) {
 						store2 = number;
-						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, full_name + "@size"));
+						instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, full_name + "@size"));
 						number++;
 					}
 					else {
 						store2 = number;
-						vector<string> temp = descend_binary_expression(end).first;
-						ret.insert(ret.end(), temp.begin(), temp.end());
+						descend_binary_expression(end);
 					}
 					int store3 = number;
-					ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
+					instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "$1"));
 					number++;
 					full_name += "/r" + to_string(store1) + "/r" + to_string(store2) + "/r" + to_string(store3);
 				}
@@ -396,33 +375,30 @@ namespace karma_lang {
 					int store3 = -1;
 					if(start == nullptr) {
 						store1 = number;
-						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "0"));
+						instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "$0"));
 						number++;
 					}
 					else {
 						store1 = number;
-						vector<string> temp = descend_binary_expression(start).first;
-						ret.insert(ret.end(), temp.begin(), temp.end());
+						descend_binary_expression(start);
 					}
 					if(end == nullptr) {
 						store2 = number;
-						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, full_name + "@size"));
+						instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, full_name + "@size"));
 						number++;
 					}
 					else {
 						store2 = number;
-						vector<string> temp = descend_binary_expression(end).first;
-						ret.insert(ret.end(), temp.begin(), temp.end());
+						descend_binary_expression(end);
 					}
 					if(step == nullptr) {
 						store3 = number;
-						ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "1"));
+						instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "$1"));
 						number++;
 					}
 					else {
 						store3 = number;
-						vector<string> temp = descend_binary_expression(step).first;
-						ret.insert(ret.end(), temp.begin(), temp.end());
+						descend_binary_expression(step);
 					}
 					full_name += "/r" + to_string(store1) + "/r" + to_string(store2) + "/r" + to_string(store3);
 				}
@@ -433,18 +409,21 @@ namespace karma_lang {
 				exit(1);
 			}
 		}
-		return make_tuple(ret, full_name, pok);
+		if (full_name == "");
+		else
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, first, full_name));
+		return make_tuple(full_name, pok, first);
 	}
 
-	tuple<vector<string>, string, postfix_operation_kind> generate_code::descend_unary_expression(shared_ptr<annotated_unary_expression> auexpr) {
+	pair<string, postfix_operation_kind> generate_code::descend_unary_expression(shared_ptr<annotated_unary_expression> auexpr) {
 		type_information _any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 		if(auexpr->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			make_tuple(vector<string>(), "", postfix_operation_kind::POSTFIX_OPERATION_NONE);
 		int store_begin = number;
-		tuple<vector<string>, string, postfix_operation_kind> tup = descend_postfix_expression(auexpr->get_raw_annotated_linearized_postfix_expression());
-		vector<string> ret = get<0>(tup);
-		string name = get<1>(tup);
-		postfix_operation_kind op = get<2>(tup);
+		tuple<string, postfix_operation_kind, int> tup = descend_postfix_expression(auexpr->get_raw_annotated_linearized_postfix_expression());
+		string name = get<0>(tup);
+		int first = get<2>(tup);
+		postfix_operation_kind pok = get<1>(tup);
 		string insn1;
 		if(auexpr->get_unary_operation_kind() == unary_operation_kind::UNARY_OPERATION_MINUS)
 			insn1 = code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::neg, store_begin);
@@ -459,42 +438,44 @@ namespace karma_lang {
 				insn1 = code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::inc, name);
 		}
 		if(insn1 == "");
-		else
-			ret.push_back(insn1);
-		return make_tuple(ret, name, op);
+		else {
+			instruction_list.push_back(insn1);
+			if (auexpr->get_unary_operation_kind() == unary_operation_kind::UNARY_OPERATION_DECREMENT ||
+				auexpr->get_unary_operation_kind() == unary_operation_kind::UNARY_OPERATION_INCREMENT) {
+				instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, first, name));
+			}
+		}
+		return make_pair(name, pok);
 	}
 
-	pair<vector<string>, vector<string>> generate_code::descend_binary_expression(shared_ptr<annotated_binary_expression> abexpr) {
-		if(abexpr->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
-			return make_pair(vector<string>(), vector<string>());
+	vector<string> generate_code::descend_binary_expression(shared_ptr<annotated_binary_expression> abexpr) {
+		if (abexpr->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
+			return vector<string>();
 		int store = number;
-		postfix_operation_kind pok_lhs = postfix_operation_kind::POSTFIX_OPERATION_NONE;
-		postfix_operation_kind pok_rhs = postfix_operation_kind::POSTFIX_OPERATION_NONE;
 		string lhs_name = "";
 		string rhs_name = "";
 		tuple<int, int, int> lhs_ternary;
 		tuple<int, int, int> rhs_ternary;
 		bool lt_check = false;
 		bool rt_check = false;
-		vector<string> ret;
 		binary_operation_kind lhs_bop_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+		binary_operation_kind rhs_bop_kind = binary_operation_kind::BINARY_OPERATION_NONE;
+		postfix_operation_kind pok_lhs = postfix_operation_kind::POSTFIX_OPERATION_NONE;
+		postfix_operation_kind pok_rhs = postfix_operation_kind::POSTFIX_OPERATION_NONE;
 		if(abexpr->get_lhs_kind() == binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION) {
-			pair<vector<string>, vector<string>> pai = descend_binary_expression(static_pointer_cast<annotated_binary_expression>(abexpr->get_lhs()));
-			ret = pai.first;
-			lhs_name = pai.second[0];
+			vector<string> pai = descend_binary_expression(static_pointer_cast<annotated_binary_expression>(abexpr->get_lhs()));
+			lhs_name = pai[0];
 			lhs_bop_kind = static_pointer_cast<annotated_binary_expression>(abexpr->get_lhs())->get_binary_operation_kind();
 		}
 		else if(abexpr->get_lhs_kind() == binary_expression_kind::BINARY_EXPRESSION_UNARY_EXPRESSION) {
-			tuple<vector<string>, string, postfix_operation_kind> tup = descend_unary_expression(static_pointer_cast<annotated_unary_expression>(abexpr->get_lhs()));
-			ret = get<0>(tup);
-			lhs_name = get<1>(tup);
-			pok_lhs = get<2>(tup);
+			pair<string, postfix_operation_kind> pai = descend_unary_expression(static_pointer_cast<annotated_unary_expression>(abexpr->get_lhs()));
+			lhs_name = pai.first;
+			pok_lhs = pai.second;
 		}
 		else if(abexpr->get_lhs_kind() == binary_expression_kind::BINARY_EXPRESSION_TERNARY_EXPRESSION) {
-			pair<vector<string>, tuple<int, int, int>> pai = descend_ternary_expression(static_pointer_cast<annotated_ternary_expression>(abexpr->get_lhs()));
-			ret = pai.first;
+			tuple<int, int, int> pai = descend_ternary_expression(static_pointer_cast<annotated_ternary_expression>(abexpr->get_lhs()));
 			lt_check = true;
-			lhs_ternary = pai.second;
+			lhs_ternary = pai;
 		}
 		else {
 			d_reporter->print(diagnostic_messages::unreachable, abexpr->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
@@ -503,138 +484,128 @@ namespace karma_lang {
 		int store2 = number;
 		vector<string> temp2;
 		if(abexpr->get_rhs_kind() == binary_expression_kind::BINARY_EXPRESSION_NONE) {
-			//Takes advantage of the fact that multiple binary expressions are generated per binary expression; as a result, 
-			//by generating code for the expression here, correct postfix and prefix increments and decrements can be generated.
-			//If code generation starts failing, trying moving this after the assignment.
-			bool bop_bool = lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_EQUALS || lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_DIVIDE_EQUALS ||
-				lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_BITWISE_OR_EQUALS || lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_BITWISE_AND_EQUALS ||
-				lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR_EQUALS || lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_EXPONENT_EQUALS ||
-				lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_MINUS_EQUALS || lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_MODULUS_EQUALS ||
-				lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_MULTIPLY_EQUALS || lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_PLUS_EQUALS ||
-				lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT_EQUALS || lhs_bop_kind == binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT_EQUALS;
-			if (lhs_name == "");
-			else if(bop_bool)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store, lhs_name));
-			if (rhs_name == "");
-			else if (bop_bool)
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store2, rhs_name));
 			int prev_store = store;
 			if(lt_check) {
 				store = number;
-				ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<2>(lhs_ternary)));
+				instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
+				instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<2>(lhs_ternary)));
 				number++;
-				ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "$true", label_count + 1));
-				ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
+				instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "$true", label_count + 1));
+				instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
 				label_count++;
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store, get<1>(lhs_ternary)));
-				ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
+				instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store, get<1>(lhs_ternary)));
+				instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
 				label_count++;
-				ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, prev_store, store));
+				instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, prev_store, store));
 			}
-			if(pok_lhs == postfix_operation_kind::POSTFIX_OPERATION_INCREMENT)
-				ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::inc, lhs_name));
-			else if(pok_lhs == postfix_operation_kind::POSTFIX_OPERATION_DECREMENT)
-				ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::dec, lhs_name));
+			if (pok_lhs == postfix_operation_kind::POSTFIX_OPERATION_INCREMENT)
+				instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::inc, lhs_name));
+			else if (pok_lhs == postfix_operation_kind::POSTFIX_OPERATION_DECREMENT)
+				instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::dec, lhs_name));
 			vector<string> temp;
 			rhs_name = lhs_name;
 			temp.push_back(lhs_name);
 			temp.push_back(rhs_name);
-			return make_pair(ret, temp);
+			return temp;
 		}
 		else if(abexpr->get_rhs_kind() == binary_expression_kind::BINARY_EXPRESSION_BINARY_EXPRESSION) {
-			pair<vector<string>, vector<string>> temp = descend_binary_expression(static_pointer_cast<annotated_binary_expression>(abexpr->get_rhs()));
-			temp2 = temp.first;
-			rhs_name = temp.second[0];
+			vector<string> temp = descend_binary_expression(static_pointer_cast<annotated_binary_expression>(abexpr->get_rhs()));
+			rhs_name = temp[0];
+			rhs_bop_kind = static_pointer_cast<annotated_binary_expression>(abexpr->get_rhs())->get_binary_operation_kind();
 		}
 		else if(abexpr->get_rhs_kind() == binary_expression_kind::BINARY_EXPRESSION_TERNARY_EXPRESSION) {
-			pair<vector<string>, tuple<int, int, int>> pai = descend_ternary_expression(static_pointer_cast<annotated_ternary_expression>(abexpr->get_rhs()));
-			temp2 = pai.first;
+			tuple<int, int, int> pai = descend_ternary_expression(static_pointer_cast<annotated_ternary_expression>(abexpr->get_rhs()));
 			rt_check = true;
-			rhs_ternary = pai.second;
+			rhs_ternary = pai;
 		}
 		else {
-			tuple<vector<string>, string, postfix_operation_kind> tup = descend_unary_expression(static_pointer_cast<annotated_unary_expression>(abexpr->get_rhs()));
-			temp2 = get<0>(tup);
-			rhs_name = get<1>(tup);
-			pok_rhs = get<2>(tup);
+			pair<string, postfix_operation_kind> pai = descend_unary_expression(static_pointer_cast<annotated_unary_expression>(abexpr->get_rhs()));
+			rhs_name = pai.first;
+			pok_rhs = pai.second;
 		}
 		int prev_store = store;
 		int prev_store2 = store2;
 		binary_operation_kind bopk = abexpr->get_binary_operation_kind();
-		ret.insert(ret.end(), temp2.begin(), temp2.end());
 		if(lt_check) {
 			int prev_store = store;
 			store = number;
-			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
-			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<2>(lhs_ternary)));
+			instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<2>(lhs_ternary)));
 			number++;
-			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "$true", label_count + 1));
-			ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
+			instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "$true", label_count + 1));
+			instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
 			label_count++;
-			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store, get<1>(lhs_ternary)));
-			ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store, get<1>(lhs_ternary)));
+			instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
 			label_count++;
-			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, prev_store, store));
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, prev_store, store));
 		}
 		if(rt_check) {
 			int prev_store = store2;
 			store2 = number;
-			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
-			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<2>(lhs_ternary)));
+			instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<2>(lhs_ternary)));
 			number++;
-			ret.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "$true", label_count + 1));
-			ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
+			instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "$true", label_count + 1));
+			instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
 			label_count++;
-			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store2, get<1>(lhs_ternary)));
-			ret.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store2, get<1>(lhs_ternary)));
+			instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
 			label_count++;
-			ret.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, prev_store, store2));
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, prev_store, store2));
 		}
-		ret.push_back(code_generation_utilities().generate_binary_operation_instruction(tab_count, bopk, store, lhs_name, store2, rhs_name));
-		if(pok_lhs == postfix_operation_kind::POSTFIX_OPERATION_INCREMENT)
-			ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::inc, lhs_name));
-		else if(pok_lhs == postfix_operation_kind::POSTFIX_OPERATION_DECREMENT)
-			ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::dec, lhs_name));
-		if(pok_rhs == postfix_operation_kind::POSTFIX_OPERATION_INCREMENT)
-			ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::inc, rhs_name));
-		else if(pok_rhs == postfix_operation_kind::POSTFIX_OPERATION_DECREMENT)
-			ret.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::dec, rhs_name));
+		bool rhs_bop_bool = rhs_bop_kind == binary_operation_kind::BINARY_OPERATION_EQUALS || rhs_bop_kind == binary_operation_kind::BINARY_OPERATION_DIVIDE_EQUALS ||
+			rhs_bop_kind == binary_operation_kind::BINARY_OPERATION_BITWISE_OR_EQUALS || rhs_bop_kind == binary_operation_kind::BINARY_OPERATION_BITWISE_AND_EQUALS ||
+			rhs_bop_kind == binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR_EQUALS || rhs_bop_kind == binary_operation_kind::BINARY_OPERATION_EXPONENT_EQUALS ||
+			rhs_bop_kind == binary_operation_kind::BINARY_OPERATION_MINUS_EQUALS || rhs_bop_kind == binary_operation_kind::BINARY_OPERATION_MODULUS_EQUALS ||
+			rhs_bop_kind == binary_operation_kind::BINARY_OPERATION_MULTIPLY_EQUALS || rhs_bop_kind == binary_operation_kind::BINARY_OPERATION_PLUS_EQUALS ||
+			rhs_bop_kind == binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT_EQUALS || rhs_bop_kind == binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT_EQUALS;
+		bool rhs_inc_dec_bool = pok_rhs == postfix_operation_kind::POSTFIX_OPERATION_INCREMENT ||
+			pok_rhs == postfix_operation_kind::POSTFIX_OPERATION_DECREMENT;
+		if (pok_lhs == postfix_operation_kind::POSTFIX_OPERATION_INCREMENT)
+			instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::inc, lhs_name));
+		else if (pok_lhs == postfix_operation_kind::POSTFIX_OPERATION_DECREMENT)
+			instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::dec, lhs_name));
+		if (pok_rhs == postfix_operation_kind::POSTFIX_OPERATION_INCREMENT)
+			instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::inc, rhs_name));
+		else if (pok_rhs == postfix_operation_kind::POSTFIX_OPERATION_DECREMENT)
+			instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::dec, rhs_name));
+		instruction_list.push_back(code_generation_utilities().generate_binary_operation_instruction(tab_count, bopk, store, lhs_name, store2, rhs_name, rhs_bop_bool || rhs_inc_dec_bool));
 		vector<string> temp;
 		temp.push_back(lhs_name);
 		temp.push_back(rhs_name);
-		return make_pair(ret, temp);
+		return temp;
 	}
 
-	pair<vector<string>, tuple<int, int, int>> generate_code::descend_ternary_expression(shared_ptr<annotated_ternary_expression> atexpr) {
+	tuple<int, int, int> generate_code::descend_ternary_expression(shared_ptr<annotated_ternary_expression> atexpr) {
 		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
 		if(atexpr->get_type_information() == bad)
-			return make_pair(vector<string>(), make_tuple(-1, -1, -1));
+			return make_tuple(-1, -1, -1);
 		int store1 = number;
-		vector<string> ret = descend_binary_expression(static_pointer_cast<annotated_binary_expression>(atexpr->get_condition())).first;
+		descend_binary_expression(static_pointer_cast<annotated_binary_expression>(atexpr->get_condition()));
 		int store2 = number;
-		vector<string> temp1 = descend_binary_expression(static_pointer_cast<annotated_binary_expression>(atexpr->get_true_path())).first;
-		ret.insert(ret.end(), temp1.begin(), temp1.end());
+		descend_binary_expression(static_pointer_cast<annotated_binary_expression>(atexpr->get_true_path()));
 		int store3 = number;
-		vector<string> temp2 = descend_binary_expression(static_pointer_cast<annotated_binary_expression>(atexpr->get_false_path())).first;
-		ret.insert(ret.end(), temp2.begin(), temp2.end());
-		return make_pair(ret, make_tuple(store1, store2, store3));
+		descend_binary_expression(static_pointer_cast<annotated_binary_expression>(atexpr->get_false_path()));
+		return make_tuple(store1, store2, store3);
 	}
 
-	vector<string> generate_code::descend_declaration(shared_ptr<annotated_declaration> adecl) {
-		if(adecl->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
-			return vector<string>();
+	bool generate_code::descend_declaration(shared_ptr<annotated_declaration> adecl) {
+		if (adecl->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
+			return false;
 		int store = number;
-		vector<string> expr = descend_binary_expression(adecl->get_binary_expression()).first;
-		expr.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, adecl->get_identifier()->get_raw_literal()->get_raw_string(), store));
-		return expr;
+		descend_binary_expression(adecl->get_binary_expression());
+		instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, adecl->get_identifier()->get_raw_literal()->get_raw_string(), store));
+		return true;
 	}
 
-	vector<string> generate_code::descend_statement(shared_ptr<annotated_statement> astmt) {
-		if(astmt->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
-			return vector<string>();
-		if(astmt->get_statement_kind() == statement_kind::STATEMENT_EXPRESSION)
-			return descend_binary_expression(astmt->get_binary_expression()).first;
+	bool generate_code::descend_statement(shared_ptr<annotated_statement> astmt) {
+		if (astmt->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
+			return false;
+		if (astmt->get_statement_kind() == statement_kind::STATEMENT_EXPRESSION) {
+			descend_binary_expression(astmt->get_binary_expression());
+			return true;
+		}
 		else if(astmt->get_statement_kind() == statement_kind::STATEMENT_DECLARATION)
 			return descend_declaration(astmt->get_declaration());
 		d_reporter->print(diagnostic_messages::unreachable, astmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
@@ -642,14 +613,12 @@ namespace karma_lang {
 	}
 
 	vector<string> generate_code::perform_code_generation() {
-		for(int i = 0; i < ann_root_node->get_annotated_statement_list().size(); i++) {
-			vector<string> temp = descend_statement(ann_root_node->get_annotated_statement_list()[i]);
-			instruction_list.insert(instruction_list.end(), temp.begin(), temp.end());
-		}
+		for(int i = 0; i < ann_root_node->get_annotated_statement_list().size(); i++)
+			descend_statement(ann_root_node->get_annotated_statement_list()[i]);
 		return instruction_list;
 	}
 
-	string code_generation_utilities::generate_binary_operation_instruction(int tab_count, binary_operation_kind bopk, int store, string name, int store2, string name2) {
+	string code_generation_utilities::generate_binary_operation_instruction(int tab_count, binary_operation_kind bopk, int store, string name, int store2, string name2, bool rhs_important) {
 		if(bopk == binary_operation_kind::BINARY_OPERATION_PLUS)
 			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::add, store, store2));
 		else if(bopk == binary_operation_kind::BINARY_OPERATION_MINUS)
@@ -689,73 +658,73 @@ namespace karma_lang {
 		else if(bopk == binary_operation_kind::BINARY_OPERATION_NOT_EQUAL)
 			return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::nequ, store, store2));
 		else if (bopk == binary_operation_kind::BINARY_OPERATION_EQUALS) {
-			if (name2 == "")
+			if (name2 == "" || !rhs_important)
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, name, store2));
 			else
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, name, name2));
 		}
 		else if (bopk == binary_operation_kind::BINARY_OPERATION_PLUS_EQUALS) {
-			if (name2 == "")
+			if (name2 == "" || !rhs_important)
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::add, name, store2));
 			else
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::add, name, name2));
 		}
 		else if (bopk == binary_operation_kind::BINARY_OPERATION_MINUS_EQUALS) {
-			if (name2 == "")
+			if (name2 == "" || !rhs_important)
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sub, name, store2));
 			else
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::sub, name, name2));
 		}
 		else if (bopk == binary_operation_kind::BINARY_OPERATION_MULTIPLY_EQUALS) {
-			if (name2 == "")
+			if (name2 == "" || !rhs_important)
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mul, name, store2));
 			else
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mul, name, name2));
 		}
 		else if (bopk == binary_operation_kind::BINARY_OPERATION_DIVIDE_EQUALS) {
-			if (name2 == "")
+			if (name2 == "" || !rhs_important)
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::div, name, store2));
 			else
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::div, name, name2));
 		}
 		else if (bopk == binary_operation_kind::BINARY_OPERATION_EXPONENT_EQUALS) {
-			if (name2 == "")
+			if (name2 == "" || !rhs_important)
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::exp, name, store2));
 			else
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::exp, name, name2));
 		}
 		else if (bopk == binary_operation_kind::BINARY_OPERATION_MODULUS_EQUALS) {
-			if (name2 == "")
+			if (name2 == "" || !rhs_important)
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mod, name, store2));
 			else
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mod, name, name2));
 		}
 		else if (bopk == binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT_EQUALS) {
-			if (name2 == "")
+			if (name2 == "" || !rhs_important)
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::shl, name, store2));
 			else
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::shl, name, name2));
 		}
 		else if (bopk == binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT_EQUALS) {
-			if (name2 == "")
+			if (name2 == "" || !rhs_important)
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::shr, name, store2));
 			else
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::shr, name, name2));
 		}
 		else if (bopk == binary_operation_kind::BINARY_OPERATION_BITWISE_AND_EQUALS) {
-			if (name2 == "")
+			if (name2 == "" || !rhs_important)
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::band, name, store2));
 			else
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::band, name, name2));
 		}
 		else if (bopk == binary_operation_kind::BINARY_OPERATION_BITWISE_OR_EQUALS) {
-			if (name2 == "")
+			if (name2 == "" || !rhs_important)
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::bor, name, store2));
 			else
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::bor, name, name2));
 		}
 		else if (bopk == binary_operation_kind::BINARY_OPERATION_EXCLUSIVE_OR_EQUALS) {
-			if (name2 == "")
+			if (name2 == "" || !rhs_important)
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::exor, name, store2));
 			else
 				return (code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::exor, name, name2));

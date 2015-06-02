@@ -96,7 +96,7 @@ namespace karma_lang {
 			string generate_jump_instruction(int tab, string one, int two);
 			string generate_exit_instruction(int tab);
 			string generate_sequence_instruction(int tab, string op, int one, vector<int> indices);
-			string generate_binary_operation_instruction(int tab, binary_operation_kind bopk, int store, string name, int store2, string name2);
+			string generate_binary_operation_instruction(int tab, binary_operation_kind bopk, int store, string name, int store2, string name2, bool rhs_important);
 			string generate_temp_name(int one);
 	};
 
@@ -112,14 +112,14 @@ namespace karma_lang {
 		int tab_count;
 		int temp_count;
 
-		pair<vector<string>, string> descend_literal(shared_ptr<annotated_literal> alit);
-		pair<vector<string>, string> descend_primary_expression(shared_ptr<annotated_primary_expression> prexpr);
-		tuple<vector<string>, string, postfix_operation_kind> descend_postfix_expression(shared_ptr<annotated_linearized_postfix_expression> apoexpr);
-		tuple<vector<string>, string, postfix_operation_kind> descend_unary_expression(shared_ptr<annotated_unary_expression> auexpr);
-		pair<vector<string>, vector<string>> descend_binary_expression(shared_ptr<annotated_binary_expression> abexpr);
-		vector<string> descend_declaration(shared_ptr<annotated_declaration> adecl);
-		vector<string> descend_statement(shared_ptr<annotated_statement> astmt);
-		pair<vector<string>, tuple<int, int, int>> descend_ternary_expression(shared_ptr<annotated_ternary_expression> atexpr);
+		pair<string, int> descend_literal(shared_ptr<annotated_literal> alit);
+		pair<string, int> descend_primary_expression(shared_ptr<annotated_primary_expression> prexpr);
+		tuple<string, postfix_operation_kind, int> descend_postfix_expression(shared_ptr<annotated_linearized_postfix_expression> apoexpr);
+		pair<string, postfix_operation_kind> descend_unary_expression(shared_ptr<annotated_unary_expression> auexpr);
+		vector<string> descend_binary_expression(shared_ptr<annotated_binary_expression> abexpr);
+		bool descend_declaration(shared_ptr<annotated_declaration> adecl);
+		bool descend_statement(shared_ptr<annotated_statement> astmt);
+		tuple<int, int, int> descend_ternary_expression(shared_ptr<annotated_ternary_expression> atexpr);
 
 		public:
 			generate_code(shared_ptr<analyze_ast> aa);
