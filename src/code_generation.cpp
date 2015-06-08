@@ -245,6 +245,7 @@ namespace karma_lang {
 			else {
 				string insn1 = code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::tyof, store);
 				instruction_list.push_back(insn1);
+				name.clear();
 				return make_pair(name, store);
 			}
 			return make_pair(name, store);
