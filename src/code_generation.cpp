@@ -37,6 +37,8 @@ namespace karma_lang {
 	const string vm_instruction_list::list = "list";
 	const string vm_instruction_list::tupl = "tupl";
 	const string vm_instruction_list::dict = "dict";
+	const string vm_instruction_list::func = "func";
+	const string vm_instruction_list::efunc = "efunc";
 
 	code_generation_symbol_table::code_generation_symbol_table() {
 		raw_string_list = vector<string>();
@@ -174,6 +176,20 @@ namespace karma_lang {
 		return "__temp__" + to_string(one);
 	}
 
+	string code_generation_utilities::generate_function_header(int tab, string name, vector<string> reg_list) {
+		string ret;
+		for(int i = 0; i < tab; i++)
+			ret += "\t";
+		ret += vm_instruction_list::func + " " + name + " ";
+		for (int i = 0; i < reg_list.size(); i++)
+			ret += reg_list[i] + " ";
+		return ret;
+	}
+
+	string code_generation_utilities::generate_function_footer() {
+		return vm_instruction_list::efunc;
+	}
+
 	generate_code::generate_code(shared_ptr<analyze_ast> aa) {
 		ann_root_node = aa->get_annotated_root_node();
 		code_gen_sym_table = make_shared<code_generation_symbol_table>();
@@ -182,8 +198,9 @@ namespace karma_lang {
 		tab_count = 0;
 		label_count = 0;
 		temp_count = 0;
-		sym_table = aa->get_symbol_table();
+		sym_table_list = aa->get_symbol_table();
 		d_reporter = aa->get_annotated_root_node()->get_diagnostics_reporter();
+		scope_count = 0;
 	}
 
 	generate_code::~generate_code() {
@@ -199,7 +216,16 @@ namespace karma_lang {
 		else
 			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "$" + temp));
 		number++;
-		return make_pair(alit->get_literal_kind() == literal_kind::LITERAL_IDENTIFIER ? alit->get_raw_literal()->get_raw_string() : "", number - 1);
+		string str = alit->get_raw_literal()->get_raw_string();
+		string name;
+		for (int i = name_list.size() - 1; i >= 0; i--) {
+			tuple<string, string, int> tup = name_list[i];
+			if (get<0>(tup) == str) {
+				name = get<1>(tup);
+				break;
+			}
+		}
+		return make_pair(alit->get_literal_kind() == literal_kind::LITERAL_IDENTIFIER ? name : "", number - 1);
 	}
 
 	pair<string, int> generate_code::descend_primary_expression(shared_ptr<annotated_primary_expression> aprexpr) {
@@ -403,6 +429,24 @@ namespace karma_lang {
 					full_name += "/r" + to_string(store1) + "/r" + to_string(store2) + "/r" + to_string(store3);
 				}
 			}
+			else if (pokl[i] == postfix_operation_kind::POSTFIX_FUNCTION_CALL) {
+				if(full_name == "") {
+					if(apoexpr->get_type_information().get_literal() != nullptr)
+						full_name = apoexpr->get_type_information().get_literal()->get_raw_literal()->get_raw_string();
+					else
+						full_name = "r" + to_string(number);
+				}
+				shared_ptr<annotated_function_argument_list> afarg_list = static_pointer_cast<annotated_function_argument_list>(apoexpr->get_annotated_root_node_list()[i]);
+				vector<int> store_list;
+				full_name += ":";
+				for (int i = 0; i < afarg_list->get_argument_list().size(); i++) {
+					shared_ptr<annotated_binary_expression> abexpr = afarg_list->get_argument_list()[i];
+					store_list.push_back(number);
+					descend_binary_expression(abexpr);
+				}
+				for (int i = 0; i < store_list.size(); i++)
+					full_name += "r" + to_string(store_list[i]) + (i == store_list.size() - 1 ? "" : ",");
+			}
 			else if(pokl[i] == postfix_operation_kind::POSTFIX_OPERATION_NONE) break;
 			else {
 				d_reporter->print(diagnostic_messages::instruction_not_supported, apoexpr->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
@@ -595,7 +639,35 @@ namespace karma_lang {
 			return false;
 		int store = number;
 		descend_binary_expression(adecl->get_binary_expression());
-		instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, adecl->get_identifier()->get_raw_literal()->get_raw_string(), store));
+		string str = adecl->get_identifier()->get_raw_literal()->get_raw_string();
+		tuple<string, string, int> tup = make_tuple(str, str + "_" + to_string(scope_count), scope_count);
+		name_list.push_back(tup);
+		instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, get<1>(tup), store));
+		return true;
+	}
+
+	bool generate_code::descend_function(shared_ptr<annotated_function> afunc) {
+		if (afunc->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
+			return false;
+		if (afunc->get_function_declaration_definition_kind() == function_declaration_definition_kind::FUNCTION_KIND_FORWARD_DECLARATION)
+			return true;
+		string str = afunc->get_identifier()->get_raw_literal()->get_raw_string();
+		string fname = str + "_" + to_string(0);
+		name_list.push_back(make_tuple(str, fname, scope_count));
+		scope_count++;
+		int save = name_list.size();
+		vector<string> param_list;
+		for (int i = 0; i < afunc->get_parameter_list().size(); i++) {
+			string param = afunc->get_parameter_list()[i]->get_identifier()->get_raw_literal()->get_raw_string();
+			name_list.push_back(make_tuple(param, param + "_" + to_string(scope_count), scope_count));
+			param_list.push_back(param + "_" + to_string(scope_count));
+		}
+		instruction_list.push_back(code_generation_utilities().generate_function_header(tab_count, fname, param_list));
+		for (int i = 0; i < afunc->get_statement_list().size(); i++)
+			descend_statement(afunc->get_statement_list()[i]);
+		name_list.erase(name_list.begin() + save, name_list.end());
+		instruction_list.push_back(code_generation_utilities().generate_function_footer());
+		scope_count++;
 		return true;
 	}
 
@@ -606,8 +678,10 @@ namespace karma_lang {
 			descend_binary_expression(astmt->get_binary_expression());
 			return true;
 		}
-		else if(astmt->get_statement_kind() == statement_kind::STATEMENT_DECLARATION)
+		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_DECLARATION)
 			return descend_declaration(astmt->get_declaration());
+		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_FUNCTION)
+			return descend_function(astmt->get_function());
 		d_reporter->print(diagnostic_messages::unreachable, astmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 		exit(1);
 	}

@@ -322,6 +322,7 @@ namespace karma_lang {
 		bool valid;
 		source_token_list::iterator declaration_pos;
 		shared_ptr<binary_expression> expr_statement;
+		bool partial;
 		public:
 			declaration(shared_ptr<root_node> r);
 			~declaration();
@@ -330,17 +331,44 @@ namespace karma_lang {
 			shared_ptr<binary_expression> get_binary_expression();
 			const bool get_valid();
 			source_token_list::iterator get_position();
-			shared_ptr<declaration> parse_declaration();
+			shared_ptr<declaration> parse_declaration(bool partial = false);
+			const bool get_partial();
+	};
+
+	enum function_declaration_definition_kind {
+		FUNCTION_KIND_DEFINITION, FUNCTION_KIND_FORWARD_DECLARATION, FUNCTION_KIND_NONE
+	};
+
+	class function : public root_node {
+		shared_ptr<literal> identifier;
+		vector<shared_ptr<declaration>> parameter_list;
+		vector<shared_ptr<statement>> statement_list;
+		shared_ptr<declspec_list> delsp_list;
+		bool valid;
+		source_token_list::iterator function_pos;
+		function_declaration_definition_kind f_kind;
+	public:
+		function(shared_ptr<root_node> r);
+		~function();
+		shared_ptr<literal> get_identifier();
+		shared_ptr<declspec_list> get_declspec_list();
+		vector<shared_ptr<statement>> get_statement_list();
+		vector<shared_ptr<declaration>> get_parameter_list();
+		const bool get_valid();
+		source_token_list::iterator get_position();
+		shared_ptr<function> parse_function();
+		const function_declaration_definition_kind get_function_kind();
 	};
 
 	enum statement_kind {
-		STATEMENT_DECLARATION, STATEMENT_EXPRESSION, STATEMENT_NONE
+		STATEMENT_DECLARATION, STATEMENT_EXPRESSION, STATEMENT_FUNCTION, STATEMENT_NONE
 	};
 
 	class statement : public root_node {
 		statement_kind kind;
 		shared_ptr<binary_expression> b_expression;
 		shared_ptr<declaration> decl;
+		shared_ptr<function> func;
 		bool valid;
 		source_token_list::iterator statement_pos;
 		public:
@@ -352,6 +380,7 @@ namespace karma_lang {
 			shared_ptr<declaration> get_declaration();
 			source_token_list::iterator get_position();
 			shared_ptr<statement> parse_statement();
+			shared_ptr<function> get_function();
 	};
 }
 #endif

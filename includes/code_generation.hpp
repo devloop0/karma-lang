@@ -67,6 +67,8 @@ namespace karma_lang {
 			const static string list;
 			const static string tupl;
 			const static string dict;
+			const static string func;
+			const static string efunc;
 	};
 
 	class code_generation_symbol_table {
@@ -98,11 +100,14 @@ namespace karma_lang {
 			string generate_sequence_instruction(int tab, string op, int one, vector<int> indices);
 			string generate_binary_operation_instruction(int tab, binary_operation_kind bopk, int store, string name, int store2, string name2, bool rhs_important);
 			string generate_temp_name(int one);
+			string generate_call_instruction(int tab, string dest, string name, vector<string> reg_list);
+			string generate_function_header(int tab, string name, vector<string> param_list);
+			string generate_function_footer();
 	};
 
 	class generate_code {
 		shared_ptr<annotated_root_node> ann_root_node;
-		shared_ptr<symbol_table> sym_table;
+		vector<shared_ptr<symbol_table>> sym_table_list;
 		shared_ptr<diagnostics_reporter> d_reporter;
 		shared_ptr<code_generation_symbol_table> code_gen_sym_table;
 		vector<string> instruction_list;
@@ -111,6 +116,7 @@ namespace karma_lang {
 		int label_count;
 		int tab_count;
 		int temp_count;
+		int scope_count;
 
 		pair<string, int> descend_literal(shared_ptr<annotated_literal> alit);
 		pair<string, int> descend_primary_expression(shared_ptr<annotated_primary_expression> prexpr);
@@ -120,6 +126,8 @@ namespace karma_lang {
 		bool descend_declaration(shared_ptr<annotated_declaration> adecl);
 		bool descend_statement(shared_ptr<annotated_statement> astmt);
 		tuple<int, int, int> descend_ternary_expression(shared_ptr<annotated_ternary_expression> atexpr);
+		bool descend_function(shared_ptr<annotated_function> afunc);
+		vector<tuple<string, string, int>> name_list;
 
 		public:
 			generate_code(shared_ptr<analyze_ast> aa);

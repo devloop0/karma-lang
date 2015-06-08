@@ -44,4 +44,12 @@ namespace karma_lang {
 	const string diagnostic_messages::instruction_not_supported = "Instruction not supported; terminating.";
 	const string diagnostic_messages::expected_boolean_for_ternary_expression_condition = "Expected a boolean expression for a ternary expression condition.";
 	const string diagnostic_messages::already_a_pure_type_ignoring = "Expression is already a pure type; continuing.";
+	const string diagnostic_messages::expected_a_func_keyword_to_open_a_function = "Expected a 'func' keyword to open a function.";
+	const string diagnostic_messages::expected_an_open_parenthesis = "Expected an open parenthesis '('.";
+	const string diagnostic_messages::expected_an_open_brace = "Expected an open brace '{'.";
+	const string diagnostic_messages::repeated_declaration_of_a_function_parameter = "Repeated declaration of a function parameter: ";
+	const string diagnostic_messages::function_definitions_cannot_be_nested = "Function definitions cannot be nested.";
+	const string diagnostic_messages::function_declaration_does_not_match_definition = "Function declaration does not match declaration.";
+	const string diagnostic_messages::function_is_redeclared = "Function is redeclared.";
+	const string diagnostic_messages::function_declared_not_defined = "Function declared but not defined.";
 }

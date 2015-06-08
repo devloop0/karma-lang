@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
 	shared_ptr<root_node> root =  make_shared<root_node>(make_shared<lexer>(l), make_shared<diagnostics_reporter>(l.get_source_token_list()));
 	shared_ptr<parser> p = make_shared<parser>(root);
 	vector<shared_ptr<statement>> stmt_list = root->parse_program(p);
-	analyze_ast aa(root);
+	analyze_ast aa(root, { scope_kind::SCOPE_GLOBAL }, { make_shared<symbol_table>() }, root->get_statement_list());
 	cout << "\n============\nValidity: " << aa.perform_semantic_analysis() << "\nSize: ";
 	cout << aa.get_annotated_root_node()->get_annotated_statement_list().size() << "\n============\n";
 	if(root->get_diagnostics_reporter()->get_error_count() > 0) {

@@ -278,6 +278,19 @@ namespace karma_lang {
 			type_information get_type_information();
 	};
 
+	class annotated_function_argument_list : public annotated_root_node {
+		vector<shared_ptr<annotated_binary_expression>> argument_list;
+		source_token_list::iterator function_argument_list_pos;
+		vector<type_information> type_information_list;
+		public:
+			annotated_function_argument_list(shared_ptr<annotated_root_node> arn, shared_ptr<function_argument_list> fargl, vector<shared_ptr<annotated_binary_expression>> abexpr_list,
+				vector<type_information> t_inf_list);
+			~annotated_function_argument_list();
+			vector<shared_ptr<annotated_binary_expression>> get_argument_list();
+			source_token_list::iterator get_position();
+			vector<type_information> get_type_information_list();
+	};
+
 	class annotated_subscript : public annotated_root_node {
 		shared_ptr<annotated_binary_expression> start;
 		shared_ptr<annotated_binary_expression> done;
@@ -321,19 +334,43 @@ namespace karma_lang {
 			type_information get_type_information();
 	};
 
+	class annotated_function : public annotated_root_node {
+		shared_ptr<annotated_literal> identifier;
+		shared_ptr<declspec_list> delsp_list;
+		source_token_list::iterator function_pos;
+		vector<shared_ptr<annotated_declaration>> parameter_list;
+		vector<shared_ptr<annotated_statement>> statement_list;
+		type_information t_inf;
+		function_declaration_definition_kind fdd_kind;
+		public:
+			annotated_function(shared_ptr<annotated_root_node> arn, shared_ptr<function> func,
+				shared_ptr<annotated_literal> alit, vector<shared_ptr<annotated_declaration>> parm_list,
+				vector<shared_ptr<annotated_statement>> stmt_list, function_declaration_definition_kind fddk, type_information ti);
+			~annotated_function();
+			shared_ptr<annotated_literal> get_identifier();
+			shared_ptr<declspec_list> get_declspec_list();
+			source_token_list::iterator get_position();
+			vector<shared_ptr<annotated_declaration>> get_parameter_list();
+			vector<shared_ptr<annotated_statement>> get_statement_list();
+			type_information get_type_information();
+			const function_declaration_definition_kind get_function_declaration_definition_kind();
+	};
+
 	class annotated_statement : public annotated_root_node {
 		statement_kind kind;
 		shared_ptr<annotated_binary_expression> b_expression;
 		shared_ptr<annotated_declaration> decl;
+		shared_ptr<annotated_function> func;
 		source_token_list::iterator statement_pos;
 		type_information t_inf;
 		public:
 			annotated_statement(shared_ptr<annotated_root_node> arn, shared_ptr<statement> stmt, shared_ptr<annotated_binary_expression> abe,
-				shared_ptr<annotated_declaration> adecl, type_information ti);
+				shared_ptr<annotated_declaration> adecl, shared_ptr<annotated_function> afunc, type_information ti);
 			~annotated_statement();
 			const statement_kind get_statement_kind();
 			shared_ptr<annotated_binary_expression> get_binary_expression();
 			shared_ptr<annotated_declaration> get_declaration();
+			shared_ptr<annotated_function> get_function();
 			source_token_list::iterator get_position();
 			type_information get_type_information();
 	};
@@ -347,8 +384,9 @@ namespace karma_lang {
 		function_kind f_kind;
 		vector<type_information> function_arguments;
 		shared_ptr<symbol_table> class_type_information;
+		function_declaration_definition_kind fdd_kind;
 		public:
-			symbol(type_information ti, immut_kind ik, shared_ptr<literal> ident, function_kind fk, vector<type_information> fa, shared_ptr<symbol_table> st);
+			symbol(type_information ti, immut_kind ik, shared_ptr<literal> ident, function_kind fk, vector<type_information> fa, shared_ptr<symbol_table> st, function_declaration_definition_kind fddk);
 			~symbol();
 			type_information get_type_information();
 			const immut_kind get_immut_kind();
@@ -356,6 +394,8 @@ namespace karma_lang {
 			shared_ptr<literal> get_identifier();
 			vector<type_information> get_function_arguments();
 			shared_ptr<symbol_table> get_class_type_information();
+			const function_declaration_definition_kind get_function_declaration_definition_kind();
+			function_declaration_definition_kind set_function_declaration_definition_kind(function_declaration_definition_kind fddk);
 	};
 
 	class symbol_table {
@@ -382,13 +422,20 @@ namespace karma_lang {
 			vector<postfix_operation_kind> get_postfix_operation_kind_list();
 	};
 
+	enum scope_kind {
+		SCOPE_GLOBAL, SCOPE_FUNCTION, SCOPE_NONE
+	};
+
 	class analyze_ast {
-		shared_ptr<symbol_table> sym_table;
+		vector<shared_ptr<symbol_table>> sym_table_list;
 		shared_ptr<root_node> root;
 		shared_ptr<annotated_root_node> ann_root_node;
+		vector<scope_kind> s_kind_list;
+		vector<shared_ptr<statement>> statement_list;
 
 		shared_ptr<annotated_statement> analyze_statement(shared_ptr<statement> stmt);
 		shared_ptr<annotated_declaration> analyze_declaration(shared_ptr<declaration> decl);
+		pair<shared_ptr<annotated_declaration>, shared_ptr<symbol>> analyze_parameter(shared_ptr<declaration> decl);
 		shared_ptr<annotated_binary_expression> analyze_binary_expression(shared_ptr<binary_expression> bexpr);
 		shared_ptr<annotated_unary_expression> analyze_unary_expression(shared_ptr<unary_expression> uexpr);
 		shared_ptr<annotated_linearized_postfix_expression> analyze_postfix_expression(shared_ptr<postfix_expression> poexpr);
@@ -399,14 +446,18 @@ namespace karma_lang {
 		shared_ptr<annotated_sequence> analyze_tuple_expression(shared_ptr<sequence> seq);
 		shared_ptr<annotated_dictionary> analyze_dictionary_expression(shared_ptr<dictionary> dict);
 		shared_ptr<annotated_ternary_expression> analyze_ternary_expression(shared_ptr<ternary_expression> texpr);
+		shared_ptr<annotated_function> analyze_function(shared_ptr<function> func);
+		vector<shared_ptr<symbol>> find_all_symbols(shared_ptr<annotated_literal> sym);
+		vector<shared_ptr<symbol>> find_all_symbols(shared_ptr<literal> sym);
 
 		public:
-			analyze_ast(shared_ptr<root_node> r);
+			analyze_ast(shared_ptr<root_node> r, vector<scope_kind> skl, vector<shared_ptr<symbol_table>> stl, vector<shared_ptr<statement>> stmt_list);
 			~analyze_ast();
 			const bool perform_semantic_analysis();
-			shared_ptr<symbol_table> get_symbol_table();
+			vector<shared_ptr<symbol_table>> get_symbol_table();
 			shared_ptr<root_node> get_root_node();
 			shared_ptr<annotated_root_node> get_annotated_root_node();
+			vector<shared_ptr<statement>> get_statement_list();
 	};
 
 	class deduce_binary_expression_type {

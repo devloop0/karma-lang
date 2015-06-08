@@ -3463,6 +3463,7 @@ namespace karma_lang {
 		identifier = nullptr;
 		delsp_list = nullptr;
 		expr_statement = nullptr;
+		partial = false;
 	}
 
 	declaration::~declaration() {
@@ -3489,7 +3490,12 @@ namespace karma_lang {
 		return delsp_list;
 	}
 
-	shared_ptr<declaration> declaration::parse_declaration() {
+	const bool declaration::get_partial() {
+		return partial;
+	}
+
+	shared_ptr<declaration> declaration::parse_declaration(bool partial) {
+		this->partial = partial;
 		source_token_list::iterator save = root->get_position();
 		declaration_pos = root->get_position();
 		if(save >= root->get_lexer()->get_source_token_list()->end()) {
@@ -3539,6 +3545,11 @@ namespace karma_lang {
 				expr_statement = nullptr;
 				return make_shared<declaration>(*this);
 			}
+			if (partial) {
+				valid = true;
+				expr_statement = nullptr;
+				return make_shared<declaration>(*this);
+			}
 			if(root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
 				root->get_diagnostics_reporter()->print(diagnostic_messages::unexpected_end_of_file, root->get_position() - 1, diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 				exit(0);
@@ -3562,6 +3573,220 @@ namespace karma_lang {
 		expr_statement = nullptr;
 		delsp_list = nullptr;
 		return make_shared<declaration>(*this);
+	}
+
+	function::function(shared_ptr<root_node> r) : root_node(*r), function_pos(r->get_position()) {
+		identifier = nullptr;
+		parameter_list = vector<shared_ptr<declaration>>();
+		statement_list = vector<shared_ptr<statement>>();
+		delsp_list = nullptr;
+		valid = false;
+		f_kind = function_declaration_definition_kind::FUNCTION_KIND_NONE;
+	}
+
+	function::~function() {
+
+	}
+
+	shared_ptr<literal> function::get_identifier() {
+		return identifier;
+	}
+
+	shared_ptr<declspec_list> function::get_declspec_list() {
+		return delsp_list;
+	}
+
+	vector<shared_ptr<statement>> function::get_statement_list() {
+		return statement_list;
+	}
+
+	vector<shared_ptr<declaration>> function::get_parameter_list() {
+		return parameter_list;
+	}
+
+	const bool function::get_valid() {
+		return valid;
+	}
+
+	source_token_list::iterator function::get_position() {
+		return function_pos;
+	}
+
+	const function_declaration_definition_kind function::get_function_kind() {
+		return f_kind;
+	}
+
+	shared_ptr<function> function::parse_function() {
+		source_token_list::iterator save = root->get_position();
+		function_pos = root->get_position();
+		if (save == root->get_lexer()->get_source_token_list()->end()) {
+			statement_list = vector<shared_ptr<statement>>();
+			parameter_list = vector<shared_ptr<declaration>>();
+			identifier = nullptr;
+			delsp_list = nullptr;
+			valid = false;
+			f_kind = function_declaration_definition_kind::FUNCTION_KIND_NONE;
+			return make_shared<function>(*this);
+		}
+		if ((*save)->get_token_kind() != token_kind::TOKEN_FUNC) {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_a_func_keyword_to_open_a_function, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			statement_list = vector<shared_ptr<statement>>();
+			parameter_list = vector<shared_ptr<declaration>>();
+			identifier = nullptr;
+			delsp_list = nullptr;
+			valid = false;
+			f_kind = function_declaration_definition_kind::FUNCTION_KIND_NONE;
+			return make_shared<function>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_a_func_keyword_to_open_a_function, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			statement_list = vector<shared_ptr<statement>>();
+			parameter_list = vector<shared_ptr<declaration>>();
+			identifier = nullptr;
+			delsp_list = nullptr;
+			valid = false;
+			f_kind = function_declaration_definition_kind::FUNCTION_KIND_NONE;
+			return make_shared<function>(*this);
+		}
+		shared_ptr<declspec_list> dl = make_shared<declspec_list>(root)->parse_declspec_list();
+		if (dl->get_valid());
+		else {
+			valid = false;
+			statement_list = vector<shared_ptr<statement>>();
+			parameter_list = vector<shared_ptr<declaration>>();
+			identifier = nullptr;
+			delsp_list = nullptr;
+			f_kind = function_declaration_definition_kind::FUNCTION_KIND_NONE;
+			return make_shared<function>(*this);
+		}
+		delsp_list = dl;
+		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_POINT_DECL);
+		else {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_a_point_to, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			valid = false;
+			statement_list = vector<shared_ptr<statement>>();
+			parameter_list = vector<shared_ptr<declaration>>();
+			identifier = nullptr;
+			f_kind = function_declaration_definition_kind::FUNCTION_KIND_NONE;
+			return make_shared<function>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		shared_ptr<literal> ident = make_shared<literal>(root)->parse_literal();
+		if (ident->get_valid());
+		else {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_an_identifier, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			valid = false;
+			statement_list = vector<shared_ptr<statement>>();
+			parameter_list = vector<shared_ptr<declaration>>();
+			identifier = nullptr;
+			f_kind = function_declaration_definition_kind::FUNCTION_KIND_NONE;
+			return make_shared<function>(*this);
+		}
+		identifier = ident;
+		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_OPEN_PARENTHESIS);
+		else {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_an_open_parenthesis, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			valid = false;
+			statement_list = vector<shared_ptr<statement>>();
+			parameter_list = vector<shared_ptr<declaration>>();
+			f_kind = function_declaration_definition_kind::FUNCTION_KIND_NONE;
+			return make_shared<function>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
+			valid = false;
+			statement_list = vector<shared_ptr<statement>>();
+			parameter_list = vector<shared_ptr<declaration>>();
+			f_kind = function_declaration_definition_kind::FUNCTION_KIND_NONE;
+			return make_shared<function>(*this);
+		}
+		shared_ptr<declaration> decl = make_shared<declaration>(root)->parse_declaration(true);
+		bool skip = false;
+		if (decl->get_valid());
+		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_CLOSE_PARENTHESIS)
+			skip = true;
+		else {
+			valid = false;
+			statement_list = vector<shared_ptr<statement>>();
+			parameter_list = vector<shared_ptr<declaration>>();
+			f_kind = function_declaration_definition_kind::FUNCTION_KIND_NONE;
+			return make_shared<function>(*this);
+		}
+		if(!skip && decl->get_valid())
+			parameter_list.push_back(decl);
+		while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_COMMA && !skip) {
+			root->set_position(root->get_position() + 1);
+			shared_ptr<declaration> decl = make_shared<declaration>(root)->parse_declaration(true);
+			if (decl->get_valid());
+			else {
+				valid = false;
+				statement_list = vector<shared_ptr<statement>>();
+				f_kind = function_declaration_definition_kind::FUNCTION_KIND_NONE;
+				return make_shared<function>(*this);
+			}
+			parameter_list.push_back(decl);
+		}
+		if (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_CLOSE_PARENTHESIS);
+		else {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_an_open_parenthesis, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			valid = false;
+			statement_list = vector<shared_ptr<statement>>();
+			f_kind = function_declaration_definition_kind::FUNCTION_KIND_NONE;
+			return make_shared<function>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		if (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_OPEN_BRACE);
+		else if (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_NEW_LINE) {
+			valid = true;
+			statement_list = vector<shared_ptr<statement>>();
+			f_kind = function_declaration_definition_kind::FUNCTION_KIND_FORWARD_DECLARATION;
+			return make_shared<function>(*this);
+		}
+		else {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_an_open_brace, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			valid = false;
+			statement_list = vector<shared_ptr<statement>>();
+			f_kind = function_declaration_definition_kind::FUNCTION_KIND_NONE;
+			return make_shared<function>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() != token_kind::TOKEN_CLOSE_BRACE) {
+			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_NEW_LINE)
+				root->set_position(root->get_position() + 1);
+			if (root->get_position() > root->get_lexer()->get_source_token_list()->end() || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_CLOSE_BRACE)
+				break;
+			shared_ptr<statement> stmt = make_shared<statement>(root)->parse_statement();
+			if (stmt->get_valid());
+			else {
+				valid = false;
+				f_kind = function_declaration_definition_kind::FUNCTION_KIND_NONE;
+				return make_shared<function>(*this);
+			}
+			if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
+				valid = false;
+				f_kind = function_declaration_definition_kind::FUNCTION_KIND_NONE;
+				return make_shared<function>(*this);
+			}
+			if ((*(root->get_position()))->get_token_kind() != token_kind::TOKEN_NEW_LINE) {
+				root->get_diagnostics_reporter()->print(diagnostic_messages::expected_new_line, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+				valid = false;
+				f_kind = function_declaration_definition_kind::FUNCTION_KIND_NONE;
+				return make_shared<function>(*this);
+			}
+			root->set_position(root->get_position() + 1);
+			statement_list.push_back(stmt);
+		}
+		if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
+			valid = false;
+			f_kind = function_declaration_definition_kind::FUNCTION_KIND_NONE;
+			return make_shared<function>(*this);
+		}
+		else
+			root->set_position(root->get_position() + 1);
+		valid = true;
+		f_kind = function_declaration_definition_kind::FUNCTION_KIND_DEFINITION;
+		return make_shared<function>(*this);
 	}
 
 	statement::statement(shared_ptr<root_node> r) : root_node(*r), statement_pos(r->get_position()) {
@@ -3595,6 +3820,10 @@ namespace karma_lang {
 		return statement_pos;
 	}
 
+	shared_ptr<function> statement::get_function() {
+		return func;
+	}
+
 	shared_ptr<statement> statement::parse_statement() {
 		source_token_list::iterator save = root->get_position();
 		statement_pos = root->get_position();
@@ -3603,6 +3832,7 @@ namespace karma_lang {
 			valid = false;
 			decl = nullptr;
 			b_expression = nullptr;
+			func = nullptr;
 			return make_shared<statement>(*this);
 		}
 		if((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_VAR) {
@@ -3610,10 +3840,20 @@ namespace karma_lang {
 			kind = statement_kind::STATEMENT_DECLARATION;
 			decl = make_shared<declaration>(root)->parse_declaration();
 			valid = decl->get_valid();
+			func = nullptr;
+			return make_shared<statement>(*this);
+		}
+		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_FUNC) {
+			b_expression = nullptr;
+			kind = statement_kind::STATEMENT_FUNCTION;
+			decl = nullptr;
+			func = make_shared<function>(root)->parse_function();
+			valid = func->get_valid();
 			return make_shared<statement>(*this);
 		}
 		else {
 			decl = nullptr;
+			func = nullptr;
 			kind = statement_kind::STATEMENT_EXPRESSION;
 			b_expression = make_shared<binary_expression>(root)->parse_binary_expression();
 			valid = b_expression->get_valid();
@@ -3623,6 +3863,7 @@ namespace karma_lang {
 		kind = statement_kind::STATEMENT_NONE;
 		b_expression = nullptr;
 		valid = false;
+		func = nullptr;
 		root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 		exit(0);
 		return make_shared<statement>(*this);

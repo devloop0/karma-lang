@@ -56,6 +56,14 @@ namespace karma_lang {
 			const static string instruction_not_supported;
 			const static string expected_boolean_for_ternary_expression_condition;
 			const static string already_a_pure_type_ignoring;
+			const static string expected_a_func_keyword_to_open_a_function;
+			const static string expected_an_open_parenthesis;
+			const static string expected_an_open_brace;
+			const static string repeated_declaration_of_a_function_parameter;
+			const static string function_definitions_cannot_be_nested;
+			const static string function_declaration_does_not_match_definition;
+			const static string function_is_redeclared;
+			const static string function_declared_not_defined;
 	};
 }
 
