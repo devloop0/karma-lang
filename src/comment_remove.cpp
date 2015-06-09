@@ -41,6 +41,7 @@ namespace karma_lang {
 					copy += source[i];
 			}
 			else if (source[i] == '\"') {
+				copy += source[i];
 				i++;
 				while (source[i] != '\"' && i != source.length()) {
 					if (source[i] == '\\' && i + 1 != source.length() && source[i + 1] == '\"') {
@@ -52,7 +53,7 @@ namespace karma_lang {
 						copy += source[i];
 					i++;
 				}
-				if (source[i] != '\"')
+				if (source[i] == '\"')
 					copy += source[i];
 			}
 			else
