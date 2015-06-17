@@ -26,6 +26,9 @@ namespace karma_lang {
 			const static string immut;
 			const static string nil;
 			const static string func;
+			const static string _struct;
+			const static string va_args;
+			const static string module;
 	};
 }
 

@@ -69,6 +69,13 @@ namespace karma_lang {
 			const static string dict;
 			const static string func;
 			const static string efunc;
+			const static string struc;
+			const static string estruc;
+			const static string module;
+			const static string emodule;
+			const static string imodule;
+			const static string istruc;
+			const static string imov;
 	};
 
 	class code_generation_symbol_table {
@@ -103,6 +110,10 @@ namespace karma_lang {
 			string generate_call_instruction(int tab, string dest, string name, vector<string> reg_list);
 			string generate_function_header(int tab, string name, vector<string> param_list);
 			string generate_function_footer();
+			string generate_structure_header(int tab, string name, vector<string> member_list, bool immut);
+			string generate_structure_footer(int tab);
+			string generate_module_header(int tab, string mod_name, bool immut);
+			string generate_module_footer(int tab);
 	};
 
 	class generate_code {
@@ -123,10 +134,12 @@ namespace karma_lang {
 		tuple<string, postfix_operation_kind, int> descend_postfix_expression(shared_ptr<annotated_linearized_postfix_expression> apoexpr);
 		pair<string, postfix_operation_kind> descend_unary_expression(shared_ptr<annotated_unary_expression> auexpr);
 		vector<string> descend_binary_expression(shared_ptr<annotated_binary_expression> abexpr);
-		bool descend_declaration(shared_ptr<annotated_declaration> adecl);
-		bool descend_statement(shared_ptr<annotated_statement> astmt);
+		bool descend_declaration(shared_ptr<annotated_declaration> adecl, bool in_module);
+		bool descend_statement(shared_ptr<annotated_statement> astmt, bool in_module);
 		tuple<int, int, int> descend_ternary_expression(shared_ptr<annotated_ternary_expression> atexpr);
-		bool descend_function(shared_ptr<annotated_function> afunc);
+		bool descend_function(shared_ptr<annotated_function> afunc, bool in_module);
+		bool descend_structure(shared_ptr<annotated_structure> astruc, bool in_module);
+		bool descend_module(shared_ptr<annotated_module> amod, bool in_module);
 		vector<tuple<string, string, int>> name_list;
 
 		public:

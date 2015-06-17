@@ -52,4 +52,13 @@ namespace karma_lang {
 	const string diagnostic_messages::function_declaration_does_not_match_definition = "Function declaration does not match declaration.";
 	const string diagnostic_messages::function_is_redeclared = "Function is redeclared.";
 	const string diagnostic_messages::function_declared_not_defined = "Function declared but not defined.";
+	const string diagnostic_messages::structure_definitions_cannot_be_nested = "Structure definitions cannot be nested.";
+	const string diagnostic_messages::structure_members_cannot_be_immut = "Structure members cannot be 'immut.'";
+	const string diagnostic_messages::partial_declarations_not_allowed = "Partial declarations are not allowed.";
+	const string diagnostic_messages::complete_declarations_not_allowed = "Complete declarations are not allowed.";
+	const string diagnostic_messages::structure_declared_not_defined = "Structure declared but not defined.";
+	const string diagnostic_messages::structure_declarations_need_pure_types = "Structure declarations need to be pure types.";
+	const string diagnostic_messages::builtins_cannot_be_redefined = "Builtins cannot be redefined.";
+	const string diagnostic_messages::ambiguous_function_overload = "Function definition could lead to ambiguous function overload.";
+	const string diagnostic_messages::modules_cannot_be_in_functions = "Modules cannot be in functions.";
 }

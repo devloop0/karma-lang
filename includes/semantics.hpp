@@ -29,7 +29,7 @@ using namespace karma_lang;
 namespace karma_lang {
 
 	enum type_kind {
-		TYPE_INT, TYPE_DECIMAL, TYPE_STRING, TYPE_FUNCTION, TYPE_BOOLEAN, TYPE_NIL, TYPE_ANY, TYPE_CUSTOM, TYPE_LIST, TYPE_TUPLE, TYPE_DICT, TYPE_NONE
+		TYPE_INT, TYPE_DECIMAL, TYPE_STRING, TYPE_FUNCTION, TYPE_BOOLEAN, TYPE_NIL, TYPE_ANY, TYPE_CUSTOM, TYPE_LIST, TYPE_TUPLE, TYPE_DICT, TYPE_MODULE, TYPE_NONE
 	};
 
 	enum type_pure_kind {
@@ -44,8 +44,16 @@ namespace karma_lang {
 		FUNCTION_YES, FUNCTION_NO, FUNCTION_NONE
 	};
 
+	enum structure_kind {
+		STRUCTURE_YES, STRUCTURE_NO, STRUCTURE_NONE
+	};
+
 	enum type_class_kind {
 		TYPE_CLASS_NO, TYPE_CLASS_YES, TYPE_CLASS_NONE
+	};
+
+	enum module_kind {
+		MODULE_YES, MODULE_NO, MODULE_NONE
 	};
 
 	enum value_kind {
@@ -95,6 +103,11 @@ namespace karma_lang {
 	class annotated_dictionary;
 	class annotated_subscript;
 	class linearized_postfix_expression;
+
+	class builtins {
+		public:
+			const static string builtin__va_args__;
+	};
 
 	class annotated_root_node {
 		protected:
@@ -322,6 +335,7 @@ namespace karma_lang {
 		source_token_list::iterator declaration_pos;
 		shared_ptr<annotated_binary_expression> expr_statement;
 		type_information t_inf;
+		bool immutable;
 		public:
 			annotated_declaration(shared_ptr<annotated_root_node> arn, shared_ptr<declaration> decl,
 				shared_ptr<annotated_literal> al, shared_ptr<annotated_binary_expression> abe,
@@ -332,6 +346,7 @@ namespace karma_lang {
 			shared_ptr<annotated_binary_expression> get_binary_expression();
 			source_token_list::iterator get_position();
 			type_information get_type_information();
+			const bool get_immutable();
 	};
 
 	class annotated_function : public annotated_root_node {
@@ -342,6 +357,8 @@ namespace karma_lang {
 		vector<shared_ptr<annotated_statement>> statement_list;
 		type_information t_inf;
 		function_declaration_definition_kind fdd_kind;
+		function_va_args_kind fva_kind;
+		bool immutable;
 		public:
 			annotated_function(shared_ptr<annotated_root_node> arn, shared_ptr<function> func,
 				shared_ptr<annotated_literal> alit, vector<shared_ptr<annotated_declaration>> parm_list,
@@ -354,6 +371,50 @@ namespace karma_lang {
 			vector<shared_ptr<annotated_statement>> get_statement_list();
 			type_information get_type_information();
 			const function_declaration_definition_kind get_function_declaration_definition_kind();
+			const function_va_args_kind get_function_va_args_kind();
+			const bool get_immutable();
+	};
+
+	class annotated_structure : public annotated_root_node {
+		shared_ptr<annotated_literal> identifier;
+		vector<shared_ptr<annotated_declaration>> declaration_list;
+		source_token_list::iterator structure_pos;
+		type_information t_inf;
+		vector<type_information> type_information_list;
+		structure_declaration_definition_kind sdd_kind;
+		bool immutable;
+		public:
+			annotated_structure(shared_ptr<annotated_root_node> arn, shared_ptr<structure> struc,
+				shared_ptr<annotated_literal> alit, vector<shared_ptr<annotated_declaration>> adecl_list, structure_declaration_definition_kind sddk,
+				vector<type_information> til, type_information ti);
+			~annotated_structure();
+			shared_ptr<annotated_literal> get_identifier();
+			vector<shared_ptr<annotated_declaration>> get_declaration_list();
+			source_token_list::iterator get_position();
+			type_information get_type_information();
+			vector<type_information> get_type_information_list();
+			const structure_declaration_definition_kind get_structure_declaration_definition_kind();
+			const bool get_immutable();
+	};
+
+	class annotated_module : public annotated_root_node {
+		shared_ptr<annotated_literal> identifier;
+		vector<shared_ptr<annotated_statement>> statement_list;
+		source_token_list::iterator module_pos;
+		vector<type_information> t_inf_list;
+		type_information t_inf;
+		bool immutable;
+		public:
+			annotated_module(shared_ptr<annotated_root_node> arn, shared_ptr<module> mod,
+				shared_ptr<annotated_literal> alit, vector<shared_ptr<annotated_statement>> astmt_list,
+				vector <type_information> til, type_information ti);
+			~annotated_module();
+			shared_ptr<annotated_literal> get_identifier();
+			vector<shared_ptr<annotated_statement>> get_statement_list();
+			source_token_list::iterator get_position();
+			vector<type_information> get_type_information_list();
+			type_information get_type_information();
+			const bool get_immutable();
 	};
 
 	class annotated_statement : public annotated_root_node {
@@ -361,18 +422,23 @@ namespace karma_lang {
 		shared_ptr<annotated_binary_expression> b_expression;
 		shared_ptr<annotated_declaration> decl;
 		shared_ptr<annotated_function> func;
+		shared_ptr<annotated_structure> struc;
+		shared_ptr<annotated_module> mod;
 		source_token_list::iterator statement_pos;
 		type_information t_inf;
 		public:
 			annotated_statement(shared_ptr<annotated_root_node> arn, shared_ptr<statement> stmt, shared_ptr<annotated_binary_expression> abe,
-				shared_ptr<annotated_declaration> adecl, shared_ptr<annotated_function> afunc, type_information ti);
+				shared_ptr<annotated_declaration> adecl, shared_ptr<annotated_function> afunc, shared_ptr<annotated_structure> astruc, 
+				shared_ptr<annotated_module> amod, type_information ti);
 			~annotated_statement();
 			const statement_kind get_statement_kind();
 			shared_ptr<annotated_binary_expression> get_binary_expression();
 			shared_ptr<annotated_declaration> get_declaration();
 			shared_ptr<annotated_function> get_function();
+			shared_ptr<annotated_module> get_module();
 			source_token_list::iterator get_position();
 			type_information get_type_information();
+			shared_ptr<annotated_structure> get_structure();
 	};
 
 	class symbol_table;
@@ -385,8 +451,13 @@ namespace karma_lang {
 		vector<type_information> function_arguments;
 		shared_ptr<symbol_table> class_type_information;
 		function_declaration_definition_kind fdd_kind;
+		structure_kind s_kind;
+		structure_declaration_definition_kind sdd_kind;
+		function_va_args_kind fva_kind;
+		module_kind m_kind;
 		public:
-			symbol(type_information ti, immut_kind ik, shared_ptr<literal> ident, function_kind fk, vector<type_information> fa, shared_ptr<symbol_table> st, function_declaration_definition_kind fddk);
+			symbol(type_information ti, immut_kind ik, shared_ptr<literal> ident, function_kind fk, structure_kind sk, vector<type_information> fa, shared_ptr<symbol_table> st, function_declaration_definition_kind fddk, function_va_args_kind fvak, 
+				structure_declaration_definition_kind sddk, module_kind mk);
 			~symbol();
 			type_information get_type_information();
 			const immut_kind get_immut_kind();
@@ -394,8 +465,14 @@ namespace karma_lang {
 			shared_ptr<literal> get_identifier();
 			vector<type_information> get_function_arguments();
 			shared_ptr<symbol_table> get_class_type_information();
+			shared_ptr<symbol_table> get_module_type_information();
 			const function_declaration_definition_kind get_function_declaration_definition_kind();
 			function_declaration_definition_kind set_function_declaration_definition_kind(function_declaration_definition_kind fddk);
+			const structure_kind get_structure_kind();
+			const structure_declaration_definition_kind get_structure_declaration_definition_kind();
+			structure_declaration_definition_kind set_structure_declaration_definition_kind(structure_declaration_definition_kind sddk);
+			const function_va_args_kind get_function_va_args_kind();
+			const module_kind get_module_kind();
 	};
 
 	class symbol_table {
@@ -406,7 +483,7 @@ namespace karma_lang {
 			vector<shared_ptr<symbol>> get_symbol_table();
 			shared_ptr<symbol> operator[](int i);
 			vector<shared_ptr<symbol>> find_all_symbols(shared_ptr<literal> lit);
-			shared_ptr<symbol> add_symbol(shared_ptr<symbol> sym);
+			shared_ptr<symbol> add_symbol(shared_ptr<root_node> root, source_token_list::iterator pos, shared_ptr<symbol> sym);
 			vector<shared_ptr<symbol>> find_all_symbols(shared_ptr<annotated_literal> alit);
 	};
 
@@ -423,7 +500,7 @@ namespace karma_lang {
 	};
 
 	enum scope_kind {
-		SCOPE_GLOBAL, SCOPE_FUNCTION, SCOPE_NONE
+		SCOPE_GLOBAL, SCOPE_FUNCTION, SCOPE_MODULE, SCOPE_NONE
 	};
 
 	class analyze_ast {
@@ -435,6 +512,7 @@ namespace karma_lang {
 
 		shared_ptr<annotated_statement> analyze_statement(shared_ptr<statement> stmt);
 		shared_ptr<annotated_declaration> analyze_declaration(shared_ptr<declaration> decl);
+		pair<shared_ptr<annotated_declaration>, shared_ptr<symbol>> analyze_structure_declaration(shared_ptr<declaration> decl);
 		pair<shared_ptr<annotated_declaration>, shared_ptr<symbol>> analyze_parameter(shared_ptr<declaration> decl);
 		shared_ptr<annotated_binary_expression> analyze_binary_expression(shared_ptr<binary_expression> bexpr);
 		shared_ptr<annotated_unary_expression> analyze_unary_expression(shared_ptr<unary_expression> uexpr);
@@ -447,6 +525,8 @@ namespace karma_lang {
 		shared_ptr<annotated_dictionary> analyze_dictionary_expression(shared_ptr<dictionary> dict);
 		shared_ptr<annotated_ternary_expression> analyze_ternary_expression(shared_ptr<ternary_expression> texpr);
 		shared_ptr<annotated_function> analyze_function(shared_ptr<function> func);
+		shared_ptr<annotated_structure> analyze_structure(shared_ptr<structure> struc);
+		shared_ptr<annotated_module> analyze_module(shared_ptr<module> mod);
 		vector<shared_ptr<symbol>> find_all_symbols(shared_ptr<annotated_literal> sym);
 		vector<shared_ptr<symbol>> find_all_symbols(shared_ptr<literal> sym);
 

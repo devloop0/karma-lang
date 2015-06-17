@@ -10,4 +10,7 @@ namespace karma_lang {
 	const string token_keywords::immut = "immut";
 	const string token_keywords::nil = "nil";
 	const string token_keywords::func = "func";
+	const string token_keywords::_struct = "struct";
+	const string token_keywords::va_args = "_";
+	const string token_keywords::module = "module";
 }

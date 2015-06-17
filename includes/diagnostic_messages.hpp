@@ -64,6 +64,15 @@ namespace karma_lang {
 			const static string function_declaration_does_not_match_definition;
 			const static string function_is_redeclared;
 			const static string function_declared_not_defined;
+			const static string structure_definitions_cannot_be_nested;
+			const static string structure_members_cannot_be_immut;
+			const static string partial_declarations_not_allowed;
+			const static string complete_declarations_not_allowed;
+			const static string structure_declared_not_defined;
+			const static string structure_declarations_need_pure_types;
+			const static string builtins_cannot_be_redefined;
+			const static string ambiguous_function_overload;
+			const static string diagnostic_messages::modules_cannot_be_in_functions;
 	};
 }
 

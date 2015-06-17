@@ -151,7 +151,7 @@ namespace karma_lang {
 	}
 
 	const bool type_information::operator==(type_information t_inf) {
-		bool ret = (t_kind == t_inf.t_kind && tp_kind == t_inf.tp_kind && c_kind == t_inf.c_kind);
+		bool ret = (t_kind == t_inf.t_kind && tp_kind == t_inf.tp_kind && c_kind == t_inf.c_kind && class_name == t_inf.class_name);
 		return ret;
 	}
 
@@ -183,13 +183,18 @@ namespace karma_lang {
 		return class_name;
 	}
 
-	symbol::symbol(type_information ti, immut_kind ik, shared_ptr<literal> ident, function_kind fk, vector<type_information> fa, shared_ptr<symbol_table> st, function_declaration_definition_kind fddk) : t_inf(ti) {
+	symbol::symbol(type_information ti, immut_kind ik, shared_ptr<literal> ident, function_kind fk, structure_kind sk, vector<type_information> fa, shared_ptr<symbol_table> st, function_declaration_definition_kind fddk, function_va_args_kind fvak,
+		structure_declaration_definition_kind sddk, module_kind mk) : t_inf(ti) {
 		i_kind = ik;
 		identifier = ident;
 		f_kind = fk;
 		function_arguments = fa;
 		class_type_information = st;
 		fdd_kind = fddk;
+		s_kind = sk;
+		sdd_kind = sddk;
+		fva_kind = fvak;
+		m_kind = mk;
 	}
 
 	symbol::~symbol() {
@@ -229,6 +234,23 @@ namespace karma_lang {
 		return fdd_kind;
 	}
 
+	const structure_declaration_definition_kind symbol::get_structure_declaration_definition_kind() {
+		return sdd_kind;
+	}
+
+	structure_declaration_definition_kind symbol::set_structure_declaration_definition_kind(structure_declaration_definition_kind sddk) {
+		sdd_kind = sddk;
+		return sdd_kind;
+	}
+
+	const structure_kind symbol::get_structure_kind() {
+		return s_kind;
+	}
+	
+	const function_va_args_kind symbol::get_function_va_args_kind() {
+		return fva_kind;
+	}
+
 	symbol_table::symbol_table() {
 		sym_table = vector<shared_ptr<symbol>>();
 	}
@@ -261,10 +283,12 @@ namespace karma_lang {
 		return ret;
 	}
 
-	shared_ptr<symbol> symbol_table::add_symbol(shared_ptr<symbol> sym) {
+	shared_ptr<symbol> symbol_table::add_symbol(shared_ptr<root_node> root, source_token_list::iterator pos, shared_ptr<symbol> sym) {
 		sym_table.push_back(sym);
 		return sym;
 	}
+
+	const string builtins::builtin__va_args__ = "__va_args__";
 
 	analyze_ast::analyze_ast(shared_ptr<root_node> r, vector<scope_kind> skl, vector<shared_ptr<symbol_table>> stl, vector<shared_ptr<statement>> stmt_list) {
 		root = r;
@@ -314,9 +338,11 @@ namespace karma_lang {
 
 	const bool analyze_ast::perform_semantic_analysis() {
 		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
+		type_information _any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
 		bool ret = true;
 		if(root->get_diagnostics_reporter()->get_error_count() > 0)
 			ret = false;
+		if (s_kind_list.size() == 1 && s_kind_list[0] == scope_kind::SCOPE_GLOBAL); //Add builtin symbols here
 		vector<shared_ptr<statement>> stmt_list = statement_list;
 		for(int i = 0; i < stmt_list.size(); i++) {
 			if(!stmt_list[i]->get_valid())
@@ -327,13 +353,15 @@ namespace karma_lang {
 				ann_root_node->add_annotated_statement(astmt);
 			}
 		}
-		if (s_kind_list.size() == 1 && s_kind_list[0] == scope_kind::SCOPE_GLOBAL) {
+		if ((s_kind_list.size() == 1 && s_kind_list[0] == scope_kind::SCOPE_GLOBAL) || (s_kind_list.size() > 0 && s_kind_list[s_kind_list.size() - 1] == scope_kind::SCOPE_MODULE)) {
 			for (int i = 0; i < sym_table_list.size(); i++) {
 				vector<shared_ptr<symbol>> sym_tab = sym_table_list[i]->get_symbol_table();
 				for (int j = 0; j < sym_tab.size(); j++) {
 					shared_ptr<symbol> sym = sym_tab[j];
 					if (sym->get_function_declaration_definition_kind() == function_declaration_definition_kind::FUNCTION_KIND_FORWARD_DECLARATION)
 						root->get_diagnostics_reporter()->print(diagnostic_messages::function_declared_not_defined, sym->get_identifier()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+					if (sym->get_structure_declaration_definition_kind() == structure_declaration_definition_kind::STRUCTURE_KIND_FORWARD_DECLARATION)
+						root->get_diagnostics_reporter()->print(diagnostic_messages::structure_declared_not_defined, sym->get_identifier()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 				}
 			}
 		}
@@ -345,22 +373,63 @@ namespace karma_lang {
 		shared_ptr<annotated_binary_expression> abexpr = nullptr;
 		shared_ptr<annotated_declaration> adecl = nullptr;
 		shared_ptr<annotated_function> afunc = nullptr;
+		shared_ptr<annotated_structure> astruc = nullptr;
+		shared_ptr<annotated_module> amod = nullptr;
 		if(!stmt->get_valid())
-			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, bad);
+			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
 		if(stmt->get_statement_kind() == statement_kind::STATEMENT_DECLARATION)
 			adecl = analyze_declaration(stmt->get_declaration());
 		else if (stmt->get_statement_kind() == statement_kind::STATEMENT_EXPRESSION)
 			abexpr = analyze_binary_expression(stmt->get_binary_expression());
 		else if (stmt->get_statement_kind() == statement_kind::STATEMENT_FUNCTION)
 			afunc = analyze_function(stmt->get_function());
+		else if (stmt->get_statement_kind() == statement_kind::STATEMENT_STRUCTURE)
+			astruc = analyze_structure(stmt->get_structure());
+		else if (stmt->get_statement_kind() == statement_kind::STATEMENT_MODULE)
+			amod = analyze_module(stmt->get_module());
 		else
-			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, bad);
+			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
 		type_information ret = bad;
 		if(adecl != nullptr) ret = adecl->get_type_information();
 		else if(abexpr != nullptr) ret = abexpr->get_type_information();
 		else if (afunc != nullptr) ret = afunc->get_type_information();
+		else if (astruc != nullptr) ret = astruc->get_type_information();
+		else if (amod != nullptr) ret = amod->get_type_information();
 		ret = type_information(ret, value_kind::VALUE_NOT_APPLICABLE);
-		return make_shared<annotated_statement>(ann_root_node, stmt, abexpr, adecl, afunc, ret);
+		return make_shared<annotated_statement>(ann_root_node, stmt, abexpr, adecl, afunc, astruc, amod, ret);
+	}
+
+	shared_ptr<annotated_module> analyze_ast::analyze_module(shared_ptr<module> mod) {
+		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
+		if(!mod->get_valid())
+			return make_shared<annotated_module>(ann_root_node, mod, nullptr, vector<shared_ptr<annotated_statement>>(), vector<type_information>(), bad);
+		bool immut = false;
+		if (mod->get_declspec_list()->get_declspecs_list().size() == 1)
+			immut = true;
+		else if (mod->get_declspec_list()->get_declspecs_list().size() == 0)
+			immut = false;
+		else {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_only_one_immut, mod->get_declspec_list()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_WARNING);
+			immut = true;
+		}
+		type_information _module(type_kind::TYPE_MODULE, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_YES, value_kind::VALUE_NOT_APPLICABLE, mod->get_identifier()->get_raw_literal()->get_raw_string());
+		type_information _any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_LVALUE);
+		shared_ptr<annotated_literal> alit = make_shared<annotated_literal>(ann_root_node, mod->get_identifier(), _any);
+		vector<shared_ptr<statement>> stmt_list = mod->get_statement_list();
+		vector<shared_ptr<annotated_statement>> astmt_list;
+		shared_ptr<symbol_table> sym_table = make_shared<symbol_table>();
+		sym_table_list.push_back(sym_table);
+		s_kind_list.push_back(scope_kind::SCOPE_MODULE);
+		analyze_ast aa(root, s_kind_list, sym_table_list, stmt_list);
+		aa.perform_semantic_analysis();
+		s_kind_list.pop_back();
+		sym_table_list.pop_back();
+		sym_table_list[sym_table_list.size() - 1]->add_symbol(root, mod->get_position(), make_shared<symbol>(_any, immut ? immut_kind::IMMUT_YES : immut_kind::IMMUT_NO, mod->get_identifier(), function_kind::FUNCTION_NONE, structure_kind::STRUCTURE_NONE, vector<type_information>(),
+			sym_table, function_declaration_definition_kind::FUNCTION_KIND_NONE, function_va_args_kind::FUNCTION_VA_ARGS_NONE, structure_declaration_definition_kind::STRUCTURE_KIND_NONE, module_kind::MODULE_YES));
+		vector<type_information> t_inf_list;
+		for (int i = 0; i < aa.get_statement_list().size(); i++)
+			t_inf_list.push_back(_any);
+		return make_shared<annotated_module>(ann_root_node, mod, alit, aa.get_annotated_root_node()->get_annotated_statement_list(), t_inf_list, _module);
 	}
 
 	shared_ptr<annotated_function> analyze_ast::analyze_function(shared_ptr<function> func) {
@@ -378,7 +447,13 @@ namespace karma_lang {
 		}
 		type_information _any_func(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_NOT_APPLICABLE);
 		type_information _any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_LVALUE);
+		type_information _tuple(type_kind::TYPE_TUPLE, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_LVALUE);
 		shared_ptr<annotated_literal> alit = make_shared<annotated_literal>(ann_root_node, func->get_identifier(), _any_func);
+		if (alit->get_literal_kind() == literal_kind::LITERAL_IDENTIFIER);
+		else {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_an_identifier, func->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
+		}
 		vector<shared_ptr<declaration>> decl_list = func->get_parameter_list();
 		vector<shared_ptr<annotated_declaration>> ann_decl_list;
 		shared_ptr<symbol_table> sym_table = make_shared<symbol_table>();
@@ -396,7 +471,7 @@ namespace karma_lang {
 				root->get_diagnostics_reporter()->print(diagnostic_messages::repeated_declaration_of_a_function_parameter + adecl->get_identifier()->get_raw_literal()->get_raw_string() + ".", adecl->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR); 
 				return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
 			}
-			sym_table->add_symbol(sym);
+			sym_table->add_symbol(root, func->get_position(), sym);
 			t_inf_list.push_back(sym->get_type_information());
 			ann_decl_list.push_back(adecl);
 		}
@@ -404,22 +479,64 @@ namespace karma_lang {
 		for (int i = 0; i < symbols_found.size(); i++) {
 			shared_ptr<symbol> sym = symbols_found[i];
 			if (sym->get_function_kind() == function_kind::FUNCTION_YES && t_inf_list.size() == sym->get_function_arguments().size() &&
-				((sym->get_immut_kind() == immut_kind::IMMUT_YES && func->get_declspec_list()->get_declspecs_list().size() > 0) || (sym->get_immut_kind() == immut_kind::IMMUT_NO && func->get_declspec_list()->get_declspecs_list().size() == 0)));
+				((sym->get_immut_kind() == immut_kind::IMMUT_YES && func->get_declspec_list()->get_declspecs_list().size() > 0) || (sym->get_immut_kind() == immut_kind::IMMUT_NO && func->get_declspec_list()->get_declspecs_list().size() == 0))) {
+				if (sym->get_function_va_args_kind() == func->get_function_va_args_kind());
+				else {
+					root->get_diagnostics_reporter()->print(diagnostic_messages::ambiguous_function_overload, func->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+					return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
+				}
+			}
+			else if (sym->get_function_kind() == function_kind::FUNCTION_YES && t_inf_list.size() != sym->get_function_arguments().size() &&
+				((sym->get_immut_kind() == immut_kind::IMMUT_YES && func->get_declspec_list()->get_declspecs_list().size() > 0) || (sym->get_immut_kind() == immut_kind::IMMUT_NO && func->get_declspec_list()->get_declspecs_list().size() == 0))) {
+				int sym_size = sym->get_function_arguments().size();
+				int actual_size = t_inf_list.size();
+				if (sym->get_function_va_args_kind() != func->get_function_va_args_kind()) {
+					// stored: func -> temp(var ->x, var ->y, _) {} 2
+					// now: func -> temp(var ->x) {} 1
+					if(sym->get_function_va_args_kind() == function_va_args_kind::FUNCTION_VA_ARGS_YES && func->get_function_va_args_kind() == function_va_args_kind::FUNCTION_VA_ARGS_NO) {
+						if (sym_size > actual_size) {
+							symbols_found.erase(symbols_found.begin() + i, symbols_found.begin() + i + 1);
+							i = 0;
+						}
+						else {
+							root->get_diagnostics_reporter()->print(diagnostic_messages::ambiguous_function_overload, func->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+							return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
+						}
+					}
+					// stored: func -> temp(var ->x) {} 1
+					// now: func -> temp(var ->x, var ->y, _) {} 2
+					else {
+						if (actual_size > sym_size) {
+							symbols_found.erase(symbols_found.begin() + i, symbols_found.begin() + i + 1);
+							i = 0;
+						}
+						else {
+							root->get_diagnostics_reporter()->print(diagnostic_messages::ambiguous_function_overload, func->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+							return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
+						}
+					}
+				}
+				else {
+					root->get_diagnostics_reporter()->print(diagnostic_messages::ambiguous_function_overload, func->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+					return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
+				}
+			}
 			else {
 				symbols_found.erase(symbols_found.begin() + i, symbols_found.begin() + i + 1);
 				i = 0;
 			}
 		}
 		if (symbols_found.size() == 0) {
-			shared_ptr<symbol> func_sym = make_shared<symbol>(_any, immut ? immut_kind::IMMUT_YES : immut_kind::IMMUT_NO, func->get_identifier(), function_kind::FUNCTION_YES, t_inf_list, nullptr, func->get_function_kind());
-			sym_table_list[sym_table_list.size() - 1]->add_symbol(func_sym);
+			shared_ptr<symbol> func_sym = make_shared<symbol>(_any, immut ? immut_kind::IMMUT_YES : immut_kind::IMMUT_NO, func->get_identifier(), function_kind::FUNCTION_YES, structure_kind::STRUCTURE_NO, t_inf_list, nullptr, func->get_function_kind(), func->get_function_va_args_kind(), 
+				structure_declaration_definition_kind::STRUCTURE_KIND_NONE, module_kind::MODULE_NONE);
+			sym_table_list[sym_table_list.size() - 1]->add_symbol(root, func->get_position(), func_sym);
 			if (func->get_function_kind() == function_declaration_definition_kind::FUNCTION_KIND_FORWARD_DECLARATION)
 				return make_shared<annotated_function>(ann_root_node, func, alit, ann_decl_list, vector<shared_ptr<annotated_statement>>(), func->get_function_kind(), _any_func);
 		}
 		else if (symbols_found.size() == 1) {
 			shared_ptr<symbol> sym = symbols_found[0];
 			if (((sym->get_immut_kind() == immut_kind::IMMUT_YES && func->get_declspec_list()->get_declspecs_list().size() > 0) || (sym->get_immut_kind() == immut_kind::IMMUT_NO && func->get_declspec_list()->get_declspecs_list().size() == 0)) &&
-				sym->get_function_kind() == function_kind::FUNCTION_YES && t_inf_list.size() == sym->get_function_arguments().size()) {
+				sym->get_function_kind() == function_kind::FUNCTION_YES && t_inf_list.size() == sym->get_function_arguments().size() && sym->get_function_va_args_kind() == func->get_function_va_args_kind()) {
 				if(sym->get_function_declaration_definition_kind() == function_declaration_definition_kind::FUNCTION_KIND_FORWARD_DECLARATION && func->get_function_kind() == function_declaration_definition_kind::FUNCTION_KIND_DEFINITION)
 					sym->set_function_declaration_definition_kind(function_declaration_definition_kind::FUNCTION_KIND_DEFINITION);
 				else {
@@ -443,7 +560,17 @@ namespace karma_lang {
 				root->get_diagnostics_reporter()->print(diagnostic_messages::function_definitions_cannot_be_nested, stmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 				return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
 			}
+			else if (stmt->get_statement_kind() == statement_kind::STATEMENT_STRUCTURE) {
+				root->get_diagnostics_reporter()->print(diagnostic_messages::structure_definitions_cannot_be_nested, stmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+				return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
+			}
+			else if (stmt->get_statement_kind() == statement_kind::STATEMENT_MODULE) {
+				root->get_diagnostics_reporter()->print(diagnostic_messages::modules_cannot_be_in_functions, stmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+				return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
+			}
 		}
+		sym_table->add_symbol(root, root->get_lexer()->get_source_token_list()->end(), make_shared<symbol>(_tuple, immut_kind::IMMUT_YES, make_shared<literal>(root, make_shared<token>(-1, -1, -1, builtins::builtin__va_args__, "", -1, token_kind::TOKEN_IDENTIFIER)), function_kind::FUNCTION_NONE, structure_kind::STRUCTURE_NONE,
+			vector<type_information>(), make_shared<symbol_table>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, function_va_args_kind::FUNCTION_VA_ARGS_NONE, structure_declaration_definition_kind::STRUCTURE_KIND_NONE, module_kind::MODULE_NONE));
 		s_kind_list.push_back(scope_kind::SCOPE_FUNCTION);
 		sym_table_list.push_back(sym_table);
 		analyze_ast aa(root, s_kind_list, sym_table_list, stmt_list);
@@ -451,6 +578,118 @@ namespace karma_lang {
 		sym_table_list.pop_back();
 		s_kind_list.pop_back();
 		return make_shared<annotated_function>(ann_root_node, func, alit, ann_decl_list, aa.get_annotated_root_node()->get_annotated_statement_list(), func->get_function_kind(), _any_func);
+	}
+
+	shared_ptr<annotated_structure> analyze_ast::analyze_structure(shared_ptr<structure> struc) {
+		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
+		if (!struc->get_valid())
+			return make_shared<annotated_structure>(ann_root_node, struc, nullptr, vector<shared_ptr<annotated_declaration>>(), structure_declaration_definition_kind::STRUCTURE_KIND_NONE, vector<type_information>(), bad);
+		bool immut = false;
+		if (struc->get_declspec_list()->get_declspecs_list().size() == 1)
+			immut = true;
+		else if (struc->get_declspec_list()->get_declspecs_list().size() == 0)
+			immut = false;
+		else {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_only_one_immut, struc->get_declspec_list()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_WARNING);
+			immut = true;
+		}
+		type_information _custom(type_kind::TYPE_CUSTOM, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_YES, value_kind::VALUE_NOT_APPLICABLE, struc->get_identifier()->get_raw_literal()->get_raw_string());
+		type_information _any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_LVALUE);
+		shared_ptr<annotated_literal> alit = make_shared<annotated_literal>(ann_root_node, struc->get_identifier(), _custom);
+		if (alit->get_literal_kind() == literal_kind::LITERAL_IDENTIFIER);
+		else {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_an_identifier, struc->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			return make_shared<annotated_structure>(ann_root_node, struc, nullptr, vector<shared_ptr<annotated_declaration>>(), structure_declaration_definition_kind::STRUCTURE_KIND_NONE, vector<type_information>(), bad);
+		}
+		shared_ptr<symbol_table> sym_table = make_shared<symbol_table>();
+		vector<shared_ptr<declaration>> decl_list = struc->get_declaration_list();
+		vector<shared_ptr<annotated_declaration>> adecl_list;
+		vector<type_information> t_inf_list;
+		for (int i = 0; i < decl_list.size(); i++) {
+			shared_ptr<declaration> decl = decl_list[i];
+			if (decl->get_partial()) {
+				root->get_diagnostics_reporter()->print(diagnostic_messages::partial_declarations_not_allowed, decl->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+				return make_shared<annotated_structure>(ann_root_node, struc, nullptr, vector<shared_ptr<annotated_declaration>>(), structure_declaration_definition_kind::STRUCTURE_KIND_NONE, vector<type_information>(), bad);
+			}
+			pair<shared_ptr<annotated_declaration>, shared_ptr<symbol>> pai = analyze_structure_declaration(decl);
+			shared_ptr<annotated_declaration> adecl = pai.first;
+			shared_ptr<symbol> sym = pai.second;
+			if(sym == nullptr)
+				return make_shared<annotated_structure>(ann_root_node, struc, nullptr, vector<shared_ptr<annotated_declaration>>(), structure_declaration_definition_kind::STRUCTURE_KIND_NONE, vector<type_information>(), bad);
+			if (adecl->get_binary_expression()->get_type_information().get_type_pure_kind() == type_pure_kind::TYPE_PURE_YES ||
+				adecl->get_binary_expression()->get_type_information() == _any);
+			else {
+				root->get_diagnostics_reporter()->print(diagnostic_messages::structure_declarations_need_pure_types, adecl->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+				return make_shared<annotated_structure>(ann_root_node, struc, nullptr, vector<shared_ptr<annotated_declaration>>(), structure_declaration_definition_kind::STRUCTURE_KIND_NONE, vector<type_information>(), bad);
+			}
+			vector<shared_ptr<symbol>> results = sym_table->find_all_symbols(adecl->get_identifier());
+			if (results.size() > 0) {
+				root->get_diagnostics_reporter()->print(diagnostic_messages::repeated_declaration_of_a_function_parameter + adecl->get_identifier()->get_raw_literal()->get_raw_string() + ".", adecl->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR); 
+				return make_shared<annotated_structure>(ann_root_node, struc, nullptr, vector<shared_ptr<annotated_declaration>>(), structure_declaration_definition_kind::STRUCTURE_KIND_NONE, vector<type_information>(), bad);
+			}
+			sym_table->add_symbol(root, struc->get_position(), sym);
+			adecl_list.push_back(adecl);
+			t_inf_list.push_back(_any);
+		}
+		vector<shared_ptr<symbol>> results = find_all_symbols(alit);
+		if (results.size() == 0) {
+			shared_ptr<symbol> struc_sym = make_shared<symbol>(_custom, immut ? immut_kind::IMMUT_YES : immut_kind::IMMUT_NO, struc->get_identifier(), function_kind::FUNCTION_NO, structure_kind::STRUCTURE_YES,
+				vector<type_information>(), sym_table, function_declaration_definition_kind::FUNCTION_KIND_NONE, function_va_args_kind::FUNCTION_VA_ARGS_NONE, struc->get_structure_kind(), module_kind::MODULE_NONE);
+			sym_table_list[sym_table_list.size() - 1]->add_symbol(root, struc->get_position(), struc_sym);
+			if (struc->get_structure_kind() == structure_declaration_definition_kind::STRUCTURE_KIND_FORWARD_DECLARATION)
+				return make_shared<annotated_structure>(ann_root_node, struc, alit, adecl_list, struc->get_structure_kind(), t_inf_list, _custom);
+		}
+		else if (results.size() == 1) {
+			shared_ptr<symbol> sym = results[0];
+			if (sym->get_identifier()->get_raw_literal()->get_raw_string() == alit->get_raw_literal()->get_raw_string()) {
+				if (sym->get_structure_declaration_definition_kind() == structure_declaration_definition_kind::STRUCTURE_KIND_FORWARD_DECLARATION)
+					sym->set_structure_declaration_definition_kind(structure_declaration_definition_kind::STRUCTURE_KIND_DEFINITION);
+				else {
+					root->get_diagnostics_reporter()->print(diagnostic_messages::repeated_declaration_ignoring_this_one, struc->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+					return make_shared<annotated_structure>(ann_root_node, struc, nullptr, vector<shared_ptr<annotated_declaration>>(), structure_declaration_definition_kind::STRUCTURE_KIND_NONE, vector<type_information>(), bad);
+				}
+			}
+			else {
+				root->get_diagnostics_reporter()->print(diagnostic_messages::repeated_declaration_ignoring_this_one, struc->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+				return make_shared<annotated_structure>(ann_root_node, struc, nullptr, vector<shared_ptr<annotated_declaration>>(), structure_declaration_definition_kind::STRUCTURE_KIND_NONE, vector<type_information>(), bad);	
+			}
+		}
+		else {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::repeated_declaration_ignoring_this_one, struc->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			return make_shared<annotated_structure>(ann_root_node, struc, nullptr, vector<shared_ptr<annotated_declaration>>(), structure_declaration_definition_kind::STRUCTURE_KIND_NONE, vector<type_information>(), bad);	
+		}
+		sym_table_list.push_back(sym_table);
+		sym_table_list.pop_back();
+		return make_shared<annotated_structure>(ann_root_node, struc, alit, adecl_list, structure_declaration_definition_kind::STRUCTURE_KIND_DEFINITION, t_inf_list, _custom);
+	}
+
+	pair<shared_ptr<annotated_declaration>, shared_ptr<symbol>> analyze_ast::analyze_structure_declaration(shared_ptr<declaration> decl) {
+		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
+		if(!decl->get_valid())
+			return make_pair(make_shared<annotated_declaration>(ann_root_node, decl, nullptr, nullptr, bad), nullptr);
+		bool immut = false;
+		function_kind fk = function_kind::FUNCTION_NO;
+		if(decl->get_declspec_list()->get_declspecs_list().size() > 0) {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::structure_members_cannot_be_immut, decl->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			return make_pair(make_shared<annotated_declaration>(ann_root_node, decl, nullptr, nullptr, bad), nullptr);
+		}
+		if(decl->get_identifier()->get_raw_literal()->get_token_kind() != token_kind::TOKEN_IDENTIFIER) {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_an_identifier, decl->get_identifier()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			return make_pair(make_shared<annotated_declaration>(ann_root_node, decl, nullptr, nullptr, bad), nullptr);
+		}
+		if (decl->get_partial()) {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::partial_declarations_not_allowed, decl->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			return make_pair(make_shared<annotated_declaration>(ann_root_node, decl, nullptr, nullptr, bad), nullptr);
+		}
+		shared_ptr<annotated_binary_expression> abexpr = analyze_binary_expression(decl->get_binary_expression());
+		type_information t_inf = type_information(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_LVALUE);
+		if (t_inf.get_type_kind() == type_kind::TYPE_NONE)
+			return make_pair(make_shared<annotated_declaration>(ann_root_node, decl, nullptr, nullptr, bad), nullptr);
+		shared_ptr<symbol> sym = make_shared<symbol>(t_inf, immut ? immut_kind::IMMUT_YES : immut_kind::IMMUT_NO, decl->get_identifier(), fk, structure_kind::STRUCTURE_NO, vector<type_information>(), nullptr, function_declaration_definition_kind::FUNCTION_KIND_NONE, function_va_args_kind::FUNCTION_VA_ARGS_NONE, 
+			structure_declaration_definition_kind::STRUCTURE_KIND_NONE, module_kind::MODULE_NONE);
+		t_inf = type_information(t_inf, value_kind::VALUE_LVALUE);
+		shared_ptr<annotated_literal> alit = make_shared<annotated_literal>(ann_root_node, decl->get_identifier(), t_inf);
+		return make_pair(make_shared<annotated_declaration>(ann_root_node, decl, alit, abexpr, type_information(t_inf, value_kind::VALUE_NOT_APPLICABLE)), sym);
 	}
 
 	pair<shared_ptr<annotated_declaration>, shared_ptr<symbol>> analyze_ast::analyze_parameter(shared_ptr<declaration> decl) {
@@ -471,19 +710,16 @@ namespace karma_lang {
 			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_an_identifier, decl->get_identifier()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 			return make_pair(make_shared<annotated_declaration>(ann_root_node, decl, nullptr, nullptr, bad), nullptr);
 		}
-		shared_ptr<annotated_binary_expression> abexpr;
-		if (!decl->get_partial())
-			abexpr = analyze_binary_expression(decl->get_binary_expression());
-		else
-			abexpr = nullptr;
-		type_information t_inf = bad;
-		if (!decl->get_partial())
-			t_inf = abexpr->get_type_information();
-		else
-			t_inf = type_information(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_LVALUE);
+		if (!decl->get_partial()) {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::complete_declarations_not_allowed, decl->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			return make_pair(make_shared<annotated_declaration>(ann_root_node, decl, nullptr, nullptr, bad), nullptr);
+		}
+		shared_ptr<annotated_binary_expression> abexpr = nullptr;
+		type_information t_inf = type_information(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_LVALUE);
 		if (t_inf.get_type_kind() == type_kind::TYPE_NONE)
 			return make_pair(make_shared<annotated_declaration>(ann_root_node, decl, nullptr, nullptr, bad), nullptr);
-		shared_ptr<symbol> sym = make_shared<symbol>(t_inf, immut ? immut_kind::IMMUT_YES : immut_kind::IMMUT_NO, decl->get_identifier(), fk, vector<type_information>(), nullptr, function_declaration_definition_kind::FUNCTION_KIND_NONE);
+		shared_ptr<symbol> sym = make_shared<symbol>(t_inf, immut ? immut_kind::IMMUT_YES : immut_kind::IMMUT_NO, decl->get_identifier(), fk, structure_kind::STRUCTURE_NO, vector<type_information>(), nullptr, function_declaration_definition_kind::FUNCTION_KIND_NONE, function_va_args_kind::FUNCTION_VA_ARGS_NONE, 
+			structure_declaration_definition_kind::STRUCTURE_KIND_NONE, module_kind::MODULE_NONE);
 		t_inf = type_information(t_inf, value_kind::VALUE_LVALUE);
 		shared_ptr<annotated_literal> alit = make_shared<annotated_literal>(ann_root_node, decl->get_identifier(), t_inf);
 		return make_pair(make_shared<annotated_declaration>(ann_root_node, decl, alit, abexpr, type_information(t_inf, value_kind::VALUE_NOT_APPLICABLE)), sym);
@@ -516,20 +752,17 @@ namespace karma_lang {
 			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_an_identifier, decl->get_identifier()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 			return make_shared<annotated_declaration>(ann_root_node, decl, nullptr, nullptr, bad);
 		}
-		shared_ptr<annotated_binary_expression> abexpr;
-		if (!decl->get_partial())
-			abexpr = analyze_binary_expression(decl->get_binary_expression());
-		else
-			abexpr = nullptr;
-		type_information t_inf = bad;
-		if (!decl->get_partial())
-			t_inf = abexpr->get_type_information();
-		else
-			t_inf = type_information(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_LVALUE);
+		if (decl->get_partial()) {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::partial_declarations_not_allowed, decl->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			return make_shared<annotated_declaration>(ann_root_node, decl, nullptr, nullptr, bad);
+		}
+		shared_ptr<annotated_binary_expression> abexpr = analyze_binary_expression(decl->get_binary_expression());
+		type_information t_inf = abexpr->get_type_information();
 		if(t_inf.get_type_kind() == type_kind::TYPE_NONE)
 			return make_shared<annotated_declaration>(ann_root_node, decl, nullptr, nullptr, bad);
-		shared_ptr<symbol> sym = make_shared<symbol>(t_inf, immut ? immut_kind::IMMUT_YES : immut_kind::IMMUT_NO, decl->get_identifier(), fk, vector<type_information>(), nullptr, function_declaration_definition_kind::FUNCTION_KIND_NONE);
-		sym_table_list[sym_table_list.size() - 1]->add_symbol(sym);
+		shared_ptr<symbol> sym = make_shared<symbol>(t_inf, immut ? immut_kind::IMMUT_YES : immut_kind::IMMUT_NO, decl->get_identifier(), fk, structure_kind::STRUCTURE_NO, vector<type_information>(), nullptr, function_declaration_definition_kind::FUNCTION_KIND_NONE, function_va_args_kind::FUNCTION_VA_ARGS_NONE, 
+			structure_declaration_definition_kind::STRUCTURE_KIND_NONE, module_kind::MODULE_NONE);
+		sym_table_list[sym_table_list.size() - 1]->add_symbol(root, decl->get_position(), sym);
 		t_inf = type_information(t_inf, value_kind::VALUE_LVALUE);
 		shared_ptr<annotated_literal> alit = make_shared<annotated_literal>(ann_root_node, decl->get_identifier(), t_inf);
 		return make_shared<annotated_declaration>(ann_root_node, decl, alit, abexpr, type_information(t_inf, value_kind::VALUE_NOT_APPLICABLE));
@@ -817,8 +1050,9 @@ namespace karma_lang {
 			return make_pair(_any, afarg_list);
 		}
 		else if(pok == postfix_operation_kind::POSTFIX_DOT_OPERATOR) {
-			root->get_diagnostics_reporter()->print(diagnostic_messages::instruction_not_supported, op->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-			return make_pair(bad, nullptr);
+			shared_ptr<literal> lit = static_pointer_cast<literal>(op);
+			shared_ptr<annotated_literal> alit = make_shared<annotated_literal>(ann_root_node, lit, _any);
+			return make_pair(type_information(type_information(_any, prev.get_literal()), value_kind::VALUE_LVALUE), alit);
 		}
 		else if(pok == postfix_operation_kind::POSTFIX_SUBSCRIPT) {
 			bool sta = false;
@@ -1240,7 +1474,7 @@ namespace karma_lang {
 					if(lhs == _int && rhs == _int)
 						return _int;
 					else if(lhs == _any || rhs == _any) {
-						return _float;
+						return _any;
 					}
 					else
 						return _float;
@@ -1776,6 +2010,7 @@ namespace karma_lang {
 		identifier = al;
 		delsp_list = decl->get_declspec_list();
 		expr_statement = abe;
+		immutable = decl->get_declspec_list()->get_declspecs_list().size() > 0;
 	}
 
 	annotated_declaration::~annotated_declaration() {
@@ -1802,12 +2037,19 @@ namespace karma_lang {
 		return t_inf;
 	}
 
+	const bool annotated_declaration::get_immutable() {
+		return immutable;
+	}
+
 	annotated_statement::annotated_statement(shared_ptr<annotated_root_node> arn, shared_ptr<statement> stmt, shared_ptr<annotated_binary_expression> abe,
-			shared_ptr<annotated_declaration> adecl, shared_ptr<annotated_function> afunc, type_information ti) : annotated_root_node(*arn), statement_pos(stmt->get_position()), t_inf(ti) {
+			shared_ptr<annotated_declaration> adecl, shared_ptr<annotated_function> afunc, shared_ptr<annotated_structure> astruc, 
+			shared_ptr<annotated_module> amod, type_information ti) : annotated_root_node(*arn), statement_pos(stmt->get_position()), t_inf(ti) {
 		kind = stmt->get_statement_kind();
 		b_expression = abe;
 		decl = adecl;
 		func = afunc;
+		struc = astruc;
+		mod = amod;
 	}
 
 	annotated_statement::~annotated_statement() {
@@ -1836,6 +2078,14 @@ namespace karma_lang {
 
 	source_token_list::iterator annotated_statement::get_position() {
 		return statement_pos;
+	}
+
+	shared_ptr<annotated_structure> annotated_statement::get_structure() {
+		return struc;
+	}
+
+	shared_ptr<annotated_module> annotated_statement::get_module() {
+		return mod;
 	}
 
 	annotated_ternary_expression::annotated_ternary_expression(shared_ptr<annotated_root_node> arn, shared_ptr<ternary_expression> texpr, shared_ptr<annotated_root_node> c,
@@ -1883,6 +2133,8 @@ namespace karma_lang {
 		parameter_list = parm_list;
 		statement_list = stmt_list;
 		fdd_kind = fddk;
+		fva_kind = func->get_function_va_args_kind();
+		immutable = func->get_declspec_list()->get_declspecs_list().size() > 0;
 	}
 
 	annotated_function::~annotated_function() {
@@ -1917,6 +2169,56 @@ namespace karma_lang {
 		return t_inf;
 	}
 
+	const function_va_args_kind annotated_function::get_function_va_args_kind() {
+		return fva_kind;
+	}
+
+	const bool annotated_function::get_immutable() {
+		return immutable;
+	}
+
+	annotated_structure::annotated_structure(shared_ptr<annotated_root_node> arn, shared_ptr<structure> struc, shared_ptr<annotated_literal> alit,
+		vector<shared_ptr<annotated_declaration>> adecl_list, structure_declaration_definition_kind sddk, vector<type_information> til, type_information ti) :
+		annotated_root_node(*arn), t_inf(ti), structure_pos(struc->get_position()) {
+		identifier = alit;
+		declaration_list = adecl_list;
+		type_information_list = til;
+		sdd_kind = sddk;
+		immutable = struc->get_declspec_list()->get_declspecs_list().size() > 0;
+	}
+
+	annotated_structure::~annotated_structure() {
+
+	}
+
+	shared_ptr<annotated_literal> annotated_structure::get_identifier() {
+		return identifier;
+	}
+
+	vector<shared_ptr<annotated_declaration>> annotated_structure::get_declaration_list() {
+		return declaration_list;
+	}
+
+	source_token_list::iterator annotated_structure::get_position() {
+		return structure_pos;
+	}
+
+	type_information annotated_structure::get_type_information() {
+		return t_inf;
+	}
+
+	vector<type_information> annotated_structure::get_type_information_list() {
+		return type_information_list;
+	}
+
+	const structure_declaration_definition_kind annotated_structure::get_structure_declaration_definition_kind() {
+		return sdd_kind;
+	}
+
+	const bool annotated_structure::get_immutable() {
+		return immutable;
+	}
+
 	annotated_function_argument_list::annotated_function_argument_list(shared_ptr<annotated_root_node> arn, shared_ptr<function_argument_list> fargl, vector<shared_ptr<annotated_binary_expression>> abexprl,
 		vector<type_information> t_inf_list) : annotated_root_node(*arn), function_argument_list_pos(fargl->get_position()) {
 		argument_list = abexprl;
@@ -1937,5 +2239,42 @@ namespace karma_lang {
 
 	vector<type_information> annotated_function_argument_list::get_type_information_list() {
 		return type_information_list;
+	}
+
+	annotated_module::annotated_module(shared_ptr<annotated_root_node> arn, shared_ptr<module> mod, shared_ptr<annotated_literal> alit,
+		vector<shared_ptr<annotated_statement>> astmt_list, vector<type_information> til, type_information ti) : annotated_root_node(*arn), t_inf(ti),
+		module_pos(mod->get_position()) {
+		identifier = alit;
+		statement_list = astmt_list;
+		t_inf_list = til;
+		immutable = mod->get_declspec_list()->get_declspecs_list().size() > 0;
+	}
+
+	annotated_module::~annotated_module() {
+
+	}
+
+	shared_ptr<annotated_literal> annotated_module::get_identifier() {
+		return identifier;
+	}
+
+	vector<shared_ptr<annotated_statement>> annotated_module::get_statement_list() {
+		return statement_list;
+	}
+
+	source_token_list::iterator annotated_module::get_position() {
+		return module_pos;
+	}
+
+	type_information annotated_module::get_type_information() {
+		return t_inf;
+	}
+
+	vector<type_information> annotated_module::get_type_information_list() {
+		return t_inf_list;
+	}
+
+	const bool annotated_module::get_immutable() {
+		return immutable;
 	}
 }
