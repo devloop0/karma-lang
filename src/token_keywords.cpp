@@ -13,4 +13,6 @@ namespace karma_lang {
 	const string token_keywords::_struct = "struct";
 	const string token_keywords::va_args = "_";
 	const string token_keywords::module = "module";
+	const string token_keywords::_return = "return";
+	const string token_keywords::_if = "if";
 }

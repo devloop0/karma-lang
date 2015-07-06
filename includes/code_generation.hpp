@@ -76,6 +76,7 @@ namespace karma_lang {
 			const static string imodule;
 			const static string istruc;
 			const static string imov;
+			const static string ret;
 	};
 
 	class code_generation_symbol_table {
@@ -114,6 +115,8 @@ namespace karma_lang {
 			string generate_structure_footer(int tab);
 			string generate_module_header(int tab, string mod_name, bool immut);
 			string generate_module_footer(int tab);
+			string generate_return_statement(int tab, string one);
+			string generate_return_statement(int tab, int one);
 	};
 
 	class generate_code {
@@ -140,8 +143,10 @@ namespace karma_lang {
 		bool descend_function(shared_ptr<annotated_function> afunc, bool in_module);
 		bool descend_structure(shared_ptr<annotated_structure> astruc, bool in_module);
 		bool descend_module(shared_ptr<annotated_module> amod, bool in_module);
-		vector<tuple<string, string, int>> name_list;
+		bool descend_return_statement(shared_ptr<annotated_return_statement> aret, bool in_module);
+		bool descend_conditional_statement(shared_ptr<annotated_conditional_statement> acond, bool in_module);
 
+		vector<tuple<string, string, int>> name_list;
 		public:
 			generate_code(shared_ptr<analyze_ast> aa);
 			~generate_code();

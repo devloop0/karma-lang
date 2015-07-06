@@ -490,6 +490,10 @@ namespace karma_lang {
 						tkind = token_kind::TOKEN_VA_ARGS;
 					else if (acc == token_keywords::module)
 						tkind = token_kind::TOKEN_MODULE;
+					else if (acc == token_keywords::_return)
+						tkind = token_kind::TOKEN_RETURN;
+					else if (acc == token_keywords::_if)
+						tkind = token_kind::TOKEN_IF;
 					shared_ptr<token> tok = make_shared<token>(tabs, save, cols + 1, acc, file, line_number, tkind);
 					tok_list.push_back(tok);
 				}

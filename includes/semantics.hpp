@@ -107,6 +107,7 @@ namespace karma_lang {
 	class builtins {
 		public:
 			const static string builtin__va_args__;
+			const static string builtin_print;
 	};
 
 	class annotated_root_node {
@@ -417,6 +418,44 @@ namespace karma_lang {
 			const bool get_immutable();
 	};
 
+	class annotated_return_statement : public annotated_root_node {
+		shared_ptr<annotated_binary_expression> b_expression;
+		source_token_list::iterator return_statement_pos;
+		return_statement_kind rs_kind;
+		type_information t_inf;
+		public:
+			annotated_return_statement(shared_ptr<annotated_root_node> arn, shared_ptr<return_statement> ret, shared_ptr<annotated_binary_expression> abexpr,
+				type_information ti);
+			~annotated_return_statement();
+			shared_ptr<annotated_binary_expression> get_annotated_binary_expression();
+			source_token_list::iterator get_position();
+			const return_statement_kind get_return_statement_kind();
+			type_information get_type_information();
+	};
+
+	class annotated_conditional_statement : public annotated_root_node {
+		shared_ptr<annotated_binary_expression> if_conditional;
+		vector<shared_ptr<annotated_statement>> if_statement_list;
+		shared_ptr<annotated_binary_expression> else_conditional;
+		vector<shared_ptr<annotated_statement>> else_statement_list;
+		source_token_list::iterator conditional_statement_pos;
+		conditional_else_conditional_kind cec_kind;
+		conditional_else_statement_kind ces_kind;
+		type_information t_inf;
+		public:
+			annotated_conditional_statement(shared_ptr<annotated_root_node> arn, shared_ptr<conditional_statement> cond, shared_ptr<annotated_binary_expression> ic,
+				vector<shared_ptr<annotated_statement>> isl, shared_ptr<annotated_binary_expression> ec, vector<shared_ptr<annotated_statement>> esl, type_information ti);
+			~annotated_conditional_statement();
+			shared_ptr<annotated_binary_expression> get_if_conditional();
+			vector<shared_ptr<annotated_statement>> get_if_statement_list();
+			shared_ptr<annotated_binary_expression> get_else_conditional();
+			vector<shared_ptr<annotated_statement>> get_else_statement_list();
+			source_token_list::iterator get_position();
+			const conditional_else_conditional_kind get_conditional_else_conditional_kind();
+			const conditional_else_statement_kind get_conditional_else_statement_kind();
+			type_information get_type_information();
+	};
+
 	class annotated_statement : public annotated_root_node {
 		statement_kind kind;
 		shared_ptr<annotated_binary_expression> b_expression;
@@ -424,12 +463,14 @@ namespace karma_lang {
 		shared_ptr<annotated_function> func;
 		shared_ptr<annotated_structure> struc;
 		shared_ptr<annotated_module> mod;
+		shared_ptr<annotated_return_statement> ret;
+		shared_ptr<annotated_conditional_statement> cond;
 		source_token_list::iterator statement_pos;
 		type_information t_inf;
 		public:
 			annotated_statement(shared_ptr<annotated_root_node> arn, shared_ptr<statement> stmt, shared_ptr<annotated_binary_expression> abe,
 				shared_ptr<annotated_declaration> adecl, shared_ptr<annotated_function> afunc, shared_ptr<annotated_structure> astruc, 
-				shared_ptr<annotated_module> amod, type_information ti);
+				shared_ptr<annotated_module> amod, shared_ptr<annotated_return_statement> aret, shared_ptr<annotated_conditional_statement> acond, type_information ti);
 			~annotated_statement();
 			const statement_kind get_statement_kind();
 			shared_ptr<annotated_binary_expression> get_binary_expression();
@@ -439,6 +480,8 @@ namespace karma_lang {
 			source_token_list::iterator get_position();
 			type_information get_type_information();
 			shared_ptr<annotated_structure> get_structure();
+			shared_ptr<annotated_return_statement> get_return_statement();
+			shared_ptr<annotated_conditional_statement> get_conditional_statement();
 	};
 
 	class symbol_table;
@@ -500,7 +543,7 @@ namespace karma_lang {
 	};
 
 	enum scope_kind {
-		SCOPE_GLOBAL, SCOPE_FUNCTION, SCOPE_MODULE, SCOPE_NONE
+		SCOPE_GLOBAL, SCOPE_FUNCTION, SCOPE_MODULE, SCOPE_CONDITIONAL, SCOPE_NONE
 	};
 
 	class analyze_ast {
@@ -527,6 +570,9 @@ namespace karma_lang {
 		shared_ptr<annotated_function> analyze_function(shared_ptr<function> func);
 		shared_ptr<annotated_structure> analyze_structure(shared_ptr<structure> struc);
 		shared_ptr<annotated_module> analyze_module(shared_ptr<module> mod);
+		shared_ptr<annotated_return_statement> analyze_return_statement(shared_ptr<return_statement> ret);
+		shared_ptr<annotated_conditional_statement> analyze_conditional_statement(shared_ptr<conditional_statement> cond);
+
 		vector<shared_ptr<symbol>> find_all_symbols(shared_ptr<annotated_literal> sym);
 		vector<shared_ptr<symbol>> find_all_symbols(shared_ptr<literal> sym);
 

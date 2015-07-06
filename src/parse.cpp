@@ -4101,12 +4101,296 @@ namespace karma_lang {
 		return make_shared<module>(*this);
 	}
 
+	return_statement::return_statement(shared_ptr<root_node> r) : root_node(*r), return_statement_pos(r->get_position()) {
+		valid = false;
+		b_expression = nullptr;
+		rs_kind = return_statement_kind::RETURN_STATEMENT_NONE;
+	}
+
+	return_statement::~return_statement() {
+
+	}
+
+	shared_ptr<binary_expression> return_statement::get_binary_expression() {
+		return b_expression;
+	}
+
+	const bool return_statement::get_valid() {
+		return valid;
+	}
+
+	source_token_list::iterator return_statement::get_position() {
+		return return_statement_pos;
+	}
+
+	const return_statement_kind return_statement::get_return_statement_kind() {
+		return rs_kind;
+	}
+
+	shared_ptr<return_statement> return_statement::parse_return_statement() {
+		source_token_list::iterator save = root->get_position();
+		return_statement_pos = save;
+		if (save > root->get_lexer()->get_source_token_list()->end()) {
+			valid = false;
+			b_expression = nullptr;
+			rs_kind = return_statement_kind::RETURN_STATEMENT_NONE;
+			return make_shared<return_statement>(*this);
+		}
+		if ((*save)->get_token_kind() == token_kind::TOKEN_RETURN);
+		else {
+			valid = false;
+			b_expression = nullptr;
+			rs_kind = return_statement_kind::RETURN_STATEMENT_NONE;
+			return make_shared<return_statement>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		if (root->get_position() > root->get_lexer()->get_source_token_list()->end()) {
+			valid = false;
+			b_expression = nullptr;
+			rs_kind = return_statement_kind::RETURN_STATEMENT_NONE;
+			return make_shared<return_statement>(*this);
+		}
+		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_NEW_LINE) {
+			valid = true;
+			b_expression = nullptr;
+			rs_kind = return_statement_kind::RETURN_STATEMENT_EMPTY;
+			return make_shared<return_statement>(*this);
+		}
+		b_expression = make_shared<binary_expression>(root)->parse_binary_expression();
+		if (b_expression->get_valid());
+		else {
+			valid = false;
+			rs_kind = return_statement_kind::RETURN_STATEMENT_NONE;
+			return make_shared<return_statement>(*this);
+		}
+		valid = true;
+		rs_kind = return_statement_kind::RETURN_STATEMENT_EXPRESSION;
+		return make_shared<return_statement>(*this);
+	}
+
+	conditional_statement::conditional_statement(shared_ptr<root_node> r) : root_node(*r), conditional_statement_pos(r->get_position()) {
+		if_conditional = nullptr;
+		if_statement_list = vector<shared_ptr<statement>>();
+		else_conditional = nullptr;
+		else_statement_list = vector<shared_ptr<statement>>();
+		valid = false;
+		ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
+		cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+	}
+
+	conditional_statement::~conditional_statement() {
+
+	}
+
+	shared_ptr<binary_expression> conditional_statement::get_if_conditional() {
+		return if_conditional;
+	}
+
+	vector<shared_ptr<statement>> conditional_statement::get_if_statement_list() {
+		return if_statement_list;
+	}
+
+	shared_ptr<binary_expression> conditional_statement::get_else_conditional() {
+		return else_conditional;
+	}
+
+	vector<shared_ptr<statement>> conditional_statement::get_else_statement_list() {
+		return else_statement_list;
+	}
+
+	const bool conditional_statement::get_valid() {
+		return valid;
+	}
+
+	source_token_list::iterator conditional_statement::get_position() {
+		return conditional_statement_pos;
+	}
+
+	const conditional_else_statement_kind conditional_statement::get_conditional_else_statement_kind() {
+		return ces_kind;
+	}
+
+	const conditional_else_conditional_kind conditional_statement::get_conditional_else_conditional_kind() {
+		return cec_kind;
+	}
+
+	shared_ptr<conditional_statement> conditional_statement::parse_conditional_statement() {
+		source_token_list::iterator save = root->get_position();
+		conditional_statement_pos = save;
+		if (save > root->get_lexer()->get_source_token_list()->end()) {
+			if_conditional = nullptr;
+			if_statement_list = vector<shared_ptr<statement>>();
+			else_statement_list = vector<shared_ptr<statement>>();
+			else_conditional = nullptr;
+			valid = false;
+			ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
+			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+			return make_shared<conditional_statement>(*this);
+		}
+		if ((*save)->get_token_kind() == token_kind::TOKEN_IF);
+		else {
+			if_conditional = nullptr;
+			else_conditional = nullptr;
+			if_statement_list = vector<shared_ptr<statement>>();
+			else_statement_list = vector<shared_ptr<statement>>();
+			valid = false;
+			ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
+			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+			return make_shared<conditional_statement>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		if_conditional = make_shared<binary_expression>(root)->parse_binary_expression();
+		if (if_conditional->get_valid());
+		else {
+			else_conditional = nullptr;
+			if_statement_list = vector<shared_ptr<statement>>();
+			else_statement_list = vector<shared_ptr<statement>>();
+			valid = false;
+			ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
+			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+			return make_shared<conditional_statement>(*this);
+		}
+		if (root->get_position() > root->get_lexer()->get_source_token_list()->end()) {
+			else_conditional = nullptr;
+			if_statement_list = vector<shared_ptr<statement>>();
+			else_statement_list = vector<shared_ptr<statement>>();
+			valid = false;
+			ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
+			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+			return make_shared<conditional_statement>(*this);
+		}
+		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_OPEN_BRACE);
+		else {
+			else_conditional = nullptr;
+			if_statement_list = vector<shared_ptr<statement>>();
+			else_statement_list = vector<shared_ptr<statement>>();
+			valid = false;
+			ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
+			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+			return make_shared<conditional_statement>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() != token_kind::TOKEN_CLOSE_BRACE) {
+			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_NEW_LINE)
+				root->set_position(root->get_position() + 1);
+			if (root->get_position() > root->get_lexer()->get_source_token_list()->end() || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_CLOSE_BRACE)
+				break;
+			shared_ptr<statement> stmt = make_shared<statement>(root)->parse_statement();
+			if (stmt->get_valid());
+			else {
+				else_conditional = nullptr;
+				else_statement_list = vector<shared_ptr<statement>>();
+				valid = false;
+				ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
+				cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+				return make_shared<conditional_statement>(*this);
+			}
+			if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
+				valid = false;
+				else_conditional = nullptr;
+				else_statement_list = vector<shared_ptr<statement>>();
+				cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+				valid = false;
+				ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
+				return make_shared<conditional_statement>(*this);
+			}
+			if ((*(root->get_position()))->get_token_kind() != token_kind::TOKEN_NEW_LINE) {
+				root->get_diagnostics_reporter()->print(diagnostic_messages::expected_new_line, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+				valid = false;
+				else_conditional = nullptr;
+				else_statement_list = vector<shared_ptr<statement>>();
+				ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
+				cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+				return make_shared<conditional_statement>(*this);
+			}
+			root->set_position(root->get_position() + 1);
+			if_statement_list.push_back(stmt);
+		}
+		if (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_CLOSE_BRACE);
+		else {
+			valid = false;
+			else_conditional = nullptr;
+			else_statement_list = vector<shared_ptr<statement>>();
+			ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
+			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+			return make_shared<conditional_statement>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		if (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_POINT_DECL);
+		else {
+			valid = true;
+			else_conditional = nullptr;
+			else_statement_list = vector<shared_ptr<statement>>();
+			ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NOT_PRESENT;
+			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+			return make_shared<conditional_statement>(*this);
+		}
+		ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_PRESENT;
+		root->set_position(root->get_position() + 1);
+		if (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_OPEN_BRACE)
+			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NOT_PRESENT;
+		else {
+			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_PRESENT;
+			else_conditional = make_shared<binary_expression>(root)->parse_binary_expression();
+			if (else_conditional->get_valid());
+			else {
+				else_statement_list = vector<shared_ptr<statement>>();
+				valid = false;
+				make_shared<conditional_statement>(*this);
+			}
+		}
+		if (root->get_position() > root->get_lexer()->get_source_token_list()->end()) {
+			else_statement_list = vector<shared_ptr<statement>>();
+			valid = false;
+			return make_shared<conditional_statement>(*this);
+		}
+		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_OPEN_BRACE);
+		else {
+			valid = false;
+			else_statement_list = vector<shared_ptr<statement>>();
+			return make_shared<conditional_statement>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() != token_kind::TOKEN_CLOSE_BRACE) {
+			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_NEW_LINE)
+				root->set_position(root->get_position() + 1);
+			if (root->get_position() > root->get_lexer()->get_source_token_list()->end() || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_CLOSE_BRACE)
+				break;
+			shared_ptr<statement> stmt = make_shared<statement>(root)->parse_statement();
+			if (stmt->get_valid());
+			else {
+				valid = false;
+				return make_shared<conditional_statement>(*this);
+			}
+			if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
+				valid = false;
+				return make_shared<conditional_statement>(*this);
+			}
+			if ((*(root->get_position()))->get_token_kind() != token_kind::TOKEN_NEW_LINE) {
+				root->get_diagnostics_reporter()->print(diagnostic_messages::expected_new_line, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+				return make_shared<conditional_statement>(*this);
+			}
+			root->set_position(root->get_position() + 1);
+			else_statement_list.push_back(stmt);
+		}
+		if (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_CLOSE_BRACE);
+		else {
+			valid = false;
+			return make_shared<conditional_statement>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		valid = true;
+		return make_shared<conditional_statement>(*this);
+	}
+
 	statement::statement(shared_ptr<root_node> r) : root_node(*r), statement_pos(r->get_position()) {
 		valid = false;
 		decl = nullptr;
 		struc = nullptr;
 		b_expression = nullptr;
 		mod = nullptr;
+		ret = nullptr;
+		cond = nullptr;
 		kind = statement_kind::STATEMENT_NONE;
 	}
 
@@ -4146,6 +4430,14 @@ namespace karma_lang {
 		return mod;
 	}
 
+	shared_ptr<return_statement> statement::get_return_statement() {
+		return ret;
+	}
+
+	shared_ptr<conditional_statement> statement::get_conditional_statement() {
+		return cond;
+	}
+
 	shared_ptr<statement> statement::parse_statement() {
 		source_token_list::iterator save = root->get_position();
 		statement_pos = root->get_position();
@@ -4157,6 +4449,8 @@ namespace karma_lang {
 			func = nullptr;
 			struc = nullptr;
 			mod = nullptr;
+			ret = nullptr;
+			cond = nullptr;
 			return make_shared<statement>(*this);
 		}
 		if((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_VAR) {
@@ -4167,6 +4461,8 @@ namespace karma_lang {
 			func = nullptr;
 			struc = nullptr;
 			mod = nullptr;
+			ret = nullptr;
+			cond = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_FUNC) {
@@ -4177,6 +4473,8 @@ namespace karma_lang {
 			mod = nullptr;
 			func = make_shared<function>(root)->parse_function();
 			valid = func->get_valid();
+			ret = nullptr;
+			cond = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_STRUCT) {
@@ -4187,6 +4485,8 @@ namespace karma_lang {
 			valid = struc->get_valid();
 			func = nullptr;
 			mod = nullptr;
+			ret = nullptr;
+			cond = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_MODULE) {
@@ -4195,8 +4495,34 @@ namespace karma_lang {
 			decl = nullptr;
 			struc = nullptr;
 			func = nullptr;
+			ret = nullptr;
+			cond = nullptr;
 			mod = make_shared<module>(root)->parse_module();
 			valid = mod->get_valid();
+			return make_shared<statement>(*this);
+		}
+		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_RETURN) {
+			b_expression = nullptr;
+			kind = statement_kind::STATEMENT_RETURN_STATEMENT;
+			decl = nullptr;
+			struc = nullptr;
+			func = nullptr;
+			mod = nullptr;
+			cond = nullptr;
+			ret = make_shared<return_statement>(root)->parse_return_statement();
+			valid = ret->get_valid();
+			return make_shared<statement>(*this);
+		}
+		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_IF) {
+			b_expression = nullptr;
+			kind = statement_kind::STATEMENT_CONDITIONAL_STATEMENT;
+			decl = nullptr;
+			struc = nullptr;
+			func = nullptr;
+			mod = nullptr;
+			cond = make_shared<conditional_statement>(root)->parse_conditional_statement();
+			ret = nullptr;
+			valid = cond->get_valid();
 			return make_shared<statement>(*this);
 		}
 		else {
@@ -4204,6 +4530,8 @@ namespace karma_lang {
 			func = nullptr;
 			struc = nullptr;
 			mod = nullptr;
+			ret = nullptr;
+			cond = nullptr;
 			kind = statement_kind::STATEMENT_EXPRESSION;
 			b_expression = make_shared<binary_expression>(root)->parse_binary_expression();
 			valid = b_expression->get_valid();
@@ -4215,7 +4543,9 @@ namespace karma_lang {
 		valid = false;
 		func = nullptr;
 		struc = nullptr;
+		ret = nullptr;
 		mod = nullptr;
+		cond = nullptr;
 		root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 		exit(1);
 		return make_shared<statement>(*this);

@@ -72,7 +72,10 @@ namespace karma_lang {
 			const static string structure_declarations_need_pure_types;
 			const static string builtins_cannot_be_redefined;
 			const static string ambiguous_function_overload;
-			const static string diagnostic_messages::modules_cannot_be_in_functions;
+			const static string modules_cannot_be_in_functions;
+			const static string return_statements_can_only_be_in_functions;
+			const static string modules_functions_structures_not_expected_here;
+			const static string immut_not_allowed_for_function_parameters;
 	};
 }
 

@@ -61,4 +61,7 @@ namespace karma_lang {
 	const string diagnostic_messages::builtins_cannot_be_redefined = "Builtins cannot be redefined.";
 	const string diagnostic_messages::ambiguous_function_overload = "Function definition could lead to ambiguous function overload.";
 	const string diagnostic_messages::modules_cannot_be_in_functions = "Modules cannot be in functions.";
+	const string diagnostic_messages::return_statements_can_only_be_in_functions = "Return statements can only be present in function scopes.";
+	const string diagnostic_messages::modules_functions_structures_not_expected_here = "Modules, functions, and structures are not expected here.";
+	const string diagnostic_messages::immut_not_allowed_for_function_parameters = "'immut' not allowed for function parameters.";
 }

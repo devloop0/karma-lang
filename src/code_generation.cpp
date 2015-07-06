@@ -46,6 +46,7 @@ namespace karma_lang {
 	const string vm_instruction_list::imodule = "imodule";
 	const string vm_instruction_list::emodule = "emodule";
 	const string vm_instruction_list::imov = "imov";
+	const string vm_instruction_list::ret = "ret";
 
 	code_generation_symbol_table::code_generation_symbol_table() {
 		raw_string_list = vector<string>();
@@ -134,7 +135,7 @@ namespace karma_lang {
 		string ret;
 		for(int i = 0; i < tab; i++)
 			ret += "\t";
-		return ret + ".L" + to_string(label) + ":";
+		return ret + ".L" + to_string(label) + "";
 	}
 
 	string code_generation_utilities::generate_jump_instruction(int tab, int one, int two) {
@@ -231,6 +232,22 @@ namespace karma_lang {
 		return ret;
 	}
 
+	string code_generation_utilities::generate_return_statement(int tab, string one) {
+		string ret;
+		for (int i = 0; i < tab; i++)
+			ret += "\t";
+		ret += vm_instruction_list::ret + " " + one;
+		return ret;
+	}
+
+	string code_generation_utilities::generate_return_statement(int tab, int one) {
+		string ret;
+		for (int i = 0; i < tab; i++)
+			ret += "\t";
+		ret += vm_instruction_list::ret + " r" + to_string(one);
+		return ret;
+	}
+
 	generate_code::generate_code(shared_ptr<analyze_ast> aa) {
 		ann_root_node = aa->get_annotated_root_node();
 		code_gen_sym_table = make_shared<code_generation_symbol_table>();
@@ -242,6 +259,7 @@ namespace karma_lang {
 		sym_table_list = aa->get_symbol_table();
 		d_reporter = aa->get_annotated_root_node()->get_diagnostics_reporter();
 		scope_count = 0;
+		name_list.push_back(make_tuple(builtins::builtin_print, builtins::builtin_print, 0));
 	}
 
 	generate_code::~generate_code() {
@@ -580,7 +598,9 @@ namespace karma_lang {
 				instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
 				instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<2>(lhs_ternary)));
 				number++;
-				instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "$true", label_count + 1));
+				instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "$true"));
+				number++;
+				instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, number - 1, label_count + 1));
 				instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
 				label_count++;
 				instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store, get<1>(lhs_ternary)));
@@ -622,7 +642,9 @@ namespace karma_lang {
 			instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
 			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<2>(lhs_ternary)));
 			number++;
-			instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "$true", label_count + 1));
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "$true"));
+			number++;
+			instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, number - 1, label_count + 1));
 			instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
 			label_count++;
 			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store, get<1>(lhs_ternary)));
@@ -636,7 +658,9 @@ namespace karma_lang {
 			instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, get<0>(lhs_ternary), label_count));
 			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, get<2>(lhs_ternary)));
 			number++;
-			instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, "$true", label_count + 1));
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "$true"));
+			number++;
+			instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, number - 1, label_count + 1));
 			instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_count));
 			label_count++;
 			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, store2, get<1>(lhs_ternary)));
@@ -765,6 +789,56 @@ namespace karma_lang {
 		return true;
 	}
 
+	bool generate_code::descend_return_statement(shared_ptr<annotated_return_statement> aret, bool in_module) {
+		if (aret->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
+			return false;
+		int store = number;
+		if (aret->get_return_statement_kind() == return_statement_kind::RETURN_STATEMENT_EMPTY) {
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::imov, number, "$true"));
+			number++;
+			instruction_list.push_back(code_generation_utilities().generate_return_statement(tab_count, number - 1));
+		}
+		else {
+			descend_binary_expression(aret->get_annotated_binary_expression());
+			instruction_list.push_back(code_generation_utilities().generate_return_statement(tab_count, store));
+		}
+		return true;
+	}
+
+	bool generate_code::descend_conditional_statement(shared_ptr<annotated_conditional_statement> acond, bool in_module) {
+		if (acond->get_type_information() == type_information(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
+			return false;
+		int store = number;
+		descend_binary_expression(acond->get_if_conditional());
+		int label_store = label_count;
+		label_count++;
+		int final_label = label_count;
+		label_count++;
+		int temp = number;
+		number++;
+		instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::bneg, store));
+		instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store, label_store));
+		scope_count++;
+		for (int i = 0; i < acond->get_if_statement_list().size(); i++)
+			descend_statement(acond->get_if_statement_list()[i], in_module);
+		instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, temp, "$true"));
+		instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, temp, final_label));
+		instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_store));
+		int store2 = number;
+		if (acond->get_conditional_else_conditional_kind() == conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE ||
+			acond->get_conditional_else_conditional_kind() == conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NOT_PRESENT);
+		else {
+			descend_binary_expression(acond->get_else_conditional());
+			instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::bneg, store2));
+			instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store2, final_label));
+		}
+		scope_count++;
+		for (int i = 0; i < acond->get_else_statement_list().size(); i++)
+			descend_statement(acond->get_else_statement_list()[i], in_module);
+		instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, final_label));
+		return true;
+	}
+
 	bool generate_code::descend_statement(shared_ptr<annotated_statement> astmt, bool in_module) {
 		if (astmt->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
@@ -780,6 +854,10 @@ namespace karma_lang {
 			return descend_structure(astmt->get_structure(), in_module);
 		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_MODULE)
 			return descend_module(astmt->get_module(), in_module);
+		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_RETURN_STATEMENT)
+			return descend_return_statement(astmt->get_return_statement(), in_module);
+		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_CONDITIONAL_STATEMENT)
+			return descend_conditional_statement(astmt->get_conditional_statement(), in_module);
 		d_reporter->print(diagnostic_messages::unreachable, astmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 		exit(1);
 	}

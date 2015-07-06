@@ -29,6 +29,8 @@ namespace karma_lang {
 			const static string _struct;
 			const static string va_args;
 			const static string module;
+			const static string _return;
+			const static string _if;
 	};
 }
 

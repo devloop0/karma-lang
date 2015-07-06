@@ -407,9 +407,59 @@ namespace karma_lang {
 			shared_ptr<declspec_list> get_declspec_list();
 	};
 
+	enum return_statement_kind {
+		RETURN_STATEMENT_EXPRESSION, RETURN_STATEMENT_EMPTY, RETURN_STATEMENT_NONE
+	};
+
+	class return_statement : public root_node {
+		shared_ptr<binary_expression> b_expression;
+		bool valid;
+		source_token_list::iterator return_statement_pos;
+		return_statement_kind rs_kind;
+		public:
+			return_statement(shared_ptr<root_node> r);
+			~return_statement();
+			shared_ptr<binary_expression> get_binary_expression();
+			const bool get_valid();
+			source_token_list::iterator get_position();
+			shared_ptr<return_statement> parse_return_statement();
+			const return_statement_kind get_return_statement_kind();
+	};
+
+	enum conditional_else_statement_kind {
+		CONDITIONAL_ELSE_STATEMENT_PRESENT, CONDITIONAL_ELSE_STATEMENT_NOT_PRESENT, CONDITIONAL_ELSE_STATEMENT_NONE
+	};
+	
+	enum conditional_else_conditional_kind {
+		CONDITIONAL_ELSE_CONDITIONAL_PRESENT, CONDITIONAL_ELSE_CONDITIONAL_NOT_PRESENT, CONDITIONAL_ELSE_CONDITIONAL_NONE
+	};
+
+	class conditional_statement : public root_node {
+		shared_ptr<binary_expression> if_conditional;
+		vector<shared_ptr<statement>> if_statement_list;
+		shared_ptr<binary_expression> else_conditional;
+		vector<shared_ptr<statement>> else_statement_list;
+		bool valid;
+		source_token_list::iterator conditional_statement_pos;
+		conditional_else_statement_kind ces_kind;
+		conditional_else_conditional_kind cec_kind;
+		public:
+			conditional_statement(shared_ptr<root_node> r);
+			~conditional_statement();
+			shared_ptr<binary_expression> get_if_conditional();
+			vector<shared_ptr<statement>> get_if_statement_list();
+			shared_ptr<binary_expression> get_else_conditional();
+			vector<shared_ptr<statement>> get_else_statement_list();
+			const bool get_valid();
+			source_token_list::iterator get_position();
+			const conditional_else_statement_kind get_conditional_else_statement_kind();
+			shared_ptr<conditional_statement> parse_conditional_statement();
+			const conditional_else_conditional_kind get_conditional_else_conditional_kind();
+	};
+
 	enum statement_kind {
 		STATEMENT_DECLARATION, STATEMENT_EXPRESSION, STATEMENT_FUNCTION, STATEMENT_STRUCTURE, 
-		STATEMENT_MODULE, STATEMENT_NONE
+		STATEMENT_MODULE, STATEMENT_RETURN_STATEMENT, STATEMENT_CONDITIONAL_STATEMENT, STATEMENT_NONE
 	};
 
 	class statement : public root_node {
@@ -419,6 +469,8 @@ namespace karma_lang {
 		shared_ptr<function> func;
 		shared_ptr<structure> struc;
 		shared_ptr<module> mod;
+		shared_ptr<return_statement> ret;
+		shared_ptr<conditional_statement> cond;
 		bool valid;
 		source_token_list::iterator statement_pos;
 		public:
@@ -433,6 +485,8 @@ namespace karma_lang {
 			shared_ptr<function> get_function();
 			shared_ptr<structure> get_structure();
 			shared_ptr<module> get_module();
+			shared_ptr<return_statement> get_return_statement();
+			shared_ptr<conditional_statement> get_conditional_statement();
 	};
 }
 #endif

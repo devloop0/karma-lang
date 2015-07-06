@@ -289,6 +289,7 @@ namespace karma_lang {
 	}
 
 	const string builtins::builtin__va_args__ = "__va_args__";
+	const string builtins::builtin_print = "print";
 
 	analyze_ast::analyze_ast(shared_ptr<root_node> r, vector<scope_kind> skl, vector<shared_ptr<symbol_table>> stl, vector<shared_ptr<statement>> stmt_list) {
 		root = r;
@@ -339,6 +340,10 @@ namespace karma_lang {
 	const bool analyze_ast::perform_semantic_analysis() {
 		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
 		type_information _any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
+		if (s_kind_list.size() == 1 && s_kind_list[0] == scope_kind::SCOPE_GLOBAL) {
+			sym_table_list[0]->add_symbol(root, root->get_lexer()->get_source_token_list()->end(), make_shared<symbol>(_any, immut_kind::IMMUT_YES, make_shared<literal>(root, make_shared<token>(-1, -1, -1, builtins::builtin_print, "", -1, token_kind::TOKEN_IDENTIFIER)), function_kind::FUNCTION_YES, structure_kind::STRUCTURE_NONE,
+				vector<type_information>(), make_shared<symbol_table>(), function_declaration_definition_kind::FUNCTION_KIND_DEFINITION, function_va_args_kind::FUNCTION_VA_ARGS_YES, structure_declaration_definition_kind::STRUCTURE_KIND_NONE, module_kind::MODULE_NONE));
+		}
 		bool ret = true;
 		if(root->get_diagnostics_reporter()->get_error_count() > 0)
 			ret = false;
@@ -368,6 +373,69 @@ namespace karma_lang {
 		return ret;
 	}
 
+	shared_ptr<annotated_return_statement> analyze_ast::analyze_return_statement(shared_ptr<return_statement> ret) {
+		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
+		if (!ret->get_valid())
+			return make_shared<annotated_return_statement>(ann_root_node, ret, nullptr, bad);
+		type_information _ret_any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_NOT_APPLICABLE);
+		if (ret->get_return_statement_kind() == return_statement_kind::RETURN_STATEMENT_EMPTY)
+			return make_shared<annotated_return_statement>(ann_root_node, ret, nullptr, _ret_any);
+		shared_ptr<annotated_binary_expression> abexpr = analyze_binary_expression(ret->get_binary_expression());
+		vector<scope_kind>::iterator it = find(s_kind_list.begin(), s_kind_list.end(), scope_kind::SCOPE_FUNCTION);
+		if (it >= s_kind_list.end()) {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::return_statements_can_only_be_in_functions, ret->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			return make_shared<annotated_return_statement>(ann_root_node, ret, nullptr, bad);
+		}
+		return make_shared<annotated_return_statement>(ann_root_node, ret, abexpr, _ret_any);
+	}
+
+	shared_ptr<annotated_conditional_statement> analyze_ast::analyze_conditional_statement(shared_ptr<conditional_statement> cond) {
+		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
+		if (!cond->get_valid())
+			return make_shared<annotated_conditional_statement>(ann_root_node, cond, nullptr, vector<shared_ptr<annotated_statement>>(), nullptr, vector<shared_ptr<annotated_statement>>(), bad);
+		type_information _cond_any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_NOT_APPLICABLE);
+		shared_ptr<annotated_binary_expression> ic = analyze_binary_expression(cond->get_if_conditional());
+		type_information _boolean(type_kind::TYPE_BOOLEAN, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
+		type_information _any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
+		type_information _nil(type_kind::TYPE_NIL, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
+		vector<shared_ptr<annotated_statement>> isl;
+		shared_ptr<symbol_table> sym_table = make_shared<symbol_table>();
+		s_kind_list.push_back(scope_kind::SCOPE_CONDITIONAL);
+		sym_table_list.push_back(sym_table);
+		for (int i = 0; i < cond->get_if_statement_list().size(); i++) {
+			shared_ptr<annotated_statement> astmt = analyze_statement(cond->get_if_statement_list()[i]);
+			if (astmt->get_statement_kind() == statement_kind::STATEMENT_FUNCTION || astmt->get_statement_kind() == statement_kind::STATEMENT_MODULE ||
+				astmt->get_statement_kind() == statement_kind::STATEMENT_STRUCTURE) {
+				root->get_diagnostics_reporter()->print(diagnostic_messages::modules_functions_structures_not_expected_here, astmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			}
+			isl.push_back(astmt);
+		}
+		s_kind_list.pop_back();
+		sym_table_list.pop_back();
+		shared_ptr<annotated_binary_expression> ec = nullptr;
+		vector<shared_ptr<annotated_statement>> esl;
+		if (cond->get_conditional_else_conditional_kind() == conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NOT_PRESENT ||
+			cond->get_conditional_else_conditional_kind() == conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE);
+		else
+			ec = analyze_binary_expression(cond->get_else_conditional());
+		if (cond->get_conditional_else_statement_kind() == conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE ||
+			cond->get_conditional_else_statement_kind() == conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NOT_PRESENT);
+		else {
+			shared_ptr<symbol_table> sym_table2 = make_shared<symbol_table>();
+			s_kind_list.push_back(scope_kind::SCOPE_CONDITIONAL);
+			sym_table_list.push_back(sym_table2);
+			for (int i = 0; i < cond->get_else_statement_list().size(); i++) {
+				shared_ptr<annotated_statement> astmt = analyze_statement(cond->get_else_statement_list()[i]);
+				if (astmt->get_statement_kind() == statement_kind::STATEMENT_FUNCTION || astmt->get_statement_kind() == statement_kind::STATEMENT_MODULE ||
+					astmt->get_statement_kind() == statement_kind::STATEMENT_STRUCTURE) {
+					root->get_diagnostics_reporter()->print(diagnostic_messages::modules_functions_structures_not_expected_here, astmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+				}
+				esl.push_back(astmt);
+			}
+		}
+		return make_shared<annotated_conditional_statement>(ann_root_node, cond, ic, isl, ec, esl, _cond_any);
+	}
+
 	shared_ptr<annotated_statement> analyze_ast::analyze_statement(shared_ptr<statement> stmt) {
 		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
 		shared_ptr<annotated_binary_expression> abexpr = nullptr;
@@ -375,8 +443,10 @@ namespace karma_lang {
 		shared_ptr<annotated_function> afunc = nullptr;
 		shared_ptr<annotated_structure> astruc = nullptr;
 		shared_ptr<annotated_module> amod = nullptr;
+		shared_ptr<annotated_return_statement> aret = nullptr;
+		shared_ptr<annotated_conditional_statement> acond = nullptr;
 		if(!stmt->get_valid())
-			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
+			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
 		if(stmt->get_statement_kind() == statement_kind::STATEMENT_DECLARATION)
 			adecl = analyze_declaration(stmt->get_declaration());
 		else if (stmt->get_statement_kind() == statement_kind::STATEMENT_EXPRESSION)
@@ -387,16 +457,22 @@ namespace karma_lang {
 			astruc = analyze_structure(stmt->get_structure());
 		else if (stmt->get_statement_kind() == statement_kind::STATEMENT_MODULE)
 			amod = analyze_module(stmt->get_module());
+		else if (stmt->get_statement_kind() == statement_kind::STATEMENT_RETURN_STATEMENT)
+			aret = analyze_return_statement(stmt->get_return_statement());
+		else if (stmt->get_statement_kind() == statement_kind::STATEMENT_CONDITIONAL_STATEMENT)
+			acond = analyze_conditional_statement(stmt->get_conditional_statement());
 		else
-			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
+			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
 		type_information ret = bad;
 		if(adecl != nullptr) ret = adecl->get_type_information();
 		else if(abexpr != nullptr) ret = abexpr->get_type_information();
 		else if (afunc != nullptr) ret = afunc->get_type_information();
 		else if (astruc != nullptr) ret = astruc->get_type_information();
 		else if (amod != nullptr) ret = amod->get_type_information();
+		else if (aret != nullptr) ret = aret->get_type_information();
+		else if (acond != nullptr) ret = acond->get_type_information();
 		ret = type_information(ret, value_kind::VALUE_NOT_APPLICABLE);
-		return make_shared<annotated_statement>(ann_root_node, stmt, abexpr, adecl, afunc, astruc, amod, ret);
+		return make_shared<annotated_statement>(ann_root_node, stmt, abexpr, adecl, afunc, astruc, amod, aret, acond, ret);
 	}
 
 	shared_ptr<annotated_module> analyze_ast::analyze_module(shared_ptr<module> mod) {
@@ -461,6 +537,10 @@ namespace karma_lang {
 		for (int i = 0; i < decl_list.size(); i++) {
 			if(!decl_list[i]->get_partial())
 				return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
+			if (decl_list[i]->get_declspec_list()->get_declspecs_list().size() > 0) {
+				root->get_diagnostics_reporter()->print(diagnostic_messages::immut_not_allowed_for_function_parameters, decl_list[i]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+				return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
+			}
 			pair<shared_ptr<annotated_declaration>, shared_ptr<symbol>> pai = analyze_parameter(decl_list[i]);
 			shared_ptr<annotated_declaration> adecl = pai.first;
 			shared_ptr<symbol> sym = pai.second;
@@ -478,16 +558,14 @@ namespace karma_lang {
 		vector<shared_ptr<symbol>> symbols_found = find_all_symbols(alit);
 		for (int i = 0; i < symbols_found.size(); i++) {
 			shared_ptr<symbol> sym = symbols_found[i];
-			if (sym->get_function_kind() == function_kind::FUNCTION_YES && t_inf_list.size() == sym->get_function_arguments().size() &&
-				((sym->get_immut_kind() == immut_kind::IMMUT_YES && func->get_declspec_list()->get_declspecs_list().size() > 0) || (sym->get_immut_kind() == immut_kind::IMMUT_NO && func->get_declspec_list()->get_declspecs_list().size() == 0))) {
+			if (sym->get_function_kind() == function_kind::FUNCTION_YES && t_inf_list.size() == sym->get_function_arguments().size()) {
 				if (sym->get_function_va_args_kind() == func->get_function_va_args_kind());
 				else {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::ambiguous_function_overload, func->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 					return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
 				}
 			}
-			else if (sym->get_function_kind() == function_kind::FUNCTION_YES && t_inf_list.size() != sym->get_function_arguments().size() &&
-				((sym->get_immut_kind() == immut_kind::IMMUT_YES && func->get_declspec_list()->get_declspecs_list().size() > 0) || (sym->get_immut_kind() == immut_kind::IMMUT_NO && func->get_declspec_list()->get_declspecs_list().size() == 0))) {
+			else if (sym->get_function_kind() == function_kind::FUNCTION_YES && t_inf_list.size() != sym->get_function_arguments().size()) {
 				int sym_size = sym->get_function_arguments().size();
 				int actual_size = t_inf_list.size();
 				if (sym->get_function_va_args_kind() != func->get_function_va_args_kind()) {
@@ -496,7 +574,7 @@ namespace karma_lang {
 					if(sym->get_function_va_args_kind() == function_va_args_kind::FUNCTION_VA_ARGS_YES && func->get_function_va_args_kind() == function_va_args_kind::FUNCTION_VA_ARGS_NO) {
 						if (sym_size > actual_size) {
 							symbols_found.erase(symbols_found.begin() + i, symbols_found.begin() + i + 1);
-							i = 0;
+							i = -1;
 						}
 						else {
 							root->get_diagnostics_reporter()->print(diagnostic_messages::ambiguous_function_overload, func->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
@@ -508,7 +586,7 @@ namespace karma_lang {
 					else {
 						if (actual_size > sym_size) {
 							symbols_found.erase(symbols_found.begin() + i, symbols_found.begin() + i + 1);
-							i = 0;
+							i = -1;
 						}
 						else {
 							root->get_diagnostics_reporter()->print(diagnostic_messages::ambiguous_function_overload, func->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
@@ -517,13 +595,19 @@ namespace karma_lang {
 					}
 				}
 				else {
-					root->get_diagnostics_reporter()->print(diagnostic_messages::ambiguous_function_overload, func->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
+					if (sym->get_function_va_args_kind() == function_va_args_kind::FUNCTION_VA_ARGS_YES) {
+						root->get_diagnostics_reporter()->print(diagnostic_messages::ambiguous_function_overload, func->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+						return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
+					}
+					else {
+						symbols_found.erase(symbols_found.begin() + i, symbols_found.begin() + i + 1);
+						i = -1;
+					}
 				}
 			}
 			else {
 				symbols_found.erase(symbols_found.begin() + i, symbols_found.begin() + i + 1);
-				i = 0;
+				i = -1;
 			}
 		}
 		if (symbols_found.size() == 0) {
@@ -535,8 +619,7 @@ namespace karma_lang {
 		}
 		else if (symbols_found.size() == 1) {
 			shared_ptr<symbol> sym = symbols_found[0];
-			if (((sym->get_immut_kind() == immut_kind::IMMUT_YES && func->get_declspec_list()->get_declspecs_list().size() > 0) || (sym->get_immut_kind() == immut_kind::IMMUT_NO && func->get_declspec_list()->get_declspecs_list().size() == 0)) &&
-				sym->get_function_kind() == function_kind::FUNCTION_YES && t_inf_list.size() == sym->get_function_arguments().size() && sym->get_function_va_args_kind() == func->get_function_va_args_kind()) {
+			if (sym->get_function_kind() == function_kind::FUNCTION_YES && t_inf_list.size() == sym->get_function_arguments().size() && sym->get_function_va_args_kind() == func->get_function_va_args_kind()) {
 				if(sym->get_function_declaration_definition_kind() == function_declaration_definition_kind::FUNCTION_KIND_FORWARD_DECLARATION && func->get_function_kind() == function_declaration_definition_kind::FUNCTION_KIND_DEFINITION)
 					sym->set_function_declaration_definition_kind(function_declaration_definition_kind::FUNCTION_KIND_DEFINITION);
 				else {
@@ -870,28 +953,7 @@ namespace karma_lang {
 			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_boolean_for_ternary_expression_condition, texpr->get_condition()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 			return make_shared<annotated_ternary_expression>(ann_root_node, texpr, nullptr, nullptr, nullptr, bad, bad);
 		}
-		if(abexpr2->get_type_information() == abexpr3->get_type_information() || abexpr2->get_type_information().get_type_kind() == type_kind::TYPE_ANY || abexpr3->get_type_information().get_type_kind() == type_kind::TYPE_ANY ||
-				(abexpr2->get_type_information() == _int && abexpr3->get_type_information() == _float) || (abexpr2->get_type_information() == _float && abexpr3->get_type_information() == _int)) {
-			if((abexpr2->get_type_information() == _int && abexpr3->get_type_information() == _float) || (abexpr2->get_type_information() == _float && abexpr3->get_type_information() == _int))
-				root->get_diagnostics_reporter()->print(diagnostic_messages::unequal_but_compatible_types, abexpr2->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_WARNING);
-			if(abexpr2->get_type_information() == abexpr3->get_type_information() || abexpr2->get_type_information() == _any || abexpr3->get_type_information() == _any) {
-				type_information t_inf = abexpr2->get_type_information();
-				if(abexpr2->get_type_information() != _any)
-					t_inf = abexpr2->get_type_information();
-				else
-					t_inf = abexpr3->get_type_information();
-				return make_shared<annotated_ternary_expression>(ann_root_node, texpr, abexpr1, abexpr2, abexpr3, type_information(t_inf, value_kind::VALUE_RVALUE), bad);
-			}
-			else {
-				root->get_diagnostics_reporter()->print(diagnostic_messages::incompatible_types, texpr->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-				return make_shared<annotated_ternary_expression>(ann_root_node, texpr, nullptr, nullptr, nullptr, bad, bad);
-			}
-		}
-		else {
-			root->get_diagnostics_reporter()->print(diagnostic_messages::incompatible_types, texpr->get_true_path()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-			return make_shared<annotated_ternary_expression>(ann_root_node, texpr, nullptr, nullptr, nullptr, bad, bad);
-		}
-		return make_shared<annotated_ternary_expression>(ann_root_node, texpr, abexpr1, abexpr2, abexpr3, type_information(abexpr2->get_type_information(), value_kind::VALUE_RVALUE), bad);
+		return make_shared<annotated_ternary_expression>(ann_root_node, texpr, abexpr1, abexpr2, abexpr3, type_information(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE), bad);
 	}
 
 	shared_ptr<annotated_unary_expression> analyze_ast::analyze_unary_expression(shared_ptr<unary_expression> uexpr) {
@@ -2043,13 +2105,15 @@ namespace karma_lang {
 
 	annotated_statement::annotated_statement(shared_ptr<annotated_root_node> arn, shared_ptr<statement> stmt, shared_ptr<annotated_binary_expression> abe,
 			shared_ptr<annotated_declaration> adecl, shared_ptr<annotated_function> afunc, shared_ptr<annotated_structure> astruc, 
-			shared_ptr<annotated_module> amod, type_information ti) : annotated_root_node(*arn), statement_pos(stmt->get_position()), t_inf(ti) {
+			shared_ptr<annotated_module> amod, shared_ptr<annotated_return_statement> aret, shared_ptr<annotated_conditional_statement> acond, type_information ti) : annotated_root_node(*arn), statement_pos(stmt->get_position()), t_inf(ti) {
 		kind = stmt->get_statement_kind();
 		b_expression = abe;
 		decl = adecl;
 		func = afunc;
 		struc = astruc;
 		mod = amod;
+		ret = aret;
+		cond = acond;
 	}
 
 	annotated_statement::~annotated_statement() {
@@ -2086,6 +2150,14 @@ namespace karma_lang {
 
 	shared_ptr<annotated_module> annotated_statement::get_module() {
 		return mod;
+	}
+
+	shared_ptr<annotated_return_statement> annotated_statement::get_return_statement() {
+		return ret;
+	}
+
+	shared_ptr<annotated_conditional_statement> annotated_statement::get_conditional_statement() {
+		return cond;
 	}
 
 	annotated_ternary_expression::annotated_ternary_expression(shared_ptr<annotated_root_node> arn, shared_ptr<ternary_expression> texpr, shared_ptr<annotated_root_node> c,
@@ -2276,5 +2348,78 @@ namespace karma_lang {
 
 	const bool annotated_module::get_immutable() {
 		return immutable;
+	}
+
+	annotated_return_statement::annotated_return_statement(shared_ptr<annotated_root_node> arn, shared_ptr<return_statement> ret, shared_ptr<annotated_binary_expression> abexpr,
+		type_information ti) : annotated_root_node(*arn), t_inf(ti), return_statement_pos(ret->get_position()) {
+		b_expression = abexpr;
+		rs_kind = ret->get_return_statement_kind();
+	}
+
+	annotated_return_statement::~annotated_return_statement() {
+
+	}
+
+	shared_ptr<annotated_binary_expression> annotated_return_statement::get_annotated_binary_expression() {
+		return b_expression;
+	}
+
+	source_token_list::iterator annotated_return_statement::get_position() {
+		return return_statement_pos;
+	}
+
+	const return_statement_kind annotated_return_statement::get_return_statement_kind() {
+		return rs_kind;
+	}
+
+	type_information annotated_return_statement::get_type_information() {
+		return t_inf;
+	}
+
+	annotated_conditional_statement::annotated_conditional_statement(shared_ptr<annotated_root_node> arn, shared_ptr<conditional_statement> cond, shared_ptr<annotated_binary_expression> ic,
+		vector<shared_ptr<annotated_statement>> isl, shared_ptr<annotated_binary_expression> ec, vector<shared_ptr<annotated_statement>> esl, type_information ti) :
+		annotated_root_node(*arn), conditional_statement_pos(cond->get_position()), t_inf(ti) {
+		if_conditional = ic;
+		else_conditional = ec;
+		if_statement_list = isl;
+		else_statement_list = esl;
+		cec_kind = cond->get_conditional_else_conditional_kind();
+		ces_kind = cond->get_conditional_else_statement_kind();
+	}
+
+	annotated_conditional_statement::~annotated_conditional_statement() {
+
+	}
+
+	shared_ptr<annotated_binary_expression> annotated_conditional_statement::get_if_conditional() {
+		return if_conditional;
+	}
+
+	shared_ptr<annotated_binary_expression> annotated_conditional_statement::get_else_conditional() {
+		return else_conditional;
+	}
+
+	vector<shared_ptr<annotated_statement>> annotated_conditional_statement::get_if_statement_list() {
+		return if_statement_list;
+	}
+
+	vector<shared_ptr<annotated_statement>> annotated_conditional_statement::get_else_statement_list() {
+		return else_statement_list;
+	}
+
+	source_token_list::iterator annotated_conditional_statement::get_position() {
+		return conditional_statement_pos;
+	}
+
+	type_information annotated_conditional_statement::get_type_information() {
+		return t_inf;
+	}
+
+	const conditional_else_conditional_kind annotated_conditional_statement::get_conditional_else_conditional_kind() {
+		return cec_kind;
+	}
+
+	const conditional_else_statement_kind annotated_conditional_statement::get_conditional_else_statement_kind() {
+		return ces_kind;
 	}
 }
