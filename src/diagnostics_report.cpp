@@ -58,11 +58,24 @@ namespace karma_lang {
 		else
 			cerr << "\033[34mNote \033[0m";
 #endif
-		int start = (*current_pos)->get_column_start(), end = (*current_pos)->get_column_end() - 1;
-		if(start != end)
-			cerr << '[' << (*current_pos)->get_file_name() << ' ' << (*current_pos)->get_line_number() << ':' << start << '-' << end << "]: "; 
+		int start = 0, end = 0;
+		if (current_pos < stlist->end())
+			start = (*current_pos)->get_column_start(), end = (*current_pos)->get_column_end() - 1;
 		else
-			cerr << '[' << (*current_pos)->get_file_name() << ' ' << (*current_pos)->get_line_number() << ':' << start << "]: ";
+			start = -1, end = -1;
+		if (current_pos < stlist->end()) {
+			if (start != end)
+				cerr << '[' << (*current_pos)->get_file_name() << ' ' << (*current_pos)->get_line_number() << ':' << start << '-' << end << "]: ";
+			else
+				cerr << '[' << (*current_pos)->get_file_name() << ' ' << (*current_pos)->get_line_number() << ':' << start << "]: ";
+		}
+		else {
+			if (start != end)
+				cerr << '[' << (*current_pos)->get_file_name() << ' ' << (*current_pos)->get_line_number() << ':' << start << '-' << end << "]: ";
+			else
+				cerr << "Builtin involved.";
+			return nullptr;
+		}
 		cerr << message << "\nRegion given here for reference:\n";	
 		cerr << '\t';
 		int inc = 0;
@@ -101,7 +114,10 @@ namespace karma_lang {
 		cerr << "\033[32m^\033[0m";
 #endif
 		cerr << "\n\n";	
-		return *current_pos;
+		if (current_pos < stlist->end())
+			return *current_pos;
+		else
+			return nullptr;
 	}
 
 	const int diagnostics_reporter::get_error_count() {

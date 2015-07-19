@@ -29,7 +29,8 @@ using namespace karma_lang;
 namespace karma_lang {
 
 	enum type_kind {
-		TYPE_INT, TYPE_DECIMAL, TYPE_STRING, TYPE_FUNCTION, TYPE_BOOLEAN, TYPE_NIL, TYPE_ANY, TYPE_CUSTOM, TYPE_LIST, TYPE_TUPLE, TYPE_DICT, TYPE_MODULE, TYPE_NONE
+		TYPE_INT, TYPE_DECIMAL, TYPE_STRING, TYPE_FUNCTION, TYPE_BOOLEAN, TYPE_NIL, TYPE_ANY, TYPE_CUSTOM, TYPE_LIST, TYPE_TUPLE, TYPE_DICT, TYPE_MODULE, 
+		TYPE_ENUM, TYPE_ENUM_CHILD, TYPE_NONE
 	};
 
 	enum type_pure_kind {
@@ -54,6 +55,10 @@ namespace karma_lang {
 
 	enum module_kind {
 		MODULE_YES, MODULE_NO, MODULE_NONE
+	};
+
+	enum enum_kind {
+		ENUM_YES, ENUM_NO, ENUM_NONE
 	};
 
 	enum value_kind {
@@ -103,12 +108,6 @@ namespace karma_lang {
 	class annotated_dictionary;
 	class annotated_subscript;
 	class linearized_postfix_expression;
-
-	class builtins {
-		public:
-			const static string builtin__va_args__;
-			const static string builtin_print;
-	};
 
 	class annotated_root_node {
 		protected:
@@ -456,6 +455,23 @@ namespace karma_lang {
 			type_information get_type_information();
 	};
 
+	class annotated_enum_statement : public annotated_root_node {
+		vector<shared_ptr<annotated_literal>> identifier_list;
+		shared_ptr<annotated_literal> identifier;
+		enum_statement_kind es_kind;
+		source_token_list::iterator enum_statement_pos;
+		type_information t_inf;
+		public:
+			annotated_enum_statement(shared_ptr<annotated_root_node> arn, shared_ptr<enum_statement> _enum, shared_ptr<annotated_literal> alit,
+				vector<shared_ptr<annotated_literal>> ailist, type_information ti);
+			~annotated_enum_statement();
+			vector<shared_ptr<annotated_literal>> get_identifier_list();
+			shared_ptr<annotated_literal> get_identifier();
+			const enum_statement_kind get_enum_statement_kind();
+			source_token_list::iterator get_position();
+			type_information get_type_information();
+	};
+
 	class annotated_statement : public annotated_root_node {
 		statement_kind kind;
 		shared_ptr<annotated_binary_expression> b_expression;
@@ -465,12 +481,14 @@ namespace karma_lang {
 		shared_ptr<annotated_module> mod;
 		shared_ptr<annotated_return_statement> ret;
 		shared_ptr<annotated_conditional_statement> cond;
+		shared_ptr<annotated_enum_statement> _enum;
 		source_token_list::iterator statement_pos;
 		type_information t_inf;
 		public:
 			annotated_statement(shared_ptr<annotated_root_node> arn, shared_ptr<statement> stmt, shared_ptr<annotated_binary_expression> abe,
 				shared_ptr<annotated_declaration> adecl, shared_ptr<annotated_function> afunc, shared_ptr<annotated_structure> astruc, 
-				shared_ptr<annotated_module> amod, shared_ptr<annotated_return_statement> aret, shared_ptr<annotated_conditional_statement> acond, type_information ti);
+				shared_ptr<annotated_module> amod, shared_ptr<annotated_return_statement> aret, shared_ptr<annotated_conditional_statement> acond, 
+				shared_ptr<annotated_enum_statement> aenum, type_information ti);
 			~annotated_statement();
 			const statement_kind get_statement_kind();
 			shared_ptr<annotated_binary_expression> get_binary_expression();
@@ -482,6 +500,7 @@ namespace karma_lang {
 			shared_ptr<annotated_structure> get_structure();
 			shared_ptr<annotated_return_statement> get_return_statement();
 			shared_ptr<annotated_conditional_statement> get_conditional_statement();
+			shared_ptr<annotated_enum_statement> get_enum_statement();
 	};
 
 	class symbol_table;
@@ -498,9 +517,11 @@ namespace karma_lang {
 		structure_declaration_definition_kind sdd_kind;
 		function_va_args_kind fva_kind;
 		module_kind m_kind;
+		enum_kind e_kind;
+		enum_statement_kind es_kind;
 		public:
-			symbol(type_information ti, immut_kind ik, shared_ptr<literal> ident, function_kind fk, structure_kind sk, vector<type_information> fa, shared_ptr<symbol_table> st, function_declaration_definition_kind fddk, function_va_args_kind fvak, 
-				structure_declaration_definition_kind sddk, module_kind mk);
+			symbol(type_information ti, immut_kind ik, shared_ptr<literal> ident, function_kind fk, structure_kind sk, vector<type_information> fa, shared_ptr<symbol_table> st, function_declaration_definition_kind fddk, function_va_args_kind fvak,
+				structure_declaration_definition_kind sddk, module_kind mk, enum_kind ek, enum_statement_kind es_kind);
 			~symbol();
 			type_information get_type_information();
 			const immut_kind get_immut_kind();
@@ -516,6 +537,9 @@ namespace karma_lang {
 			structure_declaration_definition_kind set_structure_declaration_definition_kind(structure_declaration_definition_kind sddk);
 			const function_va_args_kind get_function_va_args_kind();
 			const module_kind get_module_kind();
+			const enum_kind get_enum_kind();
+			const enum_statement_kind get_enum_statement_kind();
+			enum_statement_kind set_enum_statement_kind(enum_statement_kind esk);
 	};
 
 	class symbol_table {
@@ -543,7 +567,7 @@ namespace karma_lang {
 	};
 
 	enum scope_kind {
-		SCOPE_GLOBAL, SCOPE_FUNCTION, SCOPE_MODULE, SCOPE_CONDITIONAL, SCOPE_NONE
+		SCOPE_GLOBAL, SCOPE_FUNCTION, SCOPE_MODULE, SCOPE_CONDITIONAL, SCOPE_ENUM, SCOPE_NONE
 	};
 
 	class analyze_ast {
@@ -572,9 +596,10 @@ namespace karma_lang {
 		shared_ptr<annotated_module> analyze_module(shared_ptr<module> mod);
 		shared_ptr<annotated_return_statement> analyze_return_statement(shared_ptr<return_statement> ret);
 		shared_ptr<annotated_conditional_statement> analyze_conditional_statement(shared_ptr<conditional_statement> cond);
+		shared_ptr<annotated_enum_statement> analyze_enum_statement(shared_ptr<enum_statement> _enum);
 
-		vector<shared_ptr<symbol>> find_all_symbols(shared_ptr<annotated_literal> sym);
-		vector<shared_ptr<symbol>> find_all_symbols(shared_ptr<literal> sym);
+		pair<vector<shared_ptr<symbol>>, bool> find_all_symbols(shared_ptr<annotated_literal> sym);
+		pair<vector<shared_ptr<symbol>>, bool> find_all_symbols(shared_ptr<literal> sym);
 
 		public:
 			analyze_ast(shared_ptr<root_node> r, vector<scope_kind> skl, vector<shared_ptr<symbol_table>> stl, vector<shared_ptr<statement>> stmt_list);

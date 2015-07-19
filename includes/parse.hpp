@@ -6,10 +6,12 @@
 #include "../includes/diagnostics_report.hpp"
 #include "../includes/lex.hpp"
 #include "../includes/source_token_list.hpp"
+#include "../includes/builtins.hpp"
 #include <string>
 #include <vector>
 #include <iostream>
 #include <memory>
+#include <algorithm>
 
 using std::string;
 using std::vector;
@@ -457,9 +459,30 @@ namespace karma_lang {
 			const conditional_else_conditional_kind get_conditional_else_conditional_kind();
 	};
 
+	enum enum_statement_kind {
+		ENUM_STATEMENT_DECLARATION, ENUM_STATEMENT_DEFINITION, ENUM_STATEMENT_NONE
+	};
+
+	class enum_statement : public root_node {
+		vector<shared_ptr<literal>> identifier_list;
+		shared_ptr<literal> identifier;
+		bool valid;
+		source_token_list::iterator enum_statement_pos;
+		enum_statement_kind es_kind;
+		public:
+			enum_statement(shared_ptr<root_node> r);
+			~enum_statement();
+			vector<shared_ptr<literal>> get_identifier_list();
+			shared_ptr<literal> get_identifier();
+			const bool get_valid();
+			source_token_list::iterator get_position();
+			const enum_statement_kind get_enum_statement_kind();
+			shared_ptr<enum_statement> parse_enum_statement();
+	};
+
 	enum statement_kind {
 		STATEMENT_DECLARATION, STATEMENT_EXPRESSION, STATEMENT_FUNCTION, STATEMENT_STRUCTURE, 
-		STATEMENT_MODULE, STATEMENT_RETURN_STATEMENT, STATEMENT_CONDITIONAL_STATEMENT, STATEMENT_NONE
+		STATEMENT_MODULE, STATEMENT_RETURN_STATEMENT, STATEMENT_CONDITIONAL_STATEMENT, STATEMENT_ENUM_STATEMENT, STATEMENT_NONE
 	};
 
 	class statement : public root_node {
@@ -471,6 +494,7 @@ namespace karma_lang {
 		shared_ptr<module> mod;
 		shared_ptr<return_statement> ret;
 		shared_ptr<conditional_statement> cond;
+		shared_ptr<enum_statement> _enum;
 		bool valid;
 		source_token_list::iterator statement_pos;
 		public:
@@ -485,6 +509,7 @@ namespace karma_lang {
 			shared_ptr<function> get_function();
 			shared_ptr<structure> get_structure();
 			shared_ptr<module> get_module();
+			shared_ptr<enum_statement> get_enum_statement();
 			shared_ptr<return_statement> get_return_statement();
 			shared_ptr<conditional_statement> get_conditional_statement();
 	};

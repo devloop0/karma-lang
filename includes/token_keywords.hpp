@@ -31,6 +31,7 @@ namespace karma_lang {
 			const static string module;
 			const static string _return;
 			const static string _if;
+			const static string _enum;
 	};
 }
 

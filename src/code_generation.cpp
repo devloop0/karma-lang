@@ -47,6 +47,8 @@ namespace karma_lang {
 	const string vm_instruction_list::emodule = "emodule";
 	const string vm_instruction_list::imov = "imov";
 	const string vm_instruction_list::ret = "ret";
+	const string vm_instruction_list::_enum = "enum";
+	const string vm_instruction_list::ifunc = "ifunc";
 
 	code_generation_symbol_table::code_generation_symbol_table() {
 		raw_string_list = vector<string>();
@@ -184,11 +186,11 @@ namespace karma_lang {
 		return "__temp__" + to_string(one);
 	}
 
-	string code_generation_utilities::generate_function_header(int tab, string name, vector<string> reg_list) {
+	string code_generation_utilities::generate_function_header(int tab, string name, vector<string> reg_list, bool immut) {
 		string ret;
 		for(int i = 0; i < tab; i++)
 			ret += "\t";
-		ret += vm_instruction_list::func + " " + name + " ";
+		ret += (immut ? vm_instruction_list::ifunc : vm_instruction_list::func) + " " + name + " ";
 		for (int i = 0; i < reg_list.size(); i++)
 			ret += reg_list[i] + " ";
 		return ret;
@@ -245,6 +247,16 @@ namespace karma_lang {
 		for (int i = 0; i < tab; i++)
 			ret += "\t";
 		ret += vm_instruction_list::ret + " r" + to_string(one);
+		return ret;
+	}
+
+	string code_generation_utilities::generate_enum_statement(int tab, string e, vector<string> elist) {
+		string ret;
+		for (int i = 0; i < tab; i++)
+			ret += "\t";
+		ret += vm_instruction_list::_enum + " " + e;
+		for (int i = 0; i < elist.size(); i++)
+			ret += " " + elist[i];
 		return ret;
 	}
 
@@ -739,7 +751,7 @@ namespace karma_lang {
 			param_list.push_back(token_keywords::va_args);
 			name_list.push_back(make_tuple(builtins::builtin__va_args__, builtins::builtin__va_args__, 0));
 		}
-		instruction_list.push_back(code_generation_utilities().generate_function_header(tab_count, fname, param_list));
+		instruction_list.push_back(code_generation_utilities().generate_function_header(tab_count, fname, param_list, afunc->get_immutable()));
 		for (int i = 0; i < afunc->get_statement_list().size(); i++)
 			descend_statement(afunc->get_statement_list()[i], in_module);
 		name_list.erase(name_list.begin() + save, name_list.end());
@@ -782,10 +794,12 @@ namespace karma_lang {
 		string str = amod->get_identifier()->get_raw_literal()->get_raw_string();
 		string mname = str + (in_module ? "" : "_" + to_string(scope_count));
 		name_list.push_back(make_tuple(str, mname, scope_count));
+		int save = name_list.size();
 		instruction_list.push_back(code_generation_utilities().generate_module_header(tab_count, mname, amod->get_immutable()));
 		for (int i = 0; i < amod->get_statement_list().size(); i++)
 			descend_statement(amod->get_statement_list()[i], true);
 		instruction_list.push_back(code_generation_utilities().generate_module_footer(tab_count));
+		name_list.erase(name_list.begin() + save, name_list.end());
 		return true;
 	}
 
@@ -839,6 +853,19 @@ namespace karma_lang {
 		return true;
 	}
 
+	bool generate_code::descend_enum_statement(shared_ptr<annotated_enum_statement> aenum, bool in_module) {
+		if (aenum->get_type_information() == type_information(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
+			return false;
+		string str = aenum->get_identifier()->get_raw_literal()->get_raw_string();
+		string ename = str + (in_module ? "" : "_" + to_string(scope_count));
+		name_list.push_back(make_tuple(str, ename, scope_count));
+		vector<string> vlist;
+		for (int i = 0; i < aenum->get_identifier_list().size(); i++)
+			vlist.push_back(aenum->get_identifier_list()[i]->get_raw_literal()->get_raw_string());
+		instruction_list.push_back(code_generation_utilities().generate_enum_statement(tab_count, ename, vlist));
+		return true;
+	}
+
 	bool generate_code::descend_statement(shared_ptr<annotated_statement> astmt, bool in_module) {
 		if (astmt->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
@@ -858,6 +885,8 @@ namespace karma_lang {
 			return descend_return_statement(astmt->get_return_statement(), in_module);
 		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_CONDITIONAL_STATEMENT)
 			return descend_conditional_statement(astmt->get_conditional_statement(), in_module);
+		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_ENUM_STATEMENT)
+			return descend_enum_statement(astmt->get_enum_statement(), in_module);
 		d_reporter->print(diagnostic_messages::unreachable, astmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 		exit(1);
 	}

@@ -76,6 +76,9 @@ namespace karma_lang {
 			const static string return_statements_can_only_be_in_functions;
 			const static string modules_functions_structures_not_expected_here;
 			const static string immut_not_allowed_for_function_parameters;
+			const static string enum_declared_but_not_defined;
+			const static string mismatched_scopes;
+			const static string enum_names_must_be_unique;
 	};
 }
 

@@ -1,5 +1,4 @@
 #include "../includes/parse.hpp"
-#include <algorithm>
 
 using namespace karma_lang;
 
@@ -4065,6 +4064,7 @@ namespace karma_lang {
 		else {
 			statement_list = vector<shared_ptr<statement>>();
 			valid = false;
+			root->get_diagnostics_reporter()->print(diagnostic_messages::partial_declarations_not_allowed, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 			return make_shared<module>(*this);
 		}
 		root->set_position(root->get_position() + 1);
@@ -4383,6 +4383,126 @@ namespace karma_lang {
 		return make_shared<conditional_statement>(*this);
 	}
 
+	enum_statement::enum_statement(shared_ptr<root_node> r) : root_node(*r), enum_statement_pos(r->get_position()) {
+		identifier_list = vector<shared_ptr<literal>>();
+		identifier = nullptr;
+		valid = false;
+		es_kind = enum_statement_kind::ENUM_STATEMENT_NONE;
+	}
+
+	enum_statement::~enum_statement() {
+
+	}
+
+	vector<shared_ptr<literal>> enum_statement::get_identifier_list() {
+		return identifier_list;
+	}
+
+	shared_ptr<literal> enum_statement::get_identifier() {
+		return identifier;
+	}
+
+	const bool enum_statement::get_valid() {
+		return valid;
+	}
+
+	source_token_list::iterator enum_statement::get_position() {
+		return enum_statement_pos;
+	}
+
+	const enum_statement_kind enum_statement::get_enum_statement_kind() {
+		return es_kind;
+	}
+
+	shared_ptr<enum_statement> enum_statement::parse_enum_statement() {
+		source_token_list::iterator save = root->get_position();
+		enum_statement_pos = save;
+		if (save >= root->get_lexer()->get_source_token_list()->end()) {
+			identifier_list = vector<shared_ptr<literal>>();
+			identifier = nullptr;
+			valid = false;
+			es_kind = enum_statement_kind::ENUM_STATEMENT_NONE;
+			return make_shared<enum_statement>(*this);
+		}
+		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_ENUM);
+		else {
+			identifier_list = vector<shared_ptr<literal>>();
+			identifier = nullptr;
+			valid = false;
+			es_kind = enum_statement_kind::ENUM_STATEMENT_NONE;
+			return make_shared<enum_statement>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
+			identifier_list = vector<shared_ptr<literal>>();
+			identifier = nullptr;
+			valid = false;
+			es_kind = enum_statement_kind::ENUM_STATEMENT_NONE;
+			return make_shared<enum_statement>(*this);
+		}
+		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_POINT_DECL);
+		else {
+			identifier_list = vector<shared_ptr<literal>>();
+			identifier = nullptr;
+			valid = false;
+			es_kind = enum_statement_kind::ENUM_STATEMENT_NONE;
+			return make_shared<enum_statement>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		identifier = make_shared<literal>(root)->parse_literal();
+		if (identifier->get_valid());
+		else {
+			identifier_list = vector<shared_ptr<literal>>();
+			valid = false;
+			es_kind = enum_statement_kind::ENUM_STATEMENT_NONE;
+			return make_shared<enum_statement>(*this);
+		}
+		if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
+			identifier_list = vector<shared_ptr<literal>>();
+			valid = true;
+			es_kind = enum_statement_kind::ENUM_STATEMENT_DECLARATION;
+			return make_shared<enum_statement>(*this);
+		}
+		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_NEW_LINE) {
+			identifier_list = vector<shared_ptr<literal>>();
+			valid = true;
+			es_kind = enum_statement_kind::ENUM_STATEMENT_DECLARATION;
+			return make_shared<enum_statement>(*this);
+		}
+		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_OPEN_BRACE);
+		else {
+			identifier_list = vector<shared_ptr<literal>>();
+			valid = false;
+			es_kind = enum_statement_kind::ENUM_STATEMENT_NONE;
+			return make_shared<enum_statement>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		es_kind = enum_statement_kind::ENUM_STATEMENT_DEFINITION;
+		while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() != token_kind::TOKEN_CLOSE_BRACE) {
+			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_NEW_LINE)
+				root->set_position(root->get_position() + 1);
+			shared_ptr<literal> lit = make_shared<literal>(root)->parse_literal();
+			if (lit->get_valid());
+			else {
+				valid = false;
+				return make_shared<enum_statement>(*this);
+			}
+			identifier_list.push_back(lit);
+			if (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_COMMA)
+				root->set_position(root->get_position() + 1);
+			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_NEW_LINE)
+				root->set_position(root->get_position() + 1);
+		}
+		if (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_CLOSE_BRACE);
+		else {
+			valid = false;
+			return make_shared<enum_statement>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		valid = true;
+		return make_shared<enum_statement>(*this);
+	}
+
 	statement::statement(shared_ptr<root_node> r) : root_node(*r), statement_pos(r->get_position()) {
 		valid = false;
 		decl = nullptr;
@@ -4391,6 +4511,7 @@ namespace karma_lang {
 		mod = nullptr;
 		ret = nullptr;
 		cond = nullptr;
+		_enum = nullptr;
 		kind = statement_kind::STATEMENT_NONE;
 	}
 
@@ -4438,6 +4559,10 @@ namespace karma_lang {
 		return cond;
 	}
 
+	shared_ptr<enum_statement> statement::get_enum_statement() {
+		return _enum;
+	}
+
 	shared_ptr<statement> statement::parse_statement() {
 		source_token_list::iterator save = root->get_position();
 		statement_pos = root->get_position();
@@ -4451,6 +4576,7 @@ namespace karma_lang {
 			mod = nullptr;
 			ret = nullptr;
 			cond = nullptr;
+			_enum = nullptr;
 			return make_shared<statement>(*this);
 		}
 		if((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_VAR) {
@@ -4462,6 +4588,7 @@ namespace karma_lang {
 			struc = nullptr;
 			mod = nullptr;
 			ret = nullptr;
+			_enum = nullptr;
 			cond = nullptr;
 			return make_shared<statement>(*this);
 		}
@@ -4475,6 +4602,7 @@ namespace karma_lang {
 			valid = func->get_valid();
 			ret = nullptr;
 			cond = nullptr;
+			_enum = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_STRUCT) {
@@ -4487,6 +4615,7 @@ namespace karma_lang {
 			mod = nullptr;
 			ret = nullptr;
 			cond = nullptr;
+			_enum = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_MODULE) {
@@ -4497,6 +4626,7 @@ namespace karma_lang {
 			func = nullptr;
 			ret = nullptr;
 			cond = nullptr;
+			_enum = nullptr;
 			mod = make_shared<module>(root)->parse_module();
 			valid = mod->get_valid();
 			return make_shared<statement>(*this);
@@ -4509,6 +4639,7 @@ namespace karma_lang {
 			func = nullptr;
 			mod = nullptr;
 			cond = nullptr;
+			_enum = nullptr;
 			ret = make_shared<return_statement>(root)->parse_return_statement();
 			valid = ret->get_valid();
 			return make_shared<statement>(*this);
@@ -4522,7 +4653,21 @@ namespace karma_lang {
 			mod = nullptr;
 			cond = make_shared<conditional_statement>(root)->parse_conditional_statement();
 			ret = nullptr;
+			_enum = nullptr;
 			valid = cond->get_valid();
+			return make_shared<statement>(*this);
+		}
+		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_ENUM) {
+			b_expression = nullptr;
+			kind = statement_kind::STATEMENT_ENUM_STATEMENT;
+			decl = nullptr;
+			struc = nullptr;
+			func = nullptr;
+			mod = nullptr;
+			cond = nullptr;
+			ret = nullptr;
+			_enum = make_shared<enum_statement>(root)->parse_enum_statement();
+			valid = _enum->get_valid();
 			return make_shared<statement>(*this);
 		}
 		else {
@@ -4532,6 +4677,7 @@ namespace karma_lang {
 			mod = nullptr;
 			ret = nullptr;
 			cond = nullptr;
+			_enum = nullptr;
 			kind = statement_kind::STATEMENT_EXPRESSION;
 			b_expression = make_shared<binary_expression>(root)->parse_binary_expression();
 			valid = b_expression->get_valid();
@@ -4546,6 +4692,7 @@ namespace karma_lang {
 		ret = nullptr;
 		mod = nullptr;
 		cond = nullptr;
+		_enum = nullptr;
 		root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 		exit(1);
 		return make_shared<statement>(*this);
