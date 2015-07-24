@@ -459,6 +459,21 @@ namespace karma_lang {
 			const conditional_else_conditional_kind get_conditional_else_conditional_kind();
 	};
 
+	class while_statement : public root_node {
+		vector<shared_ptr<statement>> statement_list;
+		bool valid;
+		source_token_list::iterator while_statement_pos;
+		shared_ptr<binary_expression> condition;
+		public:
+			while_statement(shared_ptr<root_node> r);
+			~while_statement();
+			const bool get_valid();
+			source_token_list::iterator get_position();
+			shared_ptr<binary_expression> get_condition();
+			vector<shared_ptr<statement>> get_statement_list();
+			shared_ptr<while_statement> parse_while_statement();
+	};
+
 	enum enum_statement_kind {
 		ENUM_STATEMENT_DECLARATION, ENUM_STATEMENT_DEFINITION, ENUM_STATEMENT_NONE
 	};
@@ -482,7 +497,8 @@ namespace karma_lang {
 
 	enum statement_kind {
 		STATEMENT_DECLARATION, STATEMENT_EXPRESSION, STATEMENT_FUNCTION, STATEMENT_STRUCTURE, 
-		STATEMENT_MODULE, STATEMENT_RETURN_STATEMENT, STATEMENT_CONDITIONAL_STATEMENT, STATEMENT_ENUM_STATEMENT, STATEMENT_NONE
+		STATEMENT_MODULE, STATEMENT_RETURN_STATEMENT, STATEMENT_CONDITIONAL_STATEMENT, STATEMENT_ENUM_STATEMENT,
+		STATEMENT_WHILE_STATMENT, STATEMENT_NONE
 	};
 
 	class statement : public root_node {
@@ -495,6 +511,7 @@ namespace karma_lang {
 		shared_ptr<return_statement> ret;
 		shared_ptr<conditional_statement> cond;
 		shared_ptr<enum_statement> _enum;
+		shared_ptr<while_statement> wloop;
 		bool valid;
 		source_token_list::iterator statement_pos;
 		public:
@@ -512,6 +529,7 @@ namespace karma_lang {
 			shared_ptr<enum_statement> get_enum_statement();
 			shared_ptr<return_statement> get_return_statement();
 			shared_ptr<conditional_statement> get_conditional_statement();
+			shared_ptr<while_statement> get_while_statement();
 	};
 }
 #endif

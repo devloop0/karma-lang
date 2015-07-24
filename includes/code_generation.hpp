@@ -79,6 +79,8 @@ namespace karma_lang {
 			const static string ret;
 			const static string _enum;
 			const static string ifunc;
+			const static string scope;
+			const static string escope;
 	};
 
 	class code_generation_symbol_table {
@@ -120,6 +122,8 @@ namespace karma_lang {
 			string generate_return_statement(int tab, string one);
 			string generate_return_statement(int tab, int one);
 			string generate_enum_statement(int tab, string e, vector<string> elist);
+			string generate_scope_statement(int tab);
+			string generate_escope_statement(int tab);
 	};
 
 	class generate_code {
@@ -129,6 +133,8 @@ namespace karma_lang {
 		shared_ptr<code_generation_symbol_table> code_gen_sym_table;
 		vector<string> instruction_list;
 		vector<string> identifier_list;
+		vector<int> pre_loop_stack;
+		vector<int> post_loop_stack;
 		int number;
 		int label_count;
 		int tab_count;
@@ -149,6 +155,7 @@ namespace karma_lang {
 		bool descend_return_statement(shared_ptr<annotated_return_statement> aret, bool in_module);
 		bool descend_conditional_statement(shared_ptr<annotated_conditional_statement> acond, bool in_module);
 		bool descend_enum_statement(shared_ptr<annotated_enum_statement> aenum, bool in_module);
+		bool descend_while_statement(shared_ptr<annotated_while_statement> awhile, bool in_module);
 
 		vector<tuple<string, string, int>> name_list;
 		public:

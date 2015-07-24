@@ -496,6 +496,8 @@ namespace karma_lang {
 						tkind = token_kind::TOKEN_IF;
 					else if (acc == token_keywords::_enum)
 						tkind = token_kind::TOKEN_ENUM;
+					else if (acc == token_keywords::_while)
+						tkind = token_kind::TOKEN_WHILE;
 					shared_ptr<token> tok = make_shared<token>(tabs, save, cols + 1, acc, file, line_number, tkind);
 					tok_list.push_back(tok);
 				}

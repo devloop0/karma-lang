@@ -31,6 +31,7 @@ namespace karma_lang {
 			const static string expected_close_dict;
 			const static string expected_a_colon_to_separate_key_value_pairs;
 			const static string expected_close_bracket;
+			const static string expected_close_brace;
 			const static string explicit_empty_step_size;
 			const static string expected_a_point_to;
 			const static string expected_an_equals;
@@ -74,11 +75,13 @@ namespace karma_lang {
 			const static string ambiguous_function_overload;
 			const static string modules_cannot_be_in_functions;
 			const static string return_statements_can_only_be_in_functions;
-			const static string modules_functions_structures_not_expected_here;
+			const static string modules_functions_structures_enums_not_expected_here;
 			const static string immut_not_allowed_for_function_parameters;
 			const static string enum_declared_but_not_defined;
 			const static string mismatched_scopes;
 			const static string enum_names_must_be_unique;
+			const static string enums_not_allowed_in_functions;
+			const static string error_parsing_statement;
 	};
 }
 

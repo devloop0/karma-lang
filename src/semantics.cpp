@@ -433,8 +433,9 @@ namespace karma_lang {
 		for (int i = 0; i < cond->get_if_statement_list().size(); i++) {
 			shared_ptr<annotated_statement> astmt = analyze_statement(cond->get_if_statement_list()[i]);
 			if (astmt->get_statement_kind() == statement_kind::STATEMENT_FUNCTION || astmt->get_statement_kind() == statement_kind::STATEMENT_MODULE ||
-				astmt->get_statement_kind() == statement_kind::STATEMENT_STRUCTURE) {
-				root->get_diagnostics_reporter()->print(diagnostic_messages::modules_functions_structures_not_expected_here, astmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+				astmt->get_statement_kind() == statement_kind::STATEMENT_STRUCTURE || astmt->get_statement_kind() == statement_kind::STATEMENT_ENUM_STATEMENT) {
+				root->get_diagnostics_reporter()->print(diagnostic_messages::modules_functions_structures_enums_not_expected_here, astmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+				return make_shared<annotated_conditional_statement>(ann_root_node, cond, nullptr, vector<shared_ptr<annotated_statement>>(), nullptr, vector<shared_ptr<annotated_statement>>(), bad);
 			}
 			isl.push_back(astmt);
 		}
@@ -455,8 +456,9 @@ namespace karma_lang {
 			for (int i = 0; i < cond->get_else_statement_list().size(); i++) {
 				shared_ptr<annotated_statement> astmt = analyze_statement(cond->get_else_statement_list()[i]);
 				if (astmt->get_statement_kind() == statement_kind::STATEMENT_FUNCTION || astmt->get_statement_kind() == statement_kind::STATEMENT_MODULE ||
-					astmt->get_statement_kind() == statement_kind::STATEMENT_STRUCTURE) {
-					root->get_diagnostics_reporter()->print(diagnostic_messages::modules_functions_structures_not_expected_here, astmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+					astmt->get_statement_kind() == statement_kind::STATEMENT_STRUCTURE || astmt->get_statement_kind() == statement_kind::STATEMENT_ENUM_STATEMENT) {
+					root->get_diagnostics_reporter()->print(diagnostic_messages::modules_functions_structures_enums_not_expected_here, astmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+					return make_shared<annotated_conditional_statement>(ann_root_node, cond, nullptr, vector<shared_ptr<annotated_statement>>(), nullptr, vector<shared_ptr<annotated_statement>>(), bad);
 				}
 				esl.push_back(astmt);
 			}
@@ -530,6 +532,40 @@ namespace karma_lang {
 		return make_shared<annotated_enum_statement>(ann_root_node, _enum, alit, ailist, parent_enum);
 	}
 
+	shared_ptr<annotated_while_statement> analyze_ast::analyze_while_statement(shared_ptr<while_statement> _while) {
+		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
+		if (!_while->get_valid())
+			return make_shared<annotated_while_statement>(ann_root_node, _while, nullptr, vector<shared_ptr<annotated_statement>>(), bad);
+		shared_ptr<annotated_binary_expression> abexpr = analyze_binary_expression(_while->get_condition());
+		type_information _while_type(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_NOT_APPLICABLE);
+
+		type_information _any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_NONE);
+		type_information _boolean(type_kind::TYPE_BOOLEAN, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_NONE);
+		type_information _nil(type_kind::TYPE_NIL, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_NONE);
+		if (abexpr->get_type_information() == _boolean || abexpr->get_type_information() == _any || abexpr->get_type_information() == _nil);
+		else {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::incompatible_types, _while->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			return make_shared<annotated_while_statement>(ann_root_node, _while, nullptr, vector<shared_ptr<annotated_statement>>(), bad);
+		}
+		vector<shared_ptr<statement>> stmt_list = _while->get_statement_list();
+		vector<shared_ptr<annotated_statement>> astmt_list;
+		shared_ptr<symbol_table> sym_table = make_shared<symbol_table>();
+		s_kind_list.push_back(scope_kind::SCOPE_LOOP);
+		sym_table_list.push_back(sym_table);
+		for (int i = 0; i < stmt_list.size(); i++) {
+			shared_ptr<annotated_statement> astmt = analyze_statement(stmt_list[i]);
+			if (astmt->get_statement_kind() == statement_kind::STATEMENT_FUNCTION || astmt->get_statement_kind() == statement_kind::STATEMENT_MODULE ||
+				astmt->get_statement_kind() == statement_kind::STATEMENT_STRUCTURE || astmt->get_statement_kind() == statement_kind::STATEMENT_ENUM_STATEMENT) {
+				root->get_diagnostics_reporter()->print(diagnostic_messages::modules_functions_structures_enums_not_expected_here, astmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+				return make_shared<annotated_while_statement>(ann_root_node, _while, nullptr, vector<shared_ptr<annotated_statement>>(), bad);
+			}
+			astmt_list.push_back(astmt);
+		}
+		s_kind_list.pop_back();
+		sym_table_list.pop_back();
+		return make_shared<annotated_while_statement>(ann_root_node, _while, abexpr, astmt_list, _while_type);
+	}
+
 	shared_ptr<annotated_statement> analyze_ast::analyze_statement(shared_ptr<statement> stmt) {
 		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
 		shared_ptr<annotated_binary_expression> abexpr = nullptr;
@@ -540,8 +576,9 @@ namespace karma_lang {
 		shared_ptr<annotated_return_statement> aret = nullptr;
 		shared_ptr<annotated_conditional_statement> acond = nullptr;
 		shared_ptr<annotated_enum_statement> aenum = nullptr;
+		shared_ptr<annotated_while_statement> awhile = nullptr;
 		if (!stmt->get_valid())
-			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
+			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
 		if (stmt->get_statement_kind() == statement_kind::STATEMENT_DECLARATION)
 			adecl = analyze_declaration(stmt->get_declaration());
 		else if (stmt->get_statement_kind() == statement_kind::STATEMENT_EXPRESSION)
@@ -558,8 +595,10 @@ namespace karma_lang {
 			acond = analyze_conditional_statement(stmt->get_conditional_statement());
 		else if (stmt->get_statement_kind() == statement_kind::STATEMENT_ENUM_STATEMENT)
 			aenum = analyze_enum_statement(stmt->get_enum_statement());
+		else if (stmt->get_statement_kind() == statement_kind::STATEMENT_WHILE_STATMENT)
+			awhile = analyze_while_statement(stmt->get_while_statement());
 		else
-			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
+			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
 		type_information ret = bad;
 		if (adecl != nullptr) ret = adecl->get_type_information();
 		else if (abexpr != nullptr) ret = abexpr->get_type_information();
@@ -569,8 +608,9 @@ namespace karma_lang {
 		else if (aret != nullptr) ret = aret->get_type_information();
 		else if (acond != nullptr) ret = acond->get_type_information();
 		else if (aenum != nullptr) ret = aenum->get_type_information();
+		else if (awhile != nullptr) ret = awhile->get_type_information();
 		ret = type_information(ret, value_kind::VALUE_NOT_APPLICABLE);
-		return make_shared<annotated_statement>(ann_root_node, stmt, abexpr, adecl, afunc, astruc, amod, aret, acond, aenum, ret);
+		return make_shared<annotated_statement>(ann_root_node, stmt, abexpr, adecl, afunc, astruc, amod, aret, acond, aenum, awhile, ret);
 	}
 
 	shared_ptr<annotated_module> analyze_ast::analyze_module(shared_ptr<module> mod) {
@@ -759,6 +799,10 @@ namespace karma_lang {
 			}
 			else if (stmt->get_statement_kind() == statement_kind::STATEMENT_MODULE) {
 				root->get_diagnostics_reporter()->print(diagnostic_messages::modules_cannot_be_in_functions, stmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+				return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
+			}
+			else if (stmt->get_statement_kind() == statement_kind::STATEMENT_ENUM_STATEMENT) {
+				root->get_diagnostics_reporter()->print(diagnostic_messages::enums_not_allowed_in_functions, stmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 				return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
 			}
 		}
@@ -2220,7 +2264,8 @@ namespace karma_lang {
 	annotated_statement::annotated_statement(shared_ptr<annotated_root_node> arn, shared_ptr<statement> stmt, shared_ptr<annotated_binary_expression> abe,
 		shared_ptr<annotated_declaration> adecl, shared_ptr<annotated_function> afunc, shared_ptr<annotated_structure> astruc,
 		shared_ptr<annotated_module> amod, shared_ptr<annotated_return_statement> aret, shared_ptr<annotated_conditional_statement> acond,
-		shared_ptr<annotated_enum_statement> aenum, type_information ti) : annotated_root_node(*arn), statement_pos(stmt->get_position()), t_inf(ti) {
+		shared_ptr<annotated_enum_statement> aenum, shared_ptr<annotated_while_statement> awhile, type_information ti) : annotated_root_node(*arn),
+		statement_pos(stmt->get_position()), t_inf(ti) {
 		kind = stmt->get_statement_kind();
 		b_expression = abe;
 		decl = adecl;
@@ -2230,6 +2275,7 @@ namespace karma_lang {
 		ret = aret;
 		cond = acond;
 		_enum = aenum;
+		wloop = awhile;
 	}
 
 	annotated_statement::~annotated_statement() {
@@ -2278,6 +2324,10 @@ namespace karma_lang {
 
 	shared_ptr<annotated_enum_statement> annotated_statement::get_enum_statement() {
 		return _enum;
+	}
+
+	shared_ptr<annotated_while_statement> annotated_statement::get_while_statement() {
+		return wloop;
 	}
 
 	annotated_ternary_expression::annotated_ternary_expression(shared_ptr<annotated_root_node> arn, shared_ptr<ternary_expression> texpr, shared_ptr<annotated_root_node> c,
@@ -2571,6 +2621,32 @@ namespace karma_lang {
 	}
 
 	type_information annotated_enum_statement::get_type_information() {
+		return t_inf;
+	}
+
+	annotated_while_statement::annotated_while_statement(shared_ptr<annotated_root_node> arn, shared_ptr<while_statement> _while, shared_ptr<annotated_binary_expression> cond,
+		vector<shared_ptr<annotated_statement>> astmt_list, type_information ti) : annotated_root_node(*arn), t_inf(ti), while_statement_pos(_while->get_position()) {
+		condition = cond;
+		statement_list = astmt_list;
+	}
+
+	annotated_while_statement::~annotated_while_statement() {
+
+	}
+
+	shared_ptr<annotated_binary_expression> annotated_while_statement::get_condition() {
+		return condition;
+	}
+
+	vector<shared_ptr<annotated_statement>> annotated_while_statement::get_statement_list() {
+		return statement_list;
+	}
+
+	source_token_list::iterator annotated_while_statement::get_position() {
+		return while_statement_pos;
+	}
+
+	type_information annotated_while_statement::get_type_information() {
 		return t_inf;
 	}
 }

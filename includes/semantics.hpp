@@ -472,6 +472,21 @@ namespace karma_lang {
 			type_information get_type_information();
 	};
 
+	class annotated_while_statement : public annotated_root_node {
+		shared_ptr<annotated_binary_expression> condition;
+		source_token_list::iterator while_statement_pos;
+		vector<shared_ptr<annotated_statement>> statement_list;
+		type_information t_inf;
+		public:
+			annotated_while_statement(shared_ptr<annotated_root_node> arn, shared_ptr<while_statement> _while, shared_ptr<annotated_binary_expression> cond,
+				vector<shared_ptr<annotated_statement>> astmt_list, type_information ti);
+			~annotated_while_statement();
+			shared_ptr<annotated_binary_expression> get_condition();
+			source_token_list::iterator get_position();
+			vector<shared_ptr<annotated_statement>> get_statement_list();
+			type_information get_type_information();
+	};
+
 	class annotated_statement : public annotated_root_node {
 		statement_kind kind;
 		shared_ptr<annotated_binary_expression> b_expression;
@@ -482,13 +497,14 @@ namespace karma_lang {
 		shared_ptr<annotated_return_statement> ret;
 		shared_ptr<annotated_conditional_statement> cond;
 		shared_ptr<annotated_enum_statement> _enum;
+		shared_ptr<annotated_while_statement> wloop;
 		source_token_list::iterator statement_pos;
 		type_information t_inf;
 		public:
 			annotated_statement(shared_ptr<annotated_root_node> arn, shared_ptr<statement> stmt, shared_ptr<annotated_binary_expression> abe,
 				shared_ptr<annotated_declaration> adecl, shared_ptr<annotated_function> afunc, shared_ptr<annotated_structure> astruc, 
 				shared_ptr<annotated_module> amod, shared_ptr<annotated_return_statement> aret, shared_ptr<annotated_conditional_statement> acond, 
-				shared_ptr<annotated_enum_statement> aenum, type_information ti);
+				shared_ptr<annotated_enum_statement> aenum, shared_ptr<annotated_while_statement> awhile, type_information ti);
 			~annotated_statement();
 			const statement_kind get_statement_kind();
 			shared_ptr<annotated_binary_expression> get_binary_expression();
@@ -501,6 +517,7 @@ namespace karma_lang {
 			shared_ptr<annotated_return_statement> get_return_statement();
 			shared_ptr<annotated_conditional_statement> get_conditional_statement();
 			shared_ptr<annotated_enum_statement> get_enum_statement();
+			shared_ptr<annotated_while_statement> get_while_statement();
 	};
 
 	class symbol_table;
@@ -567,7 +584,7 @@ namespace karma_lang {
 	};
 
 	enum scope_kind {
-		SCOPE_GLOBAL, SCOPE_FUNCTION, SCOPE_MODULE, SCOPE_CONDITIONAL, SCOPE_ENUM, SCOPE_NONE
+		SCOPE_GLOBAL, SCOPE_FUNCTION, SCOPE_MODULE, SCOPE_CONDITIONAL, SCOPE_ENUM, SCOPE_LOOP, SCOPE_NONE
 	};
 
 	class analyze_ast {
@@ -597,6 +614,7 @@ namespace karma_lang {
 		shared_ptr<annotated_return_statement> analyze_return_statement(shared_ptr<return_statement> ret);
 		shared_ptr<annotated_conditional_statement> analyze_conditional_statement(shared_ptr<conditional_statement> cond);
 		shared_ptr<annotated_enum_statement> analyze_enum_statement(shared_ptr<enum_statement> _enum);
+		shared_ptr<annotated_while_statement> analyze_while_statement(shared_ptr<while_statement> _while);
 
 		pair<vector<shared_ptr<symbol>>, bool> find_all_symbols(shared_ptr<annotated_literal> sym);
 		pair<vector<shared_ptr<symbol>>, bool> find_all_symbols(shared_ptr<literal> sym);
