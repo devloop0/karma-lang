@@ -33,6 +33,7 @@ namespace karma_lang {
 	class declaration;
 	class statement;
 	class ternary_expression;
+	class function;
 
 	class parser {
 		protected:
@@ -83,7 +84,7 @@ namespace karma_lang {
 
 	enum primary_expression_kind {
 		PRIMARY_EXPRESSION_LITERAL, PRIMARY_EXPRESSION_PARENTHESIZED_EXPRESSION, PRIMARY_EXPRESSION_BRACKETED_EXPRESSION, PRIMARY_EXPRESSION_SEQUENCE,
-		PRIMARY_EXPRESSION_DICTIONARY, PRIMARY_EXPRESSION_NONE
+		PRIMARY_EXPRESSION_DICTIONARY, PRIMARY_EXPRESSION_LAMBDA, PRIMARY_EXPRESSION_NONE
 	};
 
 	class primary_expression : public root_node {
@@ -93,6 +94,7 @@ namespace karma_lang {
 		shared_ptr<binary_expression> raw_parenthesized_expression;
 		shared_ptr<sequence> seq;
 		shared_ptr<dictionary> dict;
+		shared_ptr<function> lambda;
 		source_token_list::iterator primary_expression_pos;
 		public:
 			primary_expression(shared_ptr<root_node> r);
@@ -105,6 +107,7 @@ namespace karma_lang {
 			shared_ptr<binary_expression> get_raw_parenthesized_expression();
 			shared_ptr<sequence> get_sequence();
 			shared_ptr<dictionary> get_dictionary();
+			shared_ptr<function> get_lambda();
 	};
 
 	enum postfix_operation_kind {
@@ -346,6 +349,10 @@ namespace karma_lang {
 		FUNCTION_VA_ARGS_YES, FUNCTION_VA_ARGS_NO, FUNCTION_VA_ARGS_NONE
 	};
 
+	enum lambda_kind {
+		LAMBDA_YES, LAMBDA_NO, LAMBA_NONE
+	};
+
 	class function : public root_node {
 		shared_ptr<literal> identifier;
 		vector<shared_ptr<declaration>> parameter_list;
@@ -355,6 +362,7 @@ namespace karma_lang {
 		source_token_list::iterator function_pos;
 		function_declaration_definition_kind f_kind;
 		function_va_args_kind fva_kind;
+		lambda_kind l_kind;
 	public:
 		function(shared_ptr<root_node> r);
 		~function();
@@ -364,9 +372,10 @@ namespace karma_lang {
 		vector<shared_ptr<declaration>> get_parameter_list();
 		const bool get_valid();
 		source_token_list::iterator get_position();
-		shared_ptr<function> parse_function();
+		shared_ptr<function> parse_function(bool lambda);
 		const function_declaration_definition_kind get_function_kind();
 		const function_va_args_kind get_function_va_args_kind();
+		const lambda_kind get_lambda_kind();
 	};
 
 	enum structure_declaration_definition_kind {
@@ -495,10 +504,27 @@ namespace karma_lang {
 			shared_ptr<enum_statement> parse_enum_statement();
 	};
 
+	class for_statement : public root_node {
+		shared_ptr<declaration> loop_variable;
+		shared_ptr<binary_expression> b_expression;
+		vector<shared_ptr<statement>> statement_list;
+		source_token_list::iterator for_statement_pos;
+		bool valid;
+		public:
+			for_statement(shared_ptr<root_node> r);
+			~for_statement();
+			shared_ptr<declaration> get_loop_variable();
+			shared_ptr<binary_expression> get_expression();
+			vector<shared_ptr<statement>> get_statement_list();
+			source_token_list::iterator get_position();
+			const bool get_valid();
+			shared_ptr<for_statement> parse_for_statement();
+	};
+
 	enum statement_kind {
 		STATEMENT_DECLARATION, STATEMENT_EXPRESSION, STATEMENT_FUNCTION, STATEMENT_STRUCTURE, 
 		STATEMENT_MODULE, STATEMENT_RETURN_STATEMENT, STATEMENT_CONDITIONAL_STATEMENT, STATEMENT_ENUM_STATEMENT,
-		STATEMENT_WHILE_STATMENT, STATEMENT_NONE
+		STATEMENT_WHILE_STATMENT, STATEMENT_FOR_STATEMENT, STATEMENT_NONE
 	};
 
 	class statement : public root_node {
@@ -512,6 +538,7 @@ namespace karma_lang {
 		shared_ptr<conditional_statement> cond;
 		shared_ptr<enum_statement> _enum;
 		shared_ptr<while_statement> wloop;
+		shared_ptr<for_statement> floop;
 		bool valid;
 		source_token_list::iterator statement_pos;
 		public:
@@ -530,6 +557,7 @@ namespace karma_lang {
 			shared_ptr<return_statement> get_return_statement();
 			shared_ptr<conditional_statement> get_conditional_statement();
 			shared_ptr<while_statement> get_while_statement();
+			shared_ptr<for_statement> get_for_statement();
 	};
 }
 #endif

@@ -108,6 +108,7 @@ namespace karma_lang {
 	class annotated_dictionary;
 	class annotated_subscript;
 	class linearized_postfix_expression;
+	class annotated_function;
 
 	class annotated_root_node {
 		protected:
@@ -146,12 +147,13 @@ namespace karma_lang {
 		shared_ptr<annotated_binary_expression> raw_parenthesized_expression;
 		shared_ptr<annotated_sequence> seq;
 		shared_ptr<annotated_dictionary> dict;
+		shared_ptr<annotated_function> lambda;
 		source_token_list::iterator primary_expression_pos;
 		type_information t_inf;
 		public:
 			annotated_primary_expression(shared_ptr<annotated_root_node> arn, shared_ptr<primary_expression> prexpr, shared_ptr<annotated_literal> l,
 				shared_ptr<annotated_binary_expression> abe, shared_ptr<annotated_sequence> as, shared_ptr<annotated_dictionary> ad,
-				type_information ti);
+				shared_ptr<annotated_function> afunc, type_information ti);
 			~annotated_primary_expression();
 			const primary_expression_kind get_primary_expression_kind();
 			shared_ptr<annotated_literal> get_raw_literal();
@@ -160,6 +162,7 @@ namespace karma_lang {
 			shared_ptr<annotated_sequence> get_sequence();
 			shared_ptr<annotated_dictionary> get_dictionary();
 			type_information get_type_information();
+			shared_ptr<annotated_function> get_lambda();
 	};
 
 	class annotated_linearized_postfix_expression : public annotated_root_node {
@@ -359,6 +362,7 @@ namespace karma_lang {
 		function_declaration_definition_kind fdd_kind;
 		function_va_args_kind fva_kind;
 		bool immutable;
+		lambda_kind l_kind;
 		public:
 			annotated_function(shared_ptr<annotated_root_node> arn, shared_ptr<function> func,
 				shared_ptr<annotated_literal> alit, vector<shared_ptr<annotated_declaration>> parm_list,
@@ -373,6 +377,7 @@ namespace karma_lang {
 			const function_declaration_definition_kind get_function_declaration_definition_kind();
 			const function_va_args_kind get_function_va_args_kind();
 			const bool get_immutable();
+			const lambda_kind get_lambda_kind();
 	};
 
 	class annotated_structure : public annotated_root_node {
@@ -487,6 +492,23 @@ namespace karma_lang {
 			type_information get_type_information();
 	};
 
+	class annotated_for_statement : public annotated_root_node {
+		shared_ptr<annotated_declaration> loop_variable;
+		source_token_list::iterator for_statement_pos;
+		vector<shared_ptr<annotated_statement>> statement_list;
+		shared_ptr<annotated_binary_expression> b_expression;
+		type_information t_inf;
+		public:
+			annotated_for_statement(shared_ptr<annotated_root_node> arn, shared_ptr<for_statement> _for, shared_ptr<annotated_declaration> lv,
+				shared_ptr<annotated_binary_expression> abexpr, vector<shared_ptr<annotated_statement>> astmt_list, type_information ti);
+			~annotated_for_statement();
+			source_token_list::iterator get_position();
+			shared_ptr<annotated_declaration> get_loop_variable();
+			shared_ptr<annotated_binary_expression> get_expression();
+			vector<shared_ptr<annotated_statement>> get_statement_list();
+			type_information get_type_information();
+	};
+
 	class annotated_statement : public annotated_root_node {
 		statement_kind kind;
 		shared_ptr<annotated_binary_expression> b_expression;
@@ -498,13 +520,14 @@ namespace karma_lang {
 		shared_ptr<annotated_conditional_statement> cond;
 		shared_ptr<annotated_enum_statement> _enum;
 		shared_ptr<annotated_while_statement> wloop;
+		shared_ptr<annotated_for_statement> floop;
 		source_token_list::iterator statement_pos;
 		type_information t_inf;
 		public:
 			annotated_statement(shared_ptr<annotated_root_node> arn, shared_ptr<statement> stmt, shared_ptr<annotated_binary_expression> abe,
 				shared_ptr<annotated_declaration> adecl, shared_ptr<annotated_function> afunc, shared_ptr<annotated_structure> astruc, 
 				shared_ptr<annotated_module> amod, shared_ptr<annotated_return_statement> aret, shared_ptr<annotated_conditional_statement> acond, 
-				shared_ptr<annotated_enum_statement> aenum, shared_ptr<annotated_while_statement> awhile, type_information ti);
+				shared_ptr<annotated_enum_statement> aenum, shared_ptr<annotated_while_statement> awhile, shared_ptr<annotated_for_statement> afor, type_information ti);
 			~annotated_statement();
 			const statement_kind get_statement_kind();
 			shared_ptr<annotated_binary_expression> get_binary_expression();
@@ -518,6 +541,7 @@ namespace karma_lang {
 			shared_ptr<annotated_conditional_statement> get_conditional_statement();
 			shared_ptr<annotated_enum_statement> get_enum_statement();
 			shared_ptr<annotated_while_statement> get_while_statement();
+			shared_ptr<annotated_for_statement> get_for_statement();
 	};
 
 	class symbol_table;
@@ -546,7 +570,6 @@ namespace karma_lang {
 			shared_ptr<literal> get_identifier();
 			vector<type_information> get_function_arguments();
 			shared_ptr<symbol_table> get_class_type_information();
-			shared_ptr<symbol_table> get_module_type_information();
 			const function_declaration_definition_kind get_function_declaration_definition_kind();
 			function_declaration_definition_kind set_function_declaration_definition_kind(function_declaration_definition_kind fddk);
 			const structure_kind get_structure_kind();
@@ -567,7 +590,7 @@ namespace karma_lang {
 			vector<shared_ptr<symbol>> get_symbol_table();
 			shared_ptr<symbol> operator[](int i);
 			vector<shared_ptr<symbol>> find_all_symbols(shared_ptr<literal> lit);
-			shared_ptr<symbol> add_symbol(shared_ptr<root_node> root, source_token_list::iterator pos, shared_ptr<symbol> sym);
+			shared_ptr<symbol> add_symbol(shared_ptr<symbol> sym);
 			vector<shared_ptr<symbol>> find_all_symbols(shared_ptr<annotated_literal> alit);
 	};
 
@@ -615,6 +638,7 @@ namespace karma_lang {
 		shared_ptr<annotated_conditional_statement> analyze_conditional_statement(shared_ptr<conditional_statement> cond);
 		shared_ptr<annotated_enum_statement> analyze_enum_statement(shared_ptr<enum_statement> _enum);
 		shared_ptr<annotated_while_statement> analyze_while_statement(shared_ptr<while_statement> _while);
+		shared_ptr<annotated_for_statement> analyze_for_statement(shared_ptr<for_statement> _for);
 
 		pair<vector<shared_ptr<symbol>>, bool> find_all_symbols(shared_ptr<annotated_literal> sym);
 		pair<vector<shared_ptr<symbol>>, bool> find_all_symbols(shared_ptr<literal> sym);

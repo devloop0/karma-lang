@@ -81,6 +81,10 @@ namespace karma_lang {
 			const static string ifunc;
 			const static string scope;
 			const static string escope;
+			const static string dmov;
+			const static string lambda;
+			const static string ilambda;
+			const static string elambda;
 	};
 
 	class code_generation_symbol_table {
@@ -112,9 +116,8 @@ namespace karma_lang {
 			string generate_sequence_instruction(int tab, string op, int one, vector<int> indices);
 			string generate_binary_operation_instruction(int tab, binary_operation_kind bopk, int store, string name, int store2, string name2, bool rhs_important);
 			string generate_temp_name(int one);
-			string generate_call_instruction(int tab, string dest, string name, vector<string> reg_list);
 			string generate_function_header(int tab, string name, vector<string> param_list, bool immut);
-			string generate_function_footer();
+			string generate_function_footer(int tab);
 			string generate_structure_header(int tab, string name, vector<string> member_list, bool immut);
 			string generate_structure_footer(int tab);
 			string generate_module_header(int tab, string mod_name, bool immut);
@@ -124,6 +127,8 @@ namespace karma_lang {
 			string generate_enum_statement(int tab, string e, vector<string> elist);
 			string generate_scope_statement(int tab);
 			string generate_escope_statement(int tab);
+			string generate_lambda_header(int tab, string name, vector<string> param_list, bool immut);
+			string generate_lambda_footer(int tab);
 	};
 
 	class generate_code {
@@ -156,6 +161,7 @@ namespace karma_lang {
 		bool descend_conditional_statement(shared_ptr<annotated_conditional_statement> acond, bool in_module);
 		bool descend_enum_statement(shared_ptr<annotated_enum_statement> aenum, bool in_module);
 		bool descend_while_statement(shared_ptr<annotated_while_statement> awhile, bool in_module);
+		bool descend_for_statement(shared_ptr<annotated_for_statement> afor, bool in_module);
 
 		vector<tuple<string, string, int>> name_list;
 		public:

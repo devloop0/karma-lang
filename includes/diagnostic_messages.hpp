@@ -82,6 +82,8 @@ namespace karma_lang {
 			const static string enum_names_must_be_unique;
 			const static string enums_not_allowed_in_functions;
 			const static string error_parsing_statement;
+			const static string immut_not_allowed_for_for_loop_declaration;
+			const static string lambdas_cannot_be_partially_declared;
 	};
 }
 

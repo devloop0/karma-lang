@@ -51,6 +51,10 @@ namespace karma_lang {
 	const string vm_instruction_list::ifunc = "ifunc";
 	const string vm_instruction_list::scope = "scope";
 	const string vm_instruction_list::escope = "escope";
+	const string vm_instruction_list::dmov = "dmov";
+	const string vm_instruction_list::lambda = "lambda";
+	const string vm_instruction_list::ilambda = "ilambda";
+	const string vm_instruction_list::elambda = "elambda";
 
 	code_generation_symbol_table::code_generation_symbol_table() {
 		raw_string_list = vector<string>();
@@ -216,8 +220,12 @@ namespace karma_lang {
 		return ret;
 	}
 
-	string code_generation_utilities::generate_function_footer() {
-		return vm_instruction_list::efunc;
+	string code_generation_utilities::generate_function_footer(int tab) {
+		string ret;
+		for (int i = 0; i < tab; i++)
+			ret += "\t";
+		ret += vm_instruction_list::efunc;
+		return ret;
 	}
 
 	string code_generation_utilities::generate_module_header(int tab, string mod_name, bool immut) {
@@ -278,6 +286,24 @@ namespace karma_lang {
 		return ret;
 	}
 
+	string code_generation_utilities::generate_lambda_header(int tab, string name, vector<string> param_list, bool immut) {
+		string ret;
+		for (int i = 0; i < tab; i++)
+			ret += "\t";
+		ret += (immut ? vm_instruction_list::ilambda : vm_instruction_list::lambda) + " " + name + " ";
+		for (int i = 0; i < param_list.size(); i++)
+			ret += param_list[i] + " ";
+		return ret;
+	}
+
+	string code_generation_utilities::generate_lambda_footer(int tab) {
+		string ret;
+		for (int i = 0; i < tab; i++)
+			ret += "\t";
+		ret += vm_instruction_list::elambda;
+		return ret;
+	}
+
 	generate_code::generate_code(shared_ptr<analyze_ast> aa) {
 		ann_root_node = aa->get_annotated_root_node();
 		code_gen_sym_table = make_shared<code_generation_symbol_table>();
@@ -331,6 +357,7 @@ namespace karma_lang {
 			int store = number;
 			vector<string> temp = descend_binary_expression(aprexpr->get_raw_parenthesized_expression());
 			string name = temp[0];
+			name = "";
 			if (aprexpr->get_primary_expression_kind() == primary_expression_kind::PRIMARY_EXPRESSION_PARENTHESIZED_EXPRESSION)
 				return make_pair(name, store);
 			else {
@@ -398,6 +425,12 @@ namespace karma_lang {
 			temp_count++;
 			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, s, orig));
 			return make_pair(s, orig);
+		}
+		else if (aprexpr->get_primary_expression_kind() == primary_expression_kind::PRIMARY_EXPRESSION_LAMBDA) {
+			int orig = number;
+			string temp = code_generation_utilities().generate_temp_name(temp_count);
+			descend_function(aprexpr->get_lambda(), false);
+			return make_pair(temp, orig);
 		}
 		d_reporter->print(diagnostic_messages::unreachable, aprexpr->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 		exit(1);
@@ -747,16 +780,23 @@ namespace karma_lang {
 		if (adecl->get_immutable())
 			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::imov, get<1>(tup), store));
 		else
-			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, get<1>(tup), store));
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::dmov, get<1>(tup), store));
 		return true;
 	}
 
 	bool generate_code::descend_function(shared_ptr<annotated_function> afunc, bool in_module) {
 		if (afunc->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
-		string str = afunc->get_identifier()->get_raw_literal()->get_raw_string();
-		string fname = str + (in_module ? "" : "_" + to_string(0));
-		name_list.push_back(make_tuple(str, fname, scope_count));
+		string fname = "";
+		if (afunc->get_lambda_kind() == lambda_kind::LAMBDA_NO) {
+			string str = afunc->get_identifier()->get_raw_literal()->get_raw_string();
+			fname = str + (in_module ? "" : "_" + to_string(0));
+			name_list.push_back(make_tuple(str, fname, scope_count));
+		}
+		else {
+			fname = code_generation_utilities().generate_temp_name(temp_count);
+			temp_count++;
+		}
 		if (afunc->get_function_declaration_definition_kind() == function_declaration_definition_kind::FUNCTION_KIND_FORWARD_DECLARATION)
 			return true;
 		scope_count++;
@@ -767,15 +807,20 @@ namespace karma_lang {
 			name_list.push_back(make_tuple(param, param + "_" + to_string(scope_count), scope_count));
 			param_list.push_back(param + "_" + to_string(scope_count));
 		}
-		if (afunc->get_function_va_args_kind() == function_va_args_kind::FUNCTION_VA_ARGS_YES) {
+		if (afunc->get_function_va_args_kind() == function_va_args_kind::FUNCTION_VA_ARGS_YES)
 			param_list.push_back(token_keywords::va_args);
-			name_list.push_back(make_tuple(builtins::builtin__va_args__, builtins::builtin__va_args__, 0));
-		}
-		instruction_list.push_back(code_generation_utilities().generate_function_header(tab_count, fname, param_list, afunc->get_immutable()));
+		name_list.push_back(make_tuple(builtins::builtin__va_args__, builtins::builtin__va_args__, 0));
+		if(afunc->get_lambda_kind() == lambda_kind::LAMBDA_NO)
+			instruction_list.push_back(code_generation_utilities().generate_function_header(tab_count, fname, param_list, afunc->get_immutable()));
+		else
+			instruction_list.push_back(code_generation_utilities().generate_lambda_header(tab_count, fname, param_list, afunc->get_immutable()));
 		for (int i = 0; i < afunc->get_statement_list().size(); i++)
 			descend_statement(afunc->get_statement_list()[i], in_module);
 		name_list.erase(name_list.begin() + save, name_list.end());
-		instruction_list.push_back(code_generation_utilities().generate_function_footer());
+		if (afunc->get_lambda_kind() == lambda_kind::LAMBDA_NO)
+			instruction_list.push_back(code_generation_utilities().generate_function_footer(tab_count));
+		else
+			instruction_list.push_back(code_generation_utilities().generate_lambda_footer(tab_count));
 		scope_count++;
 		return true;
 	}
@@ -802,7 +847,7 @@ namespace karma_lang {
 		}
 		for (int i = 0; i < struc_member_list.size(); i++) {
 			pair<string, int> pai = struc_member_list[i];
-			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, pai.first, pai.second));
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, astruc->get_immutable() ? vm_instruction_list::imov : vm_instruction_list::dmov, pai.first, pai.second));
 		}
 		instruction_list.push_back(code_generation_utilities().generate_structure_footer(tab_count));
 		return true;
@@ -927,6 +972,57 @@ namespace karma_lang {
 		return true;
 	}
 
+	bool generate_code::descend_for_statement(shared_ptr<annotated_for_statement> afor, bool in_module) {
+		if (afor->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
+			return false;
+		int begin = label_count;
+		label_count++;
+		int end = label_count;
+		label_count++;
+		string index = code_generation_utilities().generate_temp_name(temp_count);
+		temp_count++;
+		instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::dmov, index, "$0"));
+		int store_sequence = number;
+		descend_binary_expression(afor->get_expression());
+		string sequence = code_generation_utilities().generate_temp_name(temp_count);
+		temp_count++;
+		instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::dmov, sequence, store_sequence));
+		instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, begin));
+		instruction_list.push_back(code_generation_utilities().generate_scope_statement(tab_count));
+		int store_index_compare = number;
+		instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, index));
+		number++;
+		int store_sequence_size = number;
+		instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, sequence + "@size"));
+		number++;
+		instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::lt, store_index_compare, store_sequence_size));
+		instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::bneg, store_index_compare));
+		instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store_index_compare, end));
+		pre_loop_stack.push_back(begin);
+		post_loop_stack.push_back(end);
+		scope_count++;
+		int save = name_list.size();
+		shared_ptr<annotated_declaration> adecl = afor->get_loop_variable();
+		string str = adecl->get_identifier()->get_raw_literal()->get_raw_string();
+		string ident_name = str + (in_module ? "" : "_" + to_string(scope_count));
+		name_list.push_back(make_tuple(str, ident_name, scope_count));
+		instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::dmov, ident_name, sequence + "|" + index));
+		for (int i = 0; i < afor->get_statement_list().size(); i++) {
+			shared_ptr<annotated_statement> astmt = afor->get_statement_list()[i];
+			descend_statement(astmt, in_module);
+		}
+		name_list.erase(name_list.begin() + save, name_list.end());
+		instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::inc, index));
+		instruction_list.push_back(code_generation_utilities().generate_escope_statement(tab_count));
+		instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "$true"));
+		instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, number, begin));
+		number++;
+		instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, end));
+		pre_loop_stack.pop_back();
+		post_loop_stack.pop_back();
+		return true;
+	};
+
 	bool generate_code::descend_statement(shared_ptr<annotated_statement> astmt, bool in_module) {
 		if (astmt->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
@@ -950,6 +1046,8 @@ namespace karma_lang {
 			return descend_enum_statement(astmt->get_enum_statement(), in_module);
 		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_WHILE_STATMENT)
 			return descend_while_statement(astmt->get_while_statement(), in_module);
+		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_FOR_STATEMENT)
+			return descend_for_statement(astmt->get_for_statement(), in_module);
 		d_reporter->print(diagnostic_messages::unreachable, astmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 		exit(1);
 	}

@@ -70,4 +70,6 @@ namespace karma_lang {
 	const string diagnostic_messages::enums_not_allowed_in_functions = "Enums not allowed in functions.";
 	const string diagnostic_messages::expected_close_brace = "Expected close brace here.";
 	const string diagnostic_messages::error_parsing_statement = "Error parsing statement.";
+	const string diagnostic_messages::immut_not_allowed_for_for_loop_declaration = "Immut not allowed for, for loop declarations.";
+	const string diagnostic_messages::lambdas_cannot_be_partially_declared = "Lambdas cannot be partially declared.";
 }
