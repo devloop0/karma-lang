@@ -35,6 +35,8 @@ namespace karma_lang {
 			const static string _while;
 			const static string _for;
 			const static string lambda;
+			const static string _break;
+			const static string _continue;
 	};
 }
 

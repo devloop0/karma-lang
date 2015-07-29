@@ -612,6 +612,33 @@ namespace karma_lang {
 		return make_shared<annotated_for_statement>(ann_root_node, _for, adecl, abexpr, astmt_list, _for_ret);
 	}
 
+	shared_ptr<annotated_break_continue_statement> analyze_ast::analyze_break_continue_statement(shared_ptr<break_continue_statement> break_continue) {
+		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
+		if (!break_continue->get_valid())
+			return make_shared<annotated_break_continue_statement>(ann_root_node, break_continue, bad);
+		vector<scope_kind> temp_list;
+		if (find(s_kind_list.begin(), s_kind_list.end(), scope_kind::SCOPE_LOOP) == s_kind_list.end()) {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::break_and_continue_statements_only_allowed_in_loops, break_continue->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			return make_shared<annotated_break_continue_statement>(ann_root_node, break_continue, bad);
+		}
+		type_information ret(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_NOT_APPLICABLE);
+		for (int i = s_kind_list.size() - 1; i >= 0; i--) {
+			if (s_kind_list[i] == scope_kind::SCOPE_LOOP)
+				break;
+			else
+				temp_list.push_back(s_kind_list[i]);
+		}
+		vector<scope_kind>::iterator enum_it = find(temp_list.begin(), temp_list.end(), scope_kind::SCOPE_ENUM);
+		vector<scope_kind>::iterator function_it = find(temp_list.begin(), temp_list.end(), scope_kind::SCOPE_FUNCTION);
+		vector<scope_kind>::iterator module_it = find(temp_list.begin(), temp_list.end(), scope_kind::SCOPE_MODULE);
+		if (enum_it == temp_list.end() && function_it == temp_list.end() && module_it == temp_list.end());
+		else {
+			root->get_diagnostics_reporter()->print(diagnostic_messages::break_and_continue_statements_not_allowed_here, break_continue->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			return make_shared<annotated_break_continue_statement>(ann_root_node, break_continue, bad);
+		}
+		return make_shared<annotated_break_continue_statement>(ann_root_node, break_continue, ret);
+	}
+
 	shared_ptr<annotated_statement> analyze_ast::analyze_statement(shared_ptr<statement> stmt) {
 		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
 		shared_ptr<annotated_binary_expression> abexpr = nullptr;
@@ -624,8 +651,9 @@ namespace karma_lang {
 		shared_ptr<annotated_enum_statement> aenum = nullptr;
 		shared_ptr<annotated_while_statement> awhile = nullptr;
 		shared_ptr<annotated_for_statement> afor = nullptr;
+		shared_ptr<annotated_break_continue_statement> abreak_continue = nullptr;
 		if (!stmt->get_valid())
-			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
+			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
 		if (stmt->get_statement_kind() == statement_kind::STATEMENT_DECLARATION)
 			adecl = analyze_declaration(stmt->get_declaration());
 		else if (stmt->get_statement_kind() == statement_kind::STATEMENT_EXPRESSION)
@@ -646,8 +674,10 @@ namespace karma_lang {
 			awhile = analyze_while_statement(stmt->get_while_statement());
 		else if (stmt->get_statement_kind() == statement_kind::STATEMENT_FOR_STATEMENT)
 			afor = analyze_for_statement(stmt->get_for_statement());
+		else if (stmt->get_statement_kind() == statement_kind::STATEMENT_BREAK_CONTINUE_STATEMENT)
+			abreak_continue = analyze_break_continue_statement(stmt->get_break_continue_statement());
 		else
-			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
+			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
 		type_information ret = bad;
 		if (adecl != nullptr) ret = adecl->get_type_information();
 		else if (abexpr != nullptr) ret = abexpr->get_type_information();
@@ -659,8 +689,9 @@ namespace karma_lang {
 		else if (aenum != nullptr) ret = aenum->get_type_information();
 		else if (awhile != nullptr) ret = awhile->get_type_information();
 		else if (afor != nullptr) ret = afor->get_type_information();
+		else if (abreak_continue != nullptr) ret = abreak_continue->get_type_information();
 		ret = type_information(ret, value_kind::VALUE_NOT_APPLICABLE);
-		return make_shared<annotated_statement>(ann_root_node, stmt, abexpr, adecl, afunc, astruc, amod, aret, acond, aenum, awhile, afor, ret);
+		return make_shared<annotated_statement>(ann_root_node, stmt, abexpr, adecl, afunc, astruc, amod, aret, acond, aenum, awhile, afor, abreak_continue, ret);
 	}
 
 	shared_ptr<annotated_module> analyze_ast::analyze_module(shared_ptr<module> mod) {
@@ -750,7 +781,6 @@ namespace karma_lang {
 			}
 			sym_table->add_symbol(sym);
 			t_inf_list.push_back(sym->get_type_information());
-		cout << "yes";
 			ann_decl_list.push_back(adecl);
 		}
 		if (func->get_lambda_kind() == lambda_kind::LAMBDA_NO) {
@@ -2334,7 +2364,8 @@ namespace karma_lang {
 	annotated_statement::annotated_statement(shared_ptr<annotated_root_node> arn, shared_ptr<statement> stmt, shared_ptr<annotated_binary_expression> abe,
 		shared_ptr<annotated_declaration> adecl, shared_ptr<annotated_function> afunc, shared_ptr<annotated_structure> astruc,
 		shared_ptr<annotated_module> amod, shared_ptr<annotated_return_statement> aret, shared_ptr<annotated_conditional_statement> acond,
-		shared_ptr<annotated_enum_statement> aenum, shared_ptr<annotated_while_statement> awhile, shared_ptr<annotated_for_statement> afor, type_information ti) : annotated_root_node(*arn),
+		shared_ptr<annotated_enum_statement> aenum, shared_ptr<annotated_while_statement> awhile, shared_ptr<annotated_for_statement> afor, 
+		shared_ptr<annotated_break_continue_statement> abc, type_information ti) : annotated_root_node(*arn),
 		statement_pos(stmt->get_position()), t_inf(ti) {
 		kind = stmt->get_statement_kind();
 		b_expression = abe;
@@ -2347,6 +2378,7 @@ namespace karma_lang {
 		_enum = aenum;
 		wloop = awhile;
 		floop = afor;
+		break_continue = abc;
 	}
 
 	annotated_statement::~annotated_statement() {
@@ -2403,6 +2435,10 @@ namespace karma_lang {
 
 	shared_ptr<annotated_for_statement> annotated_statement::get_for_statement() {
 		return floop;
+	}
+	
+	shared_ptr<annotated_break_continue_statement> annotated_statement::get_break_continue_statement() {
+		return break_continue;
 	}
 
 	annotated_ternary_expression::annotated_ternary_expression(shared_ptr<annotated_root_node> arn, shared_ptr<ternary_expression> texpr, shared_ptr<annotated_root_node> c,
@@ -2760,5 +2796,26 @@ namespace karma_lang {
 
 	vector<shared_ptr<annotated_statement>> annotated_for_statement::get_statement_list() {
 		return statement_list;
+	}
+
+	annotated_break_continue_statement::annotated_break_continue_statement(shared_ptr<annotated_root_node> arn, shared_ptr<break_continue_statement> bc, type_information ti) :
+		annotated_root_node(*arn), break_continue_statement_pos(bc->get_position()), t_inf(ti) {
+		bcs_kind = bc->get_break_continue_statement_kind();
+	}
+
+	annotated_break_continue_statement::~annotated_break_continue_statement() {
+
+	}
+
+	source_token_list::iterator annotated_break_continue_statement::get_position() {
+		return break_continue_statement_pos;
+	}
+
+	type_information annotated_break_continue_statement::get_type_information() {
+		return t_inf;
+	}
+
+	const break_continue_statement_kind annotated_break_continue_statement::get_break_continue_statement_kind() {
+		return bcs_kind;
 	}
 }

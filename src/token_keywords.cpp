@@ -19,4 +19,6 @@ namespace karma_lang {
 	const string token_keywords::_while = "while";
 	const string token_keywords::_for = "for";
 	const string token_keywords::lambda = "lambda";
+	const string token_keywords::_break = "break";
+	const string token_keywords::_continue = "continue";
 }

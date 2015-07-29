@@ -4764,6 +4764,52 @@ namespace karma_lang {
 		return make_shared<for_statement>(*this);
 	}
 
+	break_continue_statement::break_continue_statement(shared_ptr<root_node> r) : root_node(*r), break_continue_statement_pos(r->get_position()) {
+		valid = false;
+		bcs_kind = break_continue_statement_kind::BREAK_CONTINUE_STATEMENT_NONE;
+	}
+
+	break_continue_statement::~break_continue_statement() {
+
+	}
+
+	source_token_list::iterator break_continue_statement::get_position() {
+		return break_continue_statement_pos;
+	}
+
+	const bool break_continue_statement::get_valid() {
+		return valid;
+	}
+
+	const break_continue_statement_kind break_continue_statement::get_break_continue_statement_kind() {
+		return bcs_kind;
+	}
+
+	shared_ptr<break_continue_statement> break_continue_statement::parse_break_continue_statement() {
+		source_token_list::iterator save = root->get_position();
+		break_continue_statement_pos = save;
+		if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
+			valid = false;
+			bcs_kind = break_continue_statement_kind::BREAK_CONTINUE_STATEMENT_NONE;
+			return make_shared<break_continue_statement>(*this);
+		}
+		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_BREAK) {
+			valid = true;
+			root->set_position(root->get_position() + 1);
+			bcs_kind = break_continue_statement_kind::BREAK_CONTINUE_STATEMENT_BREAK;
+			return make_shared<break_continue_statement>(*this);
+		}
+		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_CONTINUE) {
+			valid = true;
+			root->set_position(root->get_position() + 1);
+			bcs_kind = break_continue_statement_kind::BREAK_CONTINUE_STATEMENT_CONTINUE;
+			return make_shared<break_continue_statement>(*this);
+		}
+		valid = false;
+		bcs_kind = break_continue_statement_kind::BREAK_CONTINUE_STATEMENT_NONE;
+		return make_shared<break_continue_statement>(*this);
+	}
+
 	statement::statement(shared_ptr<root_node> r) : root_node(*r), statement_pos(r->get_position()) {
 		valid = false;
 		decl = nullptr;
@@ -4775,6 +4821,7 @@ namespace karma_lang {
 		_enum = nullptr;
 		wloop = nullptr;
 		floop = nullptr;
+		break_continue = nullptr;
 		kind = statement_kind::STATEMENT_NONE;
 	}
 
@@ -4834,6 +4881,10 @@ namespace karma_lang {
 		return floop;
 	}
 
+	shared_ptr<break_continue_statement> statement::get_break_continue_statement() {
+		return break_continue;
+	}
+
 	shared_ptr<statement> statement::parse_statement() {
 		source_token_list::iterator save = root->get_position();
 		statement_pos = root->get_position();
@@ -4850,6 +4901,7 @@ namespace karma_lang {
 			_enum = nullptr;
 			wloop = nullptr;
 			floop = nullptr;
+			break_continue = nullptr;
 			return make_shared<statement>(*this);
 		}
 		if((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_VAR) {
@@ -4865,6 +4917,7 @@ namespace karma_lang {
 			cond = nullptr;
 			wloop = nullptr;
 			floop = nullptr;
+			break_continue = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_FUNC) {
@@ -4880,6 +4933,7 @@ namespace karma_lang {
 			_enum = nullptr;
 			wloop = nullptr;
 			floop = nullptr;
+			break_continue = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_STRUCT) {
@@ -4895,6 +4949,7 @@ namespace karma_lang {
 			_enum = nullptr;
 			wloop = nullptr;
 			floop = nullptr;
+			break_continue = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_MODULE) {
@@ -4910,6 +4965,7 @@ namespace karma_lang {
 			mod = make_shared<module>(root)->parse_module();
 			valid = mod->get_valid();
 			wloop = nullptr;
+			break_continue = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_RETURN) {
@@ -4925,6 +4981,7 @@ namespace karma_lang {
 			ret = make_shared<return_statement>(root)->parse_return_statement();
 			valid = ret->get_valid();
 			wloop = nullptr;
+			break_continue = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_IF) {
@@ -4940,6 +4997,7 @@ namespace karma_lang {
 			floop = nullptr;
 			valid = cond->get_valid();
 			wloop = nullptr;
+			break_continue = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_ENUM) {
@@ -4955,6 +5013,7 @@ namespace karma_lang {
 			valid = _enum->get_valid();
 			wloop = nullptr;
 			floop = nullptr;
+			break_continue = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_WHILE) {
@@ -4970,6 +5029,7 @@ namespace karma_lang {
 			wloop = make_shared<while_statement>(root)->parse_while_statement();
 			valid = wloop->get_valid();
 			floop = nullptr;
+			break_continue = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_FOR) {
@@ -4985,6 +5045,23 @@ namespace karma_lang {
 			wloop = nullptr;
 			floop = make_shared<for_statement>(root)->parse_for_statement();
 			valid = floop->get_valid();
+			break_continue = nullptr;
+			return make_shared<statement>(*this);
+		}
+		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_BREAK || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_CONTINUE) {
+			b_expression = nullptr;
+			kind = statement_kind::STATEMENT_BREAK_CONTINUE_STATEMENT;
+			decl = nullptr;
+			struc = nullptr;
+			func = nullptr;
+			mod = nullptr;
+			cond = nullptr;
+			ret = nullptr;
+			_enum = nullptr;
+			wloop = nullptr;
+			floop = nullptr;
+			break_continue = make_shared<break_continue_statement>(root)->parse_break_continue_statement();
+			valid = break_continue->get_valid();
 			return make_shared<statement>(*this);
 		}
 		else {
@@ -5000,6 +5077,7 @@ namespace karma_lang {
 			valid = b_expression->get_valid();
 			wloop = nullptr;
 			floop = nullptr;
+			break_continue = nullptr;
 			return make_shared<statement>(*this);
 		}
 		decl = nullptr;
@@ -5014,6 +5092,7 @@ namespace karma_lang {
 		_enum = nullptr;
 		wloop = nullptr;
 		floop = nullptr;
+		break_continue = nullptr;
 		root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 		exit(1);
 		return make_shared<statement>(*this);

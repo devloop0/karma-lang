@@ -84,6 +84,8 @@ namespace karma_lang {
 			const static string error_parsing_statement;
 			const static string immut_not_allowed_for_for_loop_declaration;
 			const static string lambdas_cannot_be_partially_declared;
+			const static string break_and_continue_statements_only_allowed_in_loops;
+			const static string break_and_continue_statements_not_allowed_here;
 	};
 }
 

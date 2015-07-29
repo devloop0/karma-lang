@@ -521,10 +521,27 @@ namespace karma_lang {
 			shared_ptr<for_statement> parse_for_statement();
 	};
 
+	enum break_continue_statement_kind {
+		BREAK_CONTINUE_STATEMENT_BREAK, BREAK_CONTINUE_STATEMENT_CONTINUE, BREAK_CONTINUE_STATEMENT_NONE
+	};
+
+	class break_continue_statement : public root_node {
+		source_token_list::iterator break_continue_statement_pos;
+		bool valid;
+		break_continue_statement_kind bcs_kind;
+		public:
+			break_continue_statement(shared_ptr<root_node> r);
+			~break_continue_statement();
+			source_token_list::iterator get_position();
+			const bool get_valid();
+			const break_continue_statement_kind get_break_continue_statement_kind();
+			shared_ptr<break_continue_statement> parse_break_continue_statement();
+	};
+
 	enum statement_kind {
 		STATEMENT_DECLARATION, STATEMENT_EXPRESSION, STATEMENT_FUNCTION, STATEMENT_STRUCTURE, 
 		STATEMENT_MODULE, STATEMENT_RETURN_STATEMENT, STATEMENT_CONDITIONAL_STATEMENT, STATEMENT_ENUM_STATEMENT,
-		STATEMENT_WHILE_STATMENT, STATEMENT_FOR_STATEMENT, STATEMENT_NONE
+		STATEMENT_WHILE_STATMENT, STATEMENT_FOR_STATEMENT, STATEMENT_BREAK_CONTINUE_STATEMENT, STATEMENT_NONE
 	};
 
 	class statement : public root_node {
@@ -539,6 +556,7 @@ namespace karma_lang {
 		shared_ptr<enum_statement> _enum;
 		shared_ptr<while_statement> wloop;
 		shared_ptr<for_statement> floop;
+		shared_ptr<break_continue_statement> break_continue;
 		bool valid;
 		source_token_list::iterator statement_pos;
 		public:
@@ -558,6 +576,7 @@ namespace karma_lang {
 			shared_ptr<conditional_statement> get_conditional_statement();
 			shared_ptr<while_statement> get_while_statement();
 			shared_ptr<for_statement> get_for_statement();
+			shared_ptr<break_continue_statement> get_break_continue_statement();
 	};
 }
 #endif

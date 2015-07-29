@@ -85,6 +85,8 @@ namespace karma_lang {
 			const static string lambda;
 			const static string ilambda;
 			const static string elambda;
+			const static string brk;
+			const static string cont;
 	};
 
 	class code_generation_symbol_table {
@@ -129,6 +131,8 @@ namespace karma_lang {
 			string generate_escope_statement(int tab);
 			string generate_lambda_header(int tab, string name, vector<string> param_list, bool immut);
 			string generate_lambda_footer(int tab);
+			string generate_break_instruction(int tab, int label);
+			string generate_continue_instruction(int tab, int label);
 	};
 
 	class generate_code {
@@ -162,6 +166,7 @@ namespace karma_lang {
 		bool descend_enum_statement(shared_ptr<annotated_enum_statement> aenum, bool in_module);
 		bool descend_while_statement(shared_ptr<annotated_while_statement> awhile, bool in_module);
 		bool descend_for_statement(shared_ptr<annotated_for_statement> afor, bool in_module);
+		bool descend_break_continue_statement(shared_ptr<annotated_break_continue_statement> abreak_continue, bool in_module);
 
 		vector<tuple<string, string, int>> name_list;
 		public:

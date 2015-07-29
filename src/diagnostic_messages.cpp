@@ -72,4 +72,6 @@ namespace karma_lang {
 	const string diagnostic_messages::error_parsing_statement = "Error parsing statement.";
 	const string diagnostic_messages::immut_not_allowed_for_for_loop_declaration = "Immut not allowed for, for loop declarations.";
 	const string diagnostic_messages::lambdas_cannot_be_partially_declared = "Lambdas cannot be partially declared.";
+	const string diagnostic_messages::break_and_continue_statements_not_allowed_here = "Break and continue statements not allowed here.";
+	const string diagnostic_messages::break_and_continue_statements_only_allowed_in_loops = "Break and continue statements are only allowed in loops.";
 }

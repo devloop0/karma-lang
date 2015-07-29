@@ -502,6 +502,10 @@ namespace karma_lang {
 						tkind = token_kind::TOKEN_FOR;
 					else if (acc == token_keywords::lambda)
 						tkind = token_kind::TOKEN_LAMBDA;
+					else if (acc == token_keywords::_continue)
+						tkind = token_kind::TOKEN_CONTINUE;
+					else if (acc == token_keywords::_break)
+						tkind = token_kind::TOKEN_BREAK;
 					shared_ptr<token> tok = make_shared<token>(tabs, save, cols + 1, acc, file, line_number, tkind);
 					tok_list.push_back(tok);
 				}

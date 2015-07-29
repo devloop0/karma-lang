@@ -55,6 +55,8 @@ namespace karma_lang {
 	const string vm_instruction_list::lambda = "lambda";
 	const string vm_instruction_list::ilambda = "ilambda";
 	const string vm_instruction_list::elambda = "elambda";
+	const string vm_instruction_list::brk = "brk";
+	const string vm_instruction_list::cont = "cont";
 
 	code_generation_symbol_table::code_generation_symbol_table() {
 		raw_string_list = vector<string>();
@@ -303,6 +305,23 @@ namespace karma_lang {
 		ret += vm_instruction_list::elambda;
 		return ret;
 	}
+
+	string code_generation_utilities::generate_break_instruction(int tab, int label) {
+		string ret;
+		for (int i = 0; i < tab; i++)
+			ret += "\t";
+		ret += vm_instruction_list::brk + " .L" + to_string(label);
+		return ret;
+	}
+
+	string code_generation_utilities::generate_continue_instruction(int tab, int label) {
+		string ret;
+		for (int i = 0; i < tab; i++)
+			ret += "\t";
+		ret += vm_instruction_list::cont + " .L" + to_string(label);
+		return ret;
+	}
+
 
 	generate_code::generate_code(shared_ptr<analyze_ast> aa) {
 		ann_root_node = aa->get_annotated_root_node();
@@ -1023,6 +1042,16 @@ namespace karma_lang {
 		return true;
 	};
 
+	bool generate_code::descend_break_continue_statement(shared_ptr<annotated_break_continue_statement> abreak_continue, bool in_module) {
+		if (abreak_continue->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
+			return false;
+		if (abreak_continue->get_break_continue_statement_kind() == break_continue_statement_kind::BREAK_CONTINUE_STATEMENT_BREAK)
+			instruction_list.push_back(code_generation_utilities().generate_break_instruction(tab_count, post_loop_stack[post_loop_stack.size() - 1]));
+		else if (abreak_continue->get_break_continue_statement_kind() == break_continue_statement_kind::BREAK_CONTINUE_STATEMENT_CONTINUE)
+			instruction_list.push_back(code_generation_utilities().generate_continue_instruction(tab_count, pre_loop_stack[pre_loop_stack.size() - 1]));
+		return true;
+	}
+
 	bool generate_code::descend_statement(shared_ptr<annotated_statement> astmt, bool in_module) {
 		if (astmt->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
@@ -1048,6 +1077,8 @@ namespace karma_lang {
 			return descend_while_statement(astmt->get_while_statement(), in_module);
 		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_FOR_STATEMENT)
 			return descend_for_statement(astmt->get_for_statement(), in_module);
+		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_BREAK_CONTINUE_STATEMENT)
+			return descend_break_continue_statement(astmt->get_break_continue_statement(), in_module);
 		d_reporter->print(diagnostic_messages::unreachable, astmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 		exit(1);
 	}

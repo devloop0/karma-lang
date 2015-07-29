@@ -509,6 +509,18 @@ namespace karma_lang {
 			type_information get_type_information();
 	};
 
+	class annotated_break_continue_statement : public annotated_root_node {
+		source_token_list::iterator break_continue_statement_pos;
+		break_continue_statement_kind bcs_kind;
+		type_information t_inf;
+		public:
+			annotated_break_continue_statement(shared_ptr<annotated_root_node> arn, shared_ptr<break_continue_statement> bc, type_information ti);
+			~annotated_break_continue_statement();
+			source_token_list::iterator get_position();
+			type_information get_type_information();
+			const break_continue_statement_kind get_break_continue_statement_kind();
+	};
+
 	class annotated_statement : public annotated_root_node {
 		statement_kind kind;
 		shared_ptr<annotated_binary_expression> b_expression;
@@ -521,13 +533,15 @@ namespace karma_lang {
 		shared_ptr<annotated_enum_statement> _enum;
 		shared_ptr<annotated_while_statement> wloop;
 		shared_ptr<annotated_for_statement> floop;
+		shared_ptr<annotated_break_continue_statement> break_continue;
 		source_token_list::iterator statement_pos;
 		type_information t_inf;
 		public:
 			annotated_statement(shared_ptr<annotated_root_node> arn, shared_ptr<statement> stmt, shared_ptr<annotated_binary_expression> abe,
 				shared_ptr<annotated_declaration> adecl, shared_ptr<annotated_function> afunc, shared_ptr<annotated_structure> astruc, 
 				shared_ptr<annotated_module> amod, shared_ptr<annotated_return_statement> aret, shared_ptr<annotated_conditional_statement> acond, 
-				shared_ptr<annotated_enum_statement> aenum, shared_ptr<annotated_while_statement> awhile, shared_ptr<annotated_for_statement> afor, type_information ti);
+				shared_ptr<annotated_enum_statement> aenum, shared_ptr<annotated_while_statement> awhile, shared_ptr<annotated_for_statement> afor, 
+				shared_ptr<annotated_break_continue_statement> abc, type_information ti);
 			~annotated_statement();
 			const statement_kind get_statement_kind();
 			shared_ptr<annotated_binary_expression> get_binary_expression();
@@ -542,6 +556,7 @@ namespace karma_lang {
 			shared_ptr<annotated_enum_statement> get_enum_statement();
 			shared_ptr<annotated_while_statement> get_while_statement();
 			shared_ptr<annotated_for_statement> get_for_statement();
+			shared_ptr<annotated_break_continue_statement> get_break_continue_statement();
 	};
 
 	class symbol_table;
@@ -639,6 +654,7 @@ namespace karma_lang {
 		shared_ptr<annotated_enum_statement> analyze_enum_statement(shared_ptr<enum_statement> _enum);
 		shared_ptr<annotated_while_statement> analyze_while_statement(shared_ptr<while_statement> _while);
 		shared_ptr<annotated_for_statement> analyze_for_statement(shared_ptr<for_statement> _for);
+		shared_ptr<annotated_break_continue_statement> analyze_break_continue_statement(shared_ptr<break_continue_statement> break_continue);
 
 		pair<vector<shared_ptr<symbol>>, bool> find_all_symbols(shared_ptr<annotated_literal> sym);
 		pair<vector<shared_ptr<symbol>>, bool> find_all_symbols(shared_ptr<literal> sym);
