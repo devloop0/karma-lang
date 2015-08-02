@@ -18,6 +18,7 @@ namespace karma_lang {
 		public:
 			const static string builtin__va_args__;
 			const static string builtin_print;
+			const static string builtin_exit;
 	};
 }
 

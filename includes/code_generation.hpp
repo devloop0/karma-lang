@@ -148,27 +148,24 @@ namespace karma_lang {
 		int label_count;
 		int tab_count;
 		int temp_count;
-		int scope_count;
 
 		pair<string, int> descend_literal(shared_ptr<annotated_literal> alit);
 		pair<string, int> descend_primary_expression(shared_ptr<annotated_primary_expression> prexpr);
 		tuple<string, postfix_operation_kind, int> descend_postfix_expression(shared_ptr<annotated_linearized_postfix_expression> apoexpr);
 		pair<string, postfix_operation_kind> descend_unary_expression(shared_ptr<annotated_unary_expression> auexpr);
 		vector<string> descend_binary_expression(shared_ptr<annotated_binary_expression> abexpr);
-		bool descend_declaration(shared_ptr<annotated_declaration> adecl, bool in_module);
-		bool descend_statement(shared_ptr<annotated_statement> astmt, bool in_module);
+		bool descend_declaration(shared_ptr<annotated_declaration> adecl);
+		bool descend_statement(shared_ptr<annotated_statement> astmt);
 		tuple<int, int, int> descend_ternary_expression(shared_ptr<annotated_ternary_expression> atexpr);
-		bool descend_function(shared_ptr<annotated_function> afunc, bool in_module);
-		bool descend_structure(shared_ptr<annotated_structure> astruc, bool in_module);
-		bool descend_module(shared_ptr<annotated_module> amod, bool in_module);
-		bool descend_return_statement(shared_ptr<annotated_return_statement> aret, bool in_module);
-		bool descend_conditional_statement(shared_ptr<annotated_conditional_statement> acond, bool in_module);
-		bool descend_enum_statement(shared_ptr<annotated_enum_statement> aenum, bool in_module);
-		bool descend_while_statement(shared_ptr<annotated_while_statement> awhile, bool in_module);
-		bool descend_for_statement(shared_ptr<annotated_for_statement> afor, bool in_module);
-		bool descend_break_continue_statement(shared_ptr<annotated_break_continue_statement> abreak_continue, bool in_module);
-
-		vector<tuple<string, string, int>> name_list;
+		bool descend_function(shared_ptr<annotated_function> afunc);
+		bool descend_structure(shared_ptr<annotated_structure> astruc);
+		bool descend_module(shared_ptr<annotated_module> amod);
+		bool descend_return_statement(shared_ptr<annotated_return_statement> aret);
+		bool descend_conditional_statement(shared_ptr<annotated_conditional_statement> acond);
+		bool descend_enum_statement(shared_ptr<annotated_enum_statement> aenum);
+		bool descend_while_statement(shared_ptr<annotated_while_statement> awhile);
+		bool descend_for_statement(shared_ptr<annotated_for_statement> afor);
+		bool descend_break_continue_statement(shared_ptr<annotated_break_continue_statement> abreak_continue);
 		public:
 			generate_code(shared_ptr<analyze_ast> aa);
 			~generate_code();

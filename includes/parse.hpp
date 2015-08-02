@@ -97,7 +97,7 @@ namespace karma_lang {
 		shared_ptr<function> lambda;
 		source_token_list::iterator primary_expression_pos;
 		public:
-			primary_expression(shared_ptr<root_node> r);
+			primary_expression(shared_ptr<root_node> r, bool empty = false);
 			~primary_expression();
 			shared_ptr<primary_expression> parse_primary_expression();
 			const bool get_valid();

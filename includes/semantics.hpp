@@ -656,8 +656,8 @@ namespace karma_lang {
 		shared_ptr<annotated_for_statement> analyze_for_statement(shared_ptr<for_statement> _for);
 		shared_ptr<annotated_break_continue_statement> analyze_break_continue_statement(shared_ptr<break_continue_statement> break_continue);
 
-		pair<vector<shared_ptr<symbol>>, bool> find_all_symbols(shared_ptr<annotated_literal> sym);
-		pair<vector<shared_ptr<symbol>>, bool> find_all_symbols(shared_ptr<literal> sym);
+		pair<vector<shared_ptr<symbol>>, bool> find_all_symbols(shared_ptr<annotated_literal> sym, bool limit = false);
+		pair<vector<shared_ptr<symbol>>, bool> find_all_symbols(shared_ptr<literal> sym, bool limit = false);
 
 		public:
 			analyze_ast(shared_ptr<root_node> r, vector<scope_kind> skl, vector<shared_ptr<symbol_table>> stl, vector<shared_ptr<statement>> stmt_list);

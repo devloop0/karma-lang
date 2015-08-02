@@ -335,8 +335,6 @@ namespace karma_lang {
 		temp_count = 0;
 		sym_table_list = aa->get_symbol_table();
 		d_reporter = aa->get_annotated_root_node()->get_diagnostics_reporter();
-		scope_count = 0;
-		name_list.push_back(make_tuple(builtins::builtin_print, builtins::builtin_print, 0));
 	}
 
 	generate_code::~generate_code() {
@@ -353,15 +351,7 @@ namespace karma_lang {
 			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "$" + temp));
 		number++;
 		string str = alit->get_raw_literal()->get_raw_string();
-		string name;
-		for (int i = name_list.size() - 1; i >= 0; i--) {
-			tuple<string, string, int> tup = name_list[i];
-			if (get<0>(tup) == str) {
-				name = get<1>(tup);
-				break;
-			}
-		}
-		return make_pair(alit->get_literal_kind() == literal_kind::LITERAL_IDENTIFIER ? name : "", number - 1);
+		return make_pair(alit->get_literal_kind() == literal_kind::LITERAL_IDENTIFIER ? str : "", number - 1);
 	}
 
 	pair<string, int> generate_code::descend_primary_expression(shared_ptr<annotated_primary_expression> aprexpr) {
@@ -448,8 +438,14 @@ namespace karma_lang {
 		else if (aprexpr->get_primary_expression_kind() == primary_expression_kind::PRIMARY_EXPRESSION_LAMBDA) {
 			int orig = number;
 			string temp = code_generation_utilities().generate_temp_name(temp_count);
-			descend_function(aprexpr->get_lambda(), false);
+			descend_function(aprexpr->get_lambda());
 			return make_pair(temp, orig);
+		}
+		else if(aprexpr->get_primary_expression_kind() == primary_expression_kind::PRIMARY_EXPRESSION_NONE) {
+			int orig = number;
+			string name = "^";
+			number++;
+			return make_pair(name, orig);
 		}
 		d_reporter->print(diagnostic_messages::unreachable, aprexpr->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 		exit(1);
@@ -788,29 +784,26 @@ namespace karma_lang {
 		return make_tuple(store1, store2, store3);
 	}
 
-	bool generate_code::descend_declaration(shared_ptr<annotated_declaration> adecl, bool in_module) {
+	bool generate_code::descend_declaration(shared_ptr<annotated_declaration> adecl) {
 		if (adecl->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
 		int store = number;
 		descend_binary_expression(adecl->get_binary_expression());
 		string str = adecl->get_identifier()->get_raw_literal()->get_raw_string();
-		tuple<string, string, int> tup = make_tuple(str, str + (in_module ? "" : "_" + to_string(scope_count)), scope_count);
-		name_list.push_back(tup);
 		if (adecl->get_immutable())
-			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::imov, get<1>(tup), store));
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::imov, str, store));
 		else
-			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::dmov, get<1>(tup), store));
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::dmov, str, store));
 		return true;
 	}
 
-	bool generate_code::descend_function(shared_ptr<annotated_function> afunc, bool in_module) {
+	bool generate_code::descend_function(shared_ptr<annotated_function> afunc) {
 		if (afunc->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
 		string fname = "";
 		if (afunc->get_lambda_kind() == lambda_kind::LAMBDA_NO) {
 			string str = afunc->get_identifier()->get_raw_literal()->get_raw_string();
-			fname = str + (in_module ? "" : "_" + to_string(0));
-			name_list.push_back(make_tuple(str, fname, scope_count));
+			fname = str;
 		}
 		else {
 			fname = code_generation_utilities().generate_temp_name(temp_count);
@@ -818,41 +811,33 @@ namespace karma_lang {
 		}
 		if (afunc->get_function_declaration_definition_kind() == function_declaration_definition_kind::FUNCTION_KIND_FORWARD_DECLARATION)
 			return true;
-		scope_count++;
-		int save = name_list.size();
 		vector<string> param_list;
 		for (int i = 0; i < afunc->get_parameter_list().size(); i++) {
 			string param = afunc->get_parameter_list()[i]->get_identifier()->get_raw_literal()->get_raw_string();
-			name_list.push_back(make_tuple(param, param + "_" + to_string(scope_count), scope_count));
-			param_list.push_back(param + "_" + to_string(scope_count));
+			param_list.push_back(param);
 		}
 		if (afunc->get_function_va_args_kind() == function_va_args_kind::FUNCTION_VA_ARGS_YES)
 			param_list.push_back(token_keywords::va_args);
-		name_list.push_back(make_tuple(builtins::builtin__va_args__, builtins::builtin__va_args__, 0));
 		if(afunc->get_lambda_kind() == lambda_kind::LAMBDA_NO)
 			instruction_list.push_back(code_generation_utilities().generate_function_header(tab_count, fname, param_list, afunc->get_immutable()));
 		else
 			instruction_list.push_back(code_generation_utilities().generate_lambda_header(tab_count, fname, param_list, afunc->get_immutable()));
 		for (int i = 0; i < afunc->get_statement_list().size(); i++)
-			descend_statement(afunc->get_statement_list()[i], in_module);
-		name_list.erase(name_list.begin() + save, name_list.end());
+			descend_statement(afunc->get_statement_list()[i]);
 		if (afunc->get_lambda_kind() == lambda_kind::LAMBDA_NO)
 			instruction_list.push_back(code_generation_utilities().generate_function_footer(tab_count));
 		else
 			instruction_list.push_back(code_generation_utilities().generate_lambda_footer(tab_count));
-		scope_count++;
 		return true;
 	}
 
-	bool generate_code::descend_structure(shared_ptr<annotated_structure> astruc, bool in_module) {
+	bool generate_code::descend_structure(shared_ptr<annotated_structure> astruc) {
 		if (astruc->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
 		string str = astruc->get_identifier()->get_raw_literal()->get_raw_string();
-		string sname = str + (in_module ? "" : "_" + to_string(0));
-		name_list.push_back(make_tuple(str, sname, scope_count));
+		string sname = str;
 		if (astruc->get_structure_declaration_definition_kind() == structure_declaration_definition_kind::STRUCTURE_KIND_FORWARD_DECLARATION) 
 			return true;
-		int save = name_list.size();
 		vector<pair<string, int>> struc_member_list;
 		vector<string> member_list;
 		for (int i = 0; i < astruc->get_declaration_list().size(); i++)
@@ -872,22 +857,19 @@ namespace karma_lang {
 		return true;
 	}
 
-	bool generate_code::descend_module(shared_ptr<annotated_module> amod, bool in_module) {
+	bool generate_code::descend_module(shared_ptr<annotated_module> amod) {
 		if (amod->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
 		string str = amod->get_identifier()->get_raw_literal()->get_raw_string();
-		string mname = str + (in_module ? "" : "_" + to_string(scope_count));
-		name_list.push_back(make_tuple(str, mname, scope_count));
-		int save = name_list.size();
+		string mname = str;
 		instruction_list.push_back(code_generation_utilities().generate_module_header(tab_count, mname, amod->get_immutable()));
 		for (int i = 0; i < amod->get_statement_list().size(); i++)
-			descend_statement(amod->get_statement_list()[i], true);
+			descend_statement(amod->get_statement_list()[i]);
 		instruction_list.push_back(code_generation_utilities().generate_module_footer(tab_count));
-		name_list.erase(name_list.begin() + save, name_list.end());
 		return true;
 	}
 
-	bool generate_code::descend_return_statement(shared_ptr<annotated_return_statement> aret, bool in_module) {
+	bool generate_code::descend_return_statement(shared_ptr<annotated_return_statement> aret) {
 		if (aret->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
 		int store = number;
@@ -903,7 +885,7 @@ namespace karma_lang {
 		return true;
 	}
 
-	bool generate_code::descend_conditional_statement(shared_ptr<annotated_conditional_statement> acond, bool in_module) {
+	bool generate_code::descend_conditional_statement(shared_ptr<annotated_conditional_statement> acond) {
 		if (acond->get_type_information() == type_information(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
 		int store = number;
@@ -916,13 +898,10 @@ namespace karma_lang {
 		number++;
 		instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::bneg, store));
 		instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store, label_store));
-		scope_count++;
-		int save = name_list.size();
 		instruction_list.push_back(code_generation_utilities().generate_scope_statement(tab_count));
 		for (int i = 0; i < acond->get_if_statement_list().size(); i++)
-			descend_statement(acond->get_if_statement_list()[i], in_module);
+			descend_statement(acond->get_if_statement_list()[i]);
 		instruction_list.push_back(code_generation_utilities().generate_escope_statement(tab_count));
-		name_list.erase(name_list.begin() + save, name_list.end());
 		instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, temp, "$true"));
 		instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, temp, final_label));
 		instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_store));
@@ -935,23 +914,19 @@ namespace karma_lang {
 			instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::bneg, store2));
 			instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store2, final_label));
 		}
-		scope_count++;
-		save = name_list.size();
 		instruction_list.push_back(code_generation_utilities().generate_scope_statement(tab_count));
 		for (int i = 0; i < acond->get_else_statement_list().size(); i++)
-			descend_statement(acond->get_else_statement_list()[i], in_module);
+			descend_statement(acond->get_else_statement_list()[i]);
 		instruction_list.push_back(code_generation_utilities().generate_escope_statement(tab_count));
-		name_list.erase(name_list.begin() + save, name_list.end());
 		instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, final_label));
 		return true;
 	}
 
-	bool generate_code::descend_enum_statement(shared_ptr<annotated_enum_statement> aenum, bool in_module) {
+	bool generate_code::descend_enum_statement(shared_ptr<annotated_enum_statement> aenum) {
 		if (aenum->get_type_information() == type_information(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
 		string str = aenum->get_identifier()->get_raw_literal()->get_raw_string();
-		string ename = str + (in_module ? "" : "_" + to_string(scope_count));
-		name_list.push_back(make_tuple(str, ename, scope_count));
+		string ename = str;
 		vector<string> vlist;
 		for (int i = 0; i < aenum->get_identifier_list().size(); i++)
 			vlist.push_back(aenum->get_identifier_list()[i]->get_raw_literal()->get_raw_string());
@@ -959,7 +934,7 @@ namespace karma_lang {
 		return true;
 	}
 
-	bool generate_code::descend_while_statement(shared_ptr<annotated_while_statement> awhile, bool in_module) {
+	bool generate_code::descend_while_statement(shared_ptr<annotated_while_statement> awhile) {
 		if (awhile->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
 		int store = number;
@@ -974,13 +949,10 @@ namespace karma_lang {
 		descend_binary_expression(awhile->get_condition());
 		instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::bneg, store));
 		instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store, done));
-		scope_count++;
-		int save = name_list.size();
 		for (int i = 0; i < awhile->get_statement_list().size(); i++) {
 			shared_ptr<annotated_statement> astmt = awhile->get_statement_list()[i];
-			descend_statement(astmt, in_module);
+			descend_statement(astmt);
 		}
-		name_list.erase(name_list.begin() + save, name_list.end());
 		instruction_list.push_back(code_generation_utilities().generate_escope_statement(tab_count));
 		instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "$true"));
 		instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, number, come_back));
@@ -991,7 +963,7 @@ namespace karma_lang {
 		return true;
 	}
 
-	bool generate_code::descend_for_statement(shared_ptr<annotated_for_statement> afor, bool in_module) {
+	bool generate_code::descend_for_statement(shared_ptr<annotated_for_statement> afor) {
 		if (afor->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
 		int begin = label_count;
@@ -1019,18 +991,14 @@ namespace karma_lang {
 		instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store_index_compare, end));
 		pre_loop_stack.push_back(begin);
 		post_loop_stack.push_back(end);
-		scope_count++;
-		int save = name_list.size();
 		shared_ptr<annotated_declaration> adecl = afor->get_loop_variable();
 		string str = adecl->get_identifier()->get_raw_literal()->get_raw_string();
-		string ident_name = str + (in_module ? "" : "_" + to_string(scope_count));
-		name_list.push_back(make_tuple(str, ident_name, scope_count));
+		string ident_name = str;
 		instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::dmov, ident_name, sequence + "|" + index));
 		for (int i = 0; i < afor->get_statement_list().size(); i++) {
 			shared_ptr<annotated_statement> astmt = afor->get_statement_list()[i];
-			descend_statement(astmt, in_module);
+			descend_statement(astmt);
 		}
-		name_list.erase(name_list.begin() + save, name_list.end());
 		instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::inc, index));
 		instruction_list.push_back(code_generation_utilities().generate_escope_statement(tab_count));
 		instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "$true"));
@@ -1042,7 +1010,7 @@ namespace karma_lang {
 		return true;
 	};
 
-	bool generate_code::descend_break_continue_statement(shared_ptr<annotated_break_continue_statement> abreak_continue, bool in_module) {
+	bool generate_code::descend_break_continue_statement(shared_ptr<annotated_break_continue_statement> abreak_continue) {
 		if (abreak_continue->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
 		if (abreak_continue->get_break_continue_statement_kind() == break_continue_statement_kind::BREAK_CONTINUE_STATEMENT_BREAK)
@@ -1052,7 +1020,7 @@ namespace karma_lang {
 		return true;
 	}
 
-	bool generate_code::descend_statement(shared_ptr<annotated_statement> astmt, bool in_module) {
+	bool generate_code::descend_statement(shared_ptr<annotated_statement> astmt) {
 		if (astmt->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
 		if (astmt->get_statement_kind() == statement_kind::STATEMENT_EXPRESSION) {
@@ -1060,32 +1028,32 @@ namespace karma_lang {
 			return true;
 		}
 		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_DECLARATION)
-			return descend_declaration(astmt->get_declaration(), in_module);
+			return descend_declaration(astmt->get_declaration());
 		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_FUNCTION)
-			return descend_function(astmt->get_function(), in_module);
+			return descend_function(astmt->get_function());
 		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_STRUCTURE)
-			return descend_structure(astmt->get_structure(), in_module);
+			return descend_structure(astmt->get_structure());
 		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_MODULE)
-			return descend_module(astmt->get_module(), in_module);
+			return descend_module(astmt->get_module());
 		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_RETURN_STATEMENT)
-			return descend_return_statement(astmt->get_return_statement(), in_module);
+			return descend_return_statement(astmt->get_return_statement());
 		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_CONDITIONAL_STATEMENT)
-			return descend_conditional_statement(astmt->get_conditional_statement(), in_module);
+			return descend_conditional_statement(astmt->get_conditional_statement());
 		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_ENUM_STATEMENT)
-			return descend_enum_statement(astmt->get_enum_statement(), in_module);
+			return descend_enum_statement(astmt->get_enum_statement());
 		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_WHILE_STATMENT)
-			return descend_while_statement(astmt->get_while_statement(), in_module);
+			return descend_while_statement(astmt->get_while_statement());
 		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_FOR_STATEMENT)
-			return descend_for_statement(astmt->get_for_statement(), in_module);
+			return descend_for_statement(astmt->get_for_statement());
 		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_BREAK_CONTINUE_STATEMENT)
-			return descend_break_continue_statement(astmt->get_break_continue_statement(), in_module);
+			return descend_break_continue_statement(astmt->get_break_continue_statement());
 		d_reporter->print(diagnostic_messages::unreachable, astmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 		exit(1);
 	}
 
 	vector<string> generate_code::perform_code_generation() {
 		for(int i = 0; i < ann_root_node->get_annotated_statement_list().size(); i++)
-			descend_statement(ann_root_node->get_annotated_statement_list()[i], false);
+			descend_statement(ann_root_node->get_annotated_statement_list()[i]);
 		return instruction_list;
 	}
 

@@ -6,4 +6,5 @@ namespace karma_lang {
 
 	const string builtins::builtin__va_args__ = "__va_args__";
 	const string builtins::builtin_print = "print";
+	const string builtins::builtin_exit = "exit";
 }

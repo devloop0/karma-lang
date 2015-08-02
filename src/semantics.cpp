@@ -331,8 +331,8 @@ namespace karma_lang {
 		return ann_root_node;
 	}
 
-	pair<vector<shared_ptr<symbol>>, bool> analyze_ast::find_all_symbols(shared_ptr<annotated_literal> sym) {
-		for (int i = sym_table_list.size() - 1; i >= 0; i--) {
+	pair<vector<shared_ptr<symbol>>, bool> analyze_ast::find_all_symbols(shared_ptr<annotated_literal> sym, bool limit) {
+		for (int i = sym_table_list.size() - 1; i >= (limit ? sym_table_list.size() - 1 : 0) && i >= 0; i--) {
 			vector<shared_ptr<symbol>> stl = sym_table_list[i]->find_all_symbols(sym);
 			if (stl.size() > 0)
 				return make_pair(stl, i == sym_table_list.size() - 1);
@@ -340,8 +340,8 @@ namespace karma_lang {
 		return make_pair(vector<shared_ptr<symbol>>(), false);
 	}
 
-	pair<vector<shared_ptr<symbol>>, bool> analyze_ast::find_all_symbols(shared_ptr<literal> lit) {
-		for (int i = sym_table_list.size() - 1; i >= 0; i--) {
+	pair<vector<shared_ptr<symbol>>, bool> analyze_ast::find_all_symbols(shared_ptr<literal> lit, bool limit) {
+		for (int i = sym_table_list.size() - 1; i >= (limit ? sym_table_list.size() - 1 : 0) && i >= 0; i--) {
 			vector<shared_ptr<symbol>> stl = sym_table_list[i]->find_all_symbols(lit);
 			if (stl.size() > 0)
 				return make_pair(stl, i == sym_table_list.size() - 1);
@@ -359,6 +359,8 @@ namespace karma_lang {
 		if (s_kind_list.size() == 1 && s_kind_list[0] == scope_kind::SCOPE_GLOBAL) {
 			sym_table_list[0]->add_symbol(make_shared<symbol>(_any, immut_kind::IMMUT_YES, make_shared<literal>(root, make_shared<token>(-1, -1, -1, builtins::builtin_print, "", -1, token_kind::TOKEN_IDENTIFIER)), function_kind::FUNCTION_YES, structure_kind::STRUCTURE_NONE,
 				vector<type_information>(), make_shared<symbol_table>(), function_declaration_definition_kind::FUNCTION_KIND_DEFINITION, function_va_args_kind::FUNCTION_VA_ARGS_YES, structure_declaration_definition_kind::STRUCTURE_KIND_NONE, module_kind::MODULE_NONE, enum_kind::ENUM_NONE, enum_statement_kind::ENUM_STATEMENT_NONE));
+			sym_table_list[0]->add_symbol(make_shared<symbol>(_any, immut_kind::IMMUT_YES, make_shared<literal>(root, make_shared<token>(-1, -1, -1, builtins::builtin_exit, "", -1, token_kind::TOKEN_IDENTIFIER)), function_kind::FUNCTION_YES, structure_kind::STRUCTURE_NONE,
+				vector<type_information> { _any, _any }, make_shared<symbol_table>(), function_declaration_definition_kind::FUNCTION_KIND_DEFINITION, function_va_args_kind::FUNCTION_VA_ARGS_NO, structure_declaration_definition_kind::STRUCTURE_KIND_NONE, module_kind::MODULE_NONE, enum_kind::ENUM_NONE, enum_statement_kind::ENUM_STATEMENT_NONE));
 		}
 		bool ret = true;
 		if (root->get_diagnostics_reporter()->get_error_count() > 0)
@@ -719,14 +721,14 @@ namespace karma_lang {
 			root->get_diagnostics_reporter()->print(diagnostic_messages::repeated_declaration_ignoring_this_one, mod->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 			return make_shared<annotated_module>(ann_root_node, mod, nullptr, vector<shared_ptr<annotated_statement>>(), vector<type_information>(), bad);
 		}
+		sym_table_list[sym_table_list.size() - 1]->add_symbol(make_shared<symbol>(_any, immut_kind::IMMUT_NO, mod->get_identifier(), function_kind::FUNCTION_NONE, structure_kind::STRUCTURE_NONE, vector<type_information>(),
+			sym_table, function_declaration_definition_kind::FUNCTION_KIND_NONE, function_va_args_kind::FUNCTION_VA_ARGS_NONE, structure_declaration_definition_kind::STRUCTURE_KIND_NONE, module_kind::MODULE_YES, enum_kind::ENUM_NONE, enum_statement_kind::ENUM_STATEMENT_NONE));
 		sym_table_list.push_back(sym_table);
 		s_kind_list.push_back(scope_kind::SCOPE_MODULE);
 		analyze_ast aa(root, s_kind_list, sym_table_list, stmt_list);
 		aa.perform_semantic_analysis();
 		s_kind_list.pop_back();
 		sym_table_list.pop_back();
-		sym_table_list[sym_table_list.size() - 1]->add_symbol(make_shared<symbol>(_any, immut_kind::IMMUT_NO, mod->get_identifier(), function_kind::FUNCTION_NONE, structure_kind::STRUCTURE_NONE, vector<type_information>(),
-			sym_table, function_declaration_definition_kind::FUNCTION_KIND_NONE, function_va_args_kind::FUNCTION_VA_ARGS_NONE, structure_declaration_definition_kind::STRUCTURE_KIND_NONE, module_kind::MODULE_YES, enum_kind::ENUM_NONE, enum_statement_kind::ENUM_STATEMENT_NONE));
 		vector<type_information> t_inf_list;
 		for (int i = 0; i < aa.get_statement_list().size(); i++)
 			t_inf_list.push_back(_any);
@@ -784,13 +786,13 @@ namespace karma_lang {
 			ann_decl_list.push_back(adecl);
 		}
 		if (func->get_lambda_kind() == lambda_kind::LAMBDA_NO) {
-			pair<vector<shared_ptr<symbol>>, bool> symbols_found_pair = find_all_symbols(alit);
+			pair<vector<shared_ptr<symbol>>, bool> symbols_found_pair = find_all_symbols(alit, true);
 			vector<shared_ptr<symbol>> symbols_found = symbols_found_pair.first;
 			bool current_scope = symbols_found_pair.second;
 			for (int i = 0; i < symbols_found.size(); i++) {
 				shared_ptr<symbol> sym = symbols_found[i];
 				if (sym->get_function_kind() == function_kind::FUNCTION_YES && t_inf_list.size() == sym->get_function_arguments().size()) {
-					if (sym->get_function_va_args_kind() == func->get_function_va_args_kind());
+					if (sym->get_function_va_args_kind() == func->get_function_va_args_kind() && sym->get_function_declaration_definition_kind() == function_declaration_definition_kind::FUNCTION_KIND_FORWARD_DECLARATION);
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::ambiguous_function_overload, func->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
@@ -1525,6 +1527,7 @@ namespace karma_lang {
 
 	tuple<shared_ptr<annotated_primary_expression>, type_information, shared_ptr<annotated_root_node>> analyze_ast::analyze_primary_expression(shared_ptr<primary_expression> prexpr, shared_ptr<linearized_postfix_expression> lpe) {
 		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
+		type_information _any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
 		if (!prexpr->get_valid() || lpe == nullptr) {
 			shared_ptr<annotated_primary_expression> aprexpr = make_shared<annotated_primary_expression>(ann_root_node, prexpr, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
 			return make_tuple(aprexpr, bad, nullptr);
@@ -1600,10 +1603,8 @@ namespace karma_lang {
 			afunc = analyze_function(prexpr->get_lambda());
 			t_inf = afunc->get_type_information();
 		}
-		else {
-			shared_ptr<annotated_primary_expression> aprexpr = make_shared<annotated_primary_expression>(ann_root_node, prexpr, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
-			return make_tuple(aprexpr, bad, nullptr);
-		}
+		else if (prek == primary_expression_kind::PRIMARY_EXPRESSION_NONE)
+			t_inf = _any;
 		if (lpe->get_postfix_operation_list().size() != lpe->get_postfix_operation_kind_list().size()) {
 			shared_ptr<annotated_primary_expression> aprexpr = make_shared<annotated_primary_expression>(ann_root_node, prexpr, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
 			return make_tuple(aprexpr, bad, nullptr);

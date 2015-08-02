@@ -165,8 +165,8 @@ namespace karma_lang {
 		return make_shared<literal>(*this);
 	}
 
-	primary_expression::primary_expression(shared_ptr<root_node> r) : root_node(*r), primary_expression_pos(r->get_position()) {
-		valid = false;
+	primary_expression::primary_expression(shared_ptr<root_node> r, bool empty) : root_node(*r), primary_expression_pos(r->get_position()) {
+		valid = empty;
 		kind = primary_expression_kind::PRIMARY_EXPRESSION_NONE;
 		raw_literal = nullptr;
 		raw_parenthesized_expression = nullptr;
@@ -429,8 +429,17 @@ namespace karma_lang {
 			subscr = nullptr;
 			return make_shared<postfix_expression>(*this);
 		}
-		shared_ptr<primary_expression> pexpr = make_shared<primary_expression>(root)->parse_primary_expression();
-		if (pexpr->get_valid()) {
+		shared_ptr<primary_expression> pexpr = nullptr;
+		bool correct = false;
+		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_DOT) {
+			pexpr = make_shared<primary_expression>(root, true);
+			correct = true;
+		}
+		else {
+			pexpr = make_shared<primary_expression>(root)->parse_primary_expression();
+			correct = pexpr->get_valid();
+		}
+		if (correct) {
 			source_token_list::iterator save1 = root->get_position();
 			if (save1 >= root->get_lexer()->get_source_token_list()->end()) {
 				valid = true;
