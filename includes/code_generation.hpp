@@ -87,7 +87,7 @@ namespace karma_lang {
 		shared_ptr<diagnostics_reporter> d_reporter;
 		shared_ptr<code_generation_symbol_table> code_gen_sym_table;
 		vector<string> instruction_list;
-		vector<string> identifier_list;
+		vector<string> function_stack_list;
 		vector<int> pre_loop_stack;
 		vector<int> post_loop_stack;
 		int number;

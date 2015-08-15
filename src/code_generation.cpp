@@ -288,6 +288,7 @@ namespace karma_lang {
 		temp_count = 0;
 		sym_table_list = aa->get_symbol_table();
 		d_reporter = aa->get_annotated_root_node()->get_diagnostics_reporter();
+		function_stack_list = vector<string>();
 	}
 
 	generate_code::~generate_code() {
@@ -304,6 +305,8 @@ namespace karma_lang {
 			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "$" + temp));
 		number++;
 		string str = alit->get_raw_literal()->get_raw_string();
+		if (function_stack_list.size() > 0 && str == builtins::builtin__self__)
+			str = function_stack_list[function_stack_list.size() - 1];
 		return make_pair(alit->get_literal_kind() == literal_kind::LITERAL_IDENTIFIER ? str : "", number - 1);
 	}
 
@@ -729,6 +732,7 @@ namespace karma_lang {
 			fname = code_generation_utilities().generate_temp_name(temp_count);
 			temp_count++;
 		}
+		function_stack_list.push_back(fname);
 		if (afunc->get_function_declaration_definition_kind() == function_declaration_definition_kind::FUNCTION_KIND_FORWARD_DECLARATION)
 			return true;
 		vector<string> param_list;

@@ -73,7 +73,7 @@ namespace karma_lang {
 			if (start != end)
 				cerr << '[' << (*current_pos)->get_file_name() << ' ' << (*current_pos)->get_line_number() << ':' << start << '-' << end << "]: ";
 			else
-				cerr << "Builtin involved.";
+				cerr << "Builtin involved.\n\n";
 			return nullptr;
 		}
 		cerr << message << "\nRegion given here for reference:\n";	
