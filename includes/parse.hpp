@@ -1,12 +1,12 @@
 #ifndef KARMA_LANG_PARSE_HPP
 #define KARMA_LANG_PARSE_HPP
 
-#include "../includes/token.hpp"
-#include "../includes/diagnostic_messages.hpp"
-#include "../includes/diagnostics_report.hpp"
-#include "../includes/lex.hpp"
-#include "../includes/source_token_list.hpp"
-#include "../includes/builtins.hpp"
+#include "includes/token.hpp"
+#include "includes/diagnostic_messages.hpp"
+#include "includes/diagnostics_report.hpp"
+#include "includes/lex.hpp"
+#include "includes/source_token_list.hpp"
+#include "includes/unified.hpp"
 #include <string>
 #include <vector>
 #include <iostream>
@@ -401,12 +401,17 @@ namespace karma_lang {
 			shared_ptr<declspec_list> get_declspec_list();
 	};
 
+	enum module_declaration_definition_kind {
+		MODULE_KIND_DECLARATION, MODULE_KIND_DEFINITION, MODULE_KIND_NONE
+	};
+
 	class module : public root_node {
 		shared_ptr<literal> identifier;
 		vector<shared_ptr<statement>> statement_list;
 		shared_ptr<declspec_list> delsp_list;
 		source_token_list::iterator module_pos;
 		bool valid;
+		module_declaration_definition_kind m_kind;
 		public:	
 			module(shared_ptr<root_node> r);
 			~module();
@@ -416,6 +421,7 @@ namespace karma_lang {
 			source_token_list::iterator get_position();
 			shared_ptr<module> parse_module();
 			shared_ptr<declspec_list> get_declspec_list();
+			const module_declaration_definition_kind get_module_kind();
 	};
 
 	enum return_statement_kind {
@@ -538,10 +544,32 @@ namespace karma_lang {
 			shared_ptr<break_continue_statement> parse_break_continue_statement();
 	};
 
+	enum import_statement_kind {
+		IMPORT_STATEMENT_ALIASED, IMPORT_STATEMENT_UNALIASED, IMPORT_STATEMENT_NONE
+	};
+
+	class import_statement : public root_node {
+		source_token_list::iterator import_statement_pos;
+		bool valid;
+		shared_ptr<literal> file_to_import;
+		shared_ptr<literal> import_alias;
+		import_statement_kind is_kind;
+		public:
+			import_statement(shared_ptr<root_node> r);
+			~import_statement();
+			source_token_list::iterator get_position();
+			const bool get_valid();
+			shared_ptr<literal> get_file_to_import();
+			shared_ptr<literal> get_import_alias();
+			const import_statement_kind get_import_statement_kind();
+			shared_ptr<import_statement> parse_import_statement();
+	};
+
 	enum statement_kind {
 		STATEMENT_DECLARATION, STATEMENT_EXPRESSION, STATEMENT_FUNCTION, STATEMENT_STRUCTURE, 
 		STATEMENT_MODULE, STATEMENT_RETURN_STATEMENT, STATEMENT_CONDITIONAL_STATEMENT, STATEMENT_ENUM_STATEMENT,
-		STATEMENT_WHILE_STATMENT, STATEMENT_FOR_STATEMENT, STATEMENT_BREAK_CONTINUE_STATEMENT, STATEMENT_NONE
+		STATEMENT_WHILE_STATMENT, STATEMENT_FOR_STATEMENT, STATEMENT_BREAK_CONTINUE_STATEMENT, 
+		STATEMENT_IMPORT_STATEMENT, STATEMENT_NONE
 	};
 
 	class statement : public root_node {
@@ -557,6 +585,7 @@ namespace karma_lang {
 		shared_ptr<while_statement> wloop;
 		shared_ptr<for_statement> floop;
 		shared_ptr<break_continue_statement> break_continue;
+		shared_ptr<import_statement> import;
 		bool valid;
 		source_token_list::iterator statement_pos;
 		public:
@@ -577,6 +606,7 @@ namespace karma_lang {
 			shared_ptr<while_statement> get_while_statement();
 			shared_ptr<for_statement> get_for_statement();
 			shared_ptr<break_continue_statement> get_break_continue_statement();
+			shared_ptr<import_statement> get_import_statement();
 	};
 }
 #endif

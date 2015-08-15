@@ -1,12 +1,13 @@
 #ifndef KARMA_LANG_SEMANTICS_HPP
 #define KARMA_LANG_SEMANTICS_HPP
 
-#include "../includes/parse.hpp"
-#include "../includes/lex.hpp"
-#include "../includes/token.hpp"
-#include "../includes/token_keywords.hpp"
-#include "../includes/diagnostic_messages.hpp"
-#include "../includes/diagnostics_report.hpp"
+#include "includes/parse.hpp"
+#include "includes/lex.hpp"
+#include "includes/token.hpp"
+#include "includes/token_keywords.hpp"
+#include "includes/diagnostic_messages.hpp"
+#include "includes/diagnostics_report.hpp"
+#include "includes/unified.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -25,16 +26,13 @@ using std::pair;
 using std::make_pair;
 
 using namespace karma_lang;
+using namespace unified_includes;
 
 namespace karma_lang {
 
 	enum type_kind {
 		TYPE_INT, TYPE_DECIMAL, TYPE_STRING, TYPE_FUNCTION, TYPE_BOOLEAN, TYPE_NIL, TYPE_ANY, TYPE_CUSTOM, TYPE_LIST, TYPE_TUPLE, TYPE_DICT, TYPE_MODULE, 
 		TYPE_ENUM, TYPE_ENUM_CHILD, TYPE_NONE
-	};
-
-	enum type_pure_kind {
-		TYPE_PURE_YES, TYPE_PURE_NO, TYPE_PURE_NONE
 	};
 
 	enum immut_kind {
@@ -47,10 +45,6 @@ namespace karma_lang {
 
 	enum structure_kind {
 		STRUCTURE_YES, STRUCTURE_NO, STRUCTURE_NONE
-	};
-
-	enum type_class_kind {
-		TYPE_CLASS_NO, TYPE_CLASS_YES, TYPE_CLASS_NONE
 	};
 
 	enum module_kind {
@@ -70,11 +64,9 @@ namespace karma_lang {
 		type_pure_kind tp_kind;
 		type_class_kind c_kind;
 		value_kind v_kind;
-		shared_ptr<type_information> return_type_information;
 		shared_ptr<type_information> list_information;
 		shared_ptr<type_information> key_information;
 		shared_ptr<type_information> value_information;
-		vector<shared_ptr<type_information>> tuple_information;
 		shared_ptr<literal> lit;
 		string class_name;
 		public:
@@ -83,8 +75,6 @@ namespace karma_lang {
 			type_information(type_kind tk, type_pure_kind tpk, type_class_kind ck, value_kind vk, string cn);
 			type_information(type_kind tk, type_pure_kind tpk, type_class_kind ck, value_kind vk, shared_ptr<type_information> li);
 			type_information(type_kind tk, type_pure_kind tpk, type_class_kind ck, value_kind vk, shared_ptr<type_information> ki, shared_ptr<type_information> vi);
-			type_information(type_kind tk, type_pure_kind tpk, type_class_kind ck, value_kind vk, vector<shared_ptr<type_information>> ti);
-			type_information(type_kind tk, type_pure_kind tpk, type_class_kind ck, value_kind vk, type_information rti);
 			type_information(type_information t_inf, value_kind vk);
 			type_information(type_information t_inf, shared_ptr<literal> l);
 			~type_information();
@@ -97,7 +87,6 @@ namespace karma_lang {
 			shared_ptr<type_information> get_list_information();
 			shared_ptr<type_information> get_key_information();
 			shared_ptr<type_information> get_value_information();
-			vector<shared_ptr<type_information>> get_tuple_information();
 			shared_ptr<literal> get_literal();
 			string get_class_name();
 	};
@@ -409,6 +398,7 @@ namespace karma_lang {
 		vector<type_information> t_inf_list;
 		type_information t_inf;
 		bool immutable;
+		module_declaration_definition_kind mdd_kind;
 		public:
 			annotated_module(shared_ptr<annotated_root_node> arn, shared_ptr<module> mod,
 				shared_ptr<annotated_literal> alit, vector<shared_ptr<annotated_statement>> astmt_list,
@@ -420,6 +410,7 @@ namespace karma_lang {
 			vector<type_information> get_type_information_list();
 			type_information get_type_information();
 			const bool get_immutable();
+			const module_declaration_definition_kind get_module_kind();
 	};
 
 	class annotated_return_statement : public annotated_root_node {
@@ -521,6 +512,22 @@ namespace karma_lang {
 			const break_continue_statement_kind get_break_continue_statement_kind();
 	};
 
+	class annotated_import_statement : public annotated_root_node {
+		shared_ptr<annotated_literal> file_to_import, import_alias;
+		import_statement_kind is_kind;
+		source_token_list::iterator import_statement_pos;
+		type_information t_inf;
+		public:
+			annotated_import_statement(shared_ptr<annotated_root_node> arn, shared_ptr<import_statement> is, shared_ptr<annotated_literal> fti,
+				shared_ptr<annotated_literal> ia, type_information ti);
+			~annotated_import_statement();
+			shared_ptr<annotated_literal> get_file_to_import();
+			shared_ptr<annotated_literal> get_import_alias();
+			const import_statement_kind get_import_statement_kind();
+			source_token_list::iterator get_position();
+			type_information get_type_information();
+	};
+
 	class annotated_statement : public annotated_root_node {
 		statement_kind kind;
 		shared_ptr<annotated_binary_expression> b_expression;
@@ -534,6 +541,7 @@ namespace karma_lang {
 		shared_ptr<annotated_while_statement> wloop;
 		shared_ptr<annotated_for_statement> floop;
 		shared_ptr<annotated_break_continue_statement> break_continue;
+		shared_ptr<annotated_import_statement> import;
 		source_token_list::iterator statement_pos;
 		type_information t_inf;
 		public:
@@ -541,7 +549,7 @@ namespace karma_lang {
 				shared_ptr<annotated_declaration> adecl, shared_ptr<annotated_function> afunc, shared_ptr<annotated_structure> astruc, 
 				shared_ptr<annotated_module> amod, shared_ptr<annotated_return_statement> aret, shared_ptr<annotated_conditional_statement> acond, 
 				shared_ptr<annotated_enum_statement> aenum, shared_ptr<annotated_while_statement> awhile, shared_ptr<annotated_for_statement> afor, 
-				shared_ptr<annotated_break_continue_statement> abc, type_information ti);
+				shared_ptr<annotated_break_continue_statement> abc, shared_ptr<annotated_import_statement> ais, type_information ti);
 			~annotated_statement();
 			const statement_kind get_statement_kind();
 			shared_ptr<annotated_binary_expression> get_binary_expression();
@@ -557,6 +565,7 @@ namespace karma_lang {
 			shared_ptr<annotated_while_statement> get_while_statement();
 			shared_ptr<annotated_for_statement> get_for_statement();
 			shared_ptr<annotated_break_continue_statement> get_break_continue_statement();
+			shared_ptr<annotated_import_statement> get_import_statement();
 	};
 
 	class symbol_table;
@@ -575,9 +584,10 @@ namespace karma_lang {
 		module_kind m_kind;
 		enum_kind e_kind;
 		enum_statement_kind es_kind;
+		module_declaration_definition_kind mdd_kind;
 		public:
 			symbol(type_information ti, immut_kind ik, shared_ptr<literal> ident, function_kind fk, structure_kind sk, vector<type_information> fa, shared_ptr<symbol_table> st, function_declaration_definition_kind fddk, function_va_args_kind fvak,
-				structure_declaration_definition_kind sddk, module_kind mk, enum_kind ek, enum_statement_kind es_kind);
+				structure_declaration_definition_kind sddk, module_kind mk, enum_kind ek, enum_statement_kind es_kind, module_declaration_definition_kind mddk);
 			~symbol();
 			type_information get_type_information();
 			const immut_kind get_immut_kind();
@@ -595,6 +605,8 @@ namespace karma_lang {
 			const enum_kind get_enum_kind();
 			const enum_statement_kind get_enum_statement_kind();
 			enum_statement_kind set_enum_statement_kind(enum_statement_kind esk);
+			const module_declaration_definition_kind get_module_declaration_definition_kind();
+			module_declaration_definition_kind set_module_declaration_definition_kind(module_declaration_definition_kind mddk);
 	};
 
 	class symbol_table {
@@ -655,6 +667,7 @@ namespace karma_lang {
 		shared_ptr<annotated_while_statement> analyze_while_statement(shared_ptr<while_statement> _while);
 		shared_ptr<annotated_for_statement> analyze_for_statement(shared_ptr<for_statement> _for);
 		shared_ptr<annotated_break_continue_statement> analyze_break_continue_statement(shared_ptr<break_continue_statement> break_continue);
+		shared_ptr<annotated_import_statement> analyze_import_statement(shared_ptr<import_statement> import);
 
 		pair<vector<shared_ptr<symbol>>, bool> find_all_symbols(shared_ptr<annotated_literal> sym, bool limit = false);
 		pair<vector<shared_ptr<symbol>>, bool> find_all_symbols(shared_ptr<literal> sym, bool limit = false);
@@ -667,19 +680,6 @@ namespace karma_lang {
 			shared_ptr<root_node> get_root_node();
 			shared_ptr<annotated_root_node> get_annotated_root_node();
 			vector<shared_ptr<statement>> get_statement_list();
-	};
-
-	class deduce_binary_expression_type {
-		type_information lhs;
-		binary_operation_kind b_kind;
-		type_information rhs;
-		public:
-			deduce_binary_expression_type(type_information l, binary_operation_kind b, type_information r);
-			~deduce_binary_expression_type();
-			type_information get_lhs_type_information();
-			const binary_operation_kind get_binary_operation_kind();
-			type_information get_rhs_type_information();
-			type_information deduce_type();
 	};
 }
 

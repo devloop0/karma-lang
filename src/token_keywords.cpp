@@ -1,4 +1,4 @@
-#include "../includes/token_keywords.hpp"
+#include "includes/token_keywords.hpp"
 
 using namespace karma_lang;
 
@@ -21,4 +21,5 @@ namespace karma_lang {
 	const string token_keywords::lambda = "lambda";
 	const string token_keywords::_break = "break";
 	const string token_keywords::_continue = "continue";
+	const string token_keywords::import = "import";
 }

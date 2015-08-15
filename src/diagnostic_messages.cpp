@@ -1,4 +1,4 @@
-#include "../includes/diagnostic_messages.hpp"
+#include "includes/diagnostic_messages.hpp"
 
 using namespace karma_lang;
 
@@ -74,4 +74,12 @@ namespace karma_lang {
 	const string diagnostic_messages::lambdas_cannot_be_partially_declared = "Lambdas cannot be partially declared.";
 	const string diagnostic_messages::break_and_continue_statements_not_allowed_here = "Break and continue statements not allowed here.";
 	const string diagnostic_messages::break_and_continue_statements_only_allowed_in_loops = "Break and continue statements are only allowed in loops.";
+	const string diagnostic_messages::module_declared_but_not_defined = "Module declared but not defined.";
+	const string diagnostic_messages::overloaded_operator_global = "Overloaded operator can only be present in the global scope.";
+	const string diagnostic_messages::two_parameters_for_a_binary_operator_overload = "Two parameters are expected to overload a binary operator.";
+	const string diagnostic_messages::one_parameter_for_a_unary_operator_overload = "One parameter is expected to overload a unary operator.";
+	const string diagnostic_messages::overloaded_operators_must_be_immutable = "Overloaded operators must be immutable.";
+	const string diagnostic_messages::print_overload_must_have_one_parameter = "Print overload must have one parameter.";
+	const string diagnostic_messages::slice_overload_must_have_four_parameters = "Slice overload must have four parameters.";
+	const string diagnostic_messages::import_statements_only_allowed_in_the_global_scope = "Import statements only allowed in the global scope.";
 }

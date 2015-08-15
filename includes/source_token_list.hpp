@@ -1,7 +1,7 @@
 #ifndef KARMA_LANG_SOURCE_TOKEN_LIST_HPP
 #define KARMA_LANG_SOURCE_TOKEN_LIST_HPP
 
-#include "token.hpp"
+#include "includes/token.hpp"
 #include <iostream>
 #include <string>
 #include <vector>

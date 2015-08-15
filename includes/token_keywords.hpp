@@ -5,7 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <memory>
-#include "../includes/diagnostic_messages.hpp"
+#include "includes/diagnostic_messages.hpp"
 
 using std::string;
 using std::vector;
@@ -37,6 +37,7 @@ namespace karma_lang {
 			const static string lambda;
 			const static string _break;
 			const static string _continue;
+			const static string import;
 	};
 }
 

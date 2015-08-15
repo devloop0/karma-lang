@@ -6,8 +6,8 @@
 #include <vector>
 #include <memory>
 #include <cassert>
-#include "../includes/token.hpp"
-#include "../includes/source_token_list.hpp"
+#include "includes/token.hpp"
+#include "includes/source_token_list.hpp"
 
 #ifdef WIN32
 #include <Windows.h>

@@ -1,4 +1,4 @@
-#include "../includes/token_analyze.hpp"
+#include "includes/token_analyze.hpp"
 
 using namespace karma_lang;
 

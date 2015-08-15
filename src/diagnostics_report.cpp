@@ -1,4 +1,4 @@
-#include "../includes/diagnostics_report.hpp"
+#include "includes/diagnostics_report.hpp"
 
 using namespace karma_lang;
 

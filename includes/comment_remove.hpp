@@ -18,6 +18,7 @@ namespace karma_lang {
 		string comments_removed;
 		public:
 			comment_remover(string src);
+			comment_remover(vector<string> src);
 			~comment_remover();
 			string remove_comments();
 			const string get_comments_removed();

@@ -1,4 +1,4 @@
-#include "../includes/lex.hpp"
+#include "includes/lex.hpp"
 
 using namespace karma_lang;
 
@@ -6,6 +6,12 @@ namespace karma_lang {
 
 	lexer::lexer(string src, string f) : source(src), file(f) {
 		stlist = nullptr;
+	}
+
+	lexer::lexer(vector<string> src, string f) : file(f) {
+		stlist = nullptr;
+		for (string s : src)
+			source += s + "\n";
 	}
 
 	shared_ptr<source_token_list> lexer::lex() {
@@ -276,7 +282,7 @@ namespace karma_lang {
 				}
 				else if (source[i + 1] == '=') {
 					i++, cols++;
-					shared_ptr<token> tok = make_shared<token>(tabs, save, cols + 1, "&=", file, line_number, token_kind::TOKEN_BITWISE_AND);
+					shared_ptr<token> tok = make_shared<token>(tabs, save, cols + 1, "&=", file, line_number, token_kind::TOKEN_BITWISE_AND_EQUALS);
 					tok_list.push_back(tok);
 				}
 				else {
@@ -506,6 +512,8 @@ namespace karma_lang {
 						tkind = token_kind::TOKEN_CONTINUE;
 					else if (acc == token_keywords::_break)
 						tkind = token_kind::TOKEN_BREAK;
+					else if (acc == token_keywords::import)
+						tkind = token_kind::TOKEN_IMPORT;
 					shared_ptr<token> tok = make_shared<token>(tabs, save, cols + 1, acc, file, line_number, tkind);
 					tok_list.push_back(tok);
 				}

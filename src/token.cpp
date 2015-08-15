@@ -1,4 +1,4 @@
-#include "../includes/token.hpp"
+#include "includes/token.hpp"
 
 namespace karma_lang {
 	token::token(int tc, int cs, int ce, string rs, string f, int l, token_kind k) : tab_count(tc), column_start(cs), column_end(ce), raw_string(rs), kind(k), file_name(f), line_number(l) {

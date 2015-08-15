@@ -1,14 +1,15 @@
 #ifndef KARMA_LANG_CODE_GENERATION_HPP
 #define KARMA_LANG_CODE_GENERATION_HPP
 
-#include "../includes/token.hpp"
-#include "../includes/token_analyze.hpp"
-#include "../includes/token_keywords.hpp"
-#include "../includes/lex.hpp"
-#include "../includes/parse.hpp"
-#include "../includes/semantics.hpp"
-#include "../includes/diagnostics_report.hpp"
-#include "../includes/diagnostic_messages.hpp"
+#include "includes/token.hpp"
+#include "includes/token_analyze.hpp"
+#include "includes/token_keywords.hpp"
+#include "includes/lex.hpp"
+#include "includes/parse.hpp"
+#include "includes/semantics.hpp"
+#include "includes/diagnostics_report.hpp"
+#include "includes/diagnostic_messages.hpp"
+#include "includes/unified.hpp"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -29,65 +30,9 @@ using std::pair;
 using std::make_pair;
 
 using namespace karma_lang;
+using namespace unified_includes;
 
 namespace karma_lang {
-
-	class vm_instruction_list {
-		public:
-			const static string mov;
-			const static string inc;
-			const static string dec;
-			const static string cmpl;
-			const static string neg;
-			const static string pos;
-			const static string bneg;
-			const static string tyof;
-			const static string add;
-			const static string mul;
-			const static string div;
-			const static string mod;
-			const static string exp;
-			const static string sub;
-			const static string shl;
-			const static string shr;
-			const static string equ;
-			const static string nequ;
-			const static string gt;
-			const static string lt;
-			const static string gte;
-			const static string lte;
-			const static string band;
-			const static string bor;
-			const static string exor;
-			const static string lor;
-			const static string land;
-			const static string cast;
-			const static string exit;
-			const static string jmp;
-			const static string list;
-			const static string tupl;
-			const static string dict;
-			const static string func;
-			const static string efunc;
-			const static string struc;
-			const static string estruc;
-			const static string module;
-			const static string emodule;
-			const static string imodule;
-			const static string istruc;
-			const static string imov;
-			const static string ret;
-			const static string _enum;
-			const static string ifunc;
-			const static string scope;
-			const static string escope;
-			const static string dmov;
-			const static string lambda;
-			const static string ilambda;
-			const static string elambda;
-			const static string brk;
-			const static string cont;
-	};
 
 	class code_generation_symbol_table {
 		vector<shared_ptr<symbol>> sym_table;
@@ -133,6 +78,7 @@ namespace karma_lang {
 			string generate_lambda_footer(int tab);
 			string generate_break_instruction(int tab, int label);
 			string generate_continue_instruction(int tab, int label);
+			string generate_import_instruction(int tab, string file, string name);
 	};
 
 	class generate_code {
@@ -151,8 +97,8 @@ namespace karma_lang {
 
 		pair<string, int> descend_literal(shared_ptr<annotated_literal> alit);
 		pair<string, int> descend_primary_expression(shared_ptr<annotated_primary_expression> prexpr);
-		tuple<string, postfix_operation_kind, int> descend_postfix_expression(shared_ptr<annotated_linearized_postfix_expression> apoexpr);
-		pair<string, postfix_operation_kind> descend_unary_expression(shared_ptr<annotated_unary_expression> auexpr);
+		pair<string, int> descend_postfix_expression(shared_ptr<annotated_linearized_postfix_expression> apoexpr);
+		string descend_unary_expression(shared_ptr<annotated_unary_expression> auexpr);
 		vector<string> descend_binary_expression(shared_ptr<annotated_binary_expression> abexpr);
 		bool descend_declaration(shared_ptr<annotated_declaration> adecl);
 		bool descend_statement(shared_ptr<annotated_statement> astmt);
@@ -166,6 +112,8 @@ namespace karma_lang {
 		bool descend_while_statement(shared_ptr<annotated_while_statement> awhile);
 		bool descend_for_statement(shared_ptr<annotated_for_statement> afor);
 		bool descend_break_continue_statement(shared_ptr<annotated_break_continue_statement> abreak_continue);
+		bool descend_import_statement(shared_ptr<annotated_import_statement> aimport);
+
 		public:
 			generate_code(shared_ptr<analyze_ast> aa);
 			~generate_code();

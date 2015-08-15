@@ -1,4 +1,4 @@
-#include "../includes/comment_remove.hpp"
+#include "includes/comment_remove.hpp"
 
 using namespace karma_lang;
 
@@ -6,6 +6,11 @@ namespace karma_lang {
 	
 	comment_remover::comment_remover(string src) : source(src), comments_removed("") {
 
+	}
+
+	comment_remover::comment_remover(vector<string> src) : comments_removed("") {
+		for (string s : src)
+			source += s + "\n";
 	}
 
 	comment_remover::~comment_remover() {

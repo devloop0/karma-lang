@@ -86,6 +86,14 @@ namespace karma_lang {
 			const static string lambdas_cannot_be_partially_declared;
 			const static string break_and_continue_statements_only_allowed_in_loops;
 			const static string break_and_continue_statements_not_allowed_here;
+			const static string module_declared_but_not_defined;
+			const static string overloaded_operator_global;
+			const static string two_parameters_for_a_binary_operator_overload;
+			const static string one_parameter_for_a_unary_operator_overload;
+			const static string overloaded_operators_must_be_immutable;
+			const static string print_overload_must_have_one_parameter;
+			const static string slice_overload_must_have_four_parameters;
+			const static string import_statements_only_allowed_in_the_global_scope;
 	};
 }
 

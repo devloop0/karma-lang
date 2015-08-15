@@ -1,11 +1,11 @@
 #ifndef KARMA_LANG_TOKEN_ANALYZE_HPP
 #define KARMA_LANG_TOKEN_ANALYZE_HPP
 
-#include "token.hpp"
-#include "source_token_list.hpp"
-#include "diagnostics_report.hpp"
-#include "lex.hpp"
-#include "diagnostic_messages.hpp"
+#include "includes/token.hpp"
+#include "includes/source_token_list.hpp"
+#include "includes/diagnostics_report.hpp"
+#include "includes/lex.hpp"
+#include "includes/diagnostic_messages.hpp"
 #include <iostream>
 #include <string>
 #include <vector>

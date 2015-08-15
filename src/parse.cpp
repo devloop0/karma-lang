@@ -1,4 +1,4 @@
-#include "../includes/parse.hpp"
+#include "includes/parse.hpp"
 
 using namespace karma_lang;
 
@@ -4047,6 +4047,7 @@ namespace karma_lang {
 		statement_list = vector<shared_ptr<statement>>();
 		valid = false;
 		delsp_list = nullptr;
+		m_kind = module_declaration_definition_kind::MODULE_KIND_NONE;
 	}
 
 	module::~module() {
@@ -4073,6 +4074,10 @@ namespace karma_lang {
 		return delsp_list;
 	}
 
+	const module_declaration_definition_kind module::get_module_kind() {
+		return m_kind;
+	}
+
 	shared_ptr<module> module::parse_module() {
 		source_token_list::iterator save = root->get_position();
 		module_pos = root->get_position();
@@ -4081,6 +4086,7 @@ namespace karma_lang {
 			statement_list = vector<shared_ptr<statement>>();
 			valid = false;
 			delsp_list = nullptr;
+			m_kind = module_declaration_definition_kind::MODULE_KIND_NONE;
 			return make_shared<module>(*this);
 		}
 		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_MODULE);
@@ -4089,6 +4095,7 @@ namespace karma_lang {
 			statement_list = vector<shared_ptr<statement>>();
 			valid = false;
 			delsp_list = nullptr;
+			m_kind = module_declaration_definition_kind::MODULE_KIND_NONE;
 			return make_shared<module>(*this);
 		}
 		root->set_position(root->get_position() + 1);
@@ -4098,12 +4105,14 @@ namespace karma_lang {
 			identifier = nullptr;
 			statement_list = vector<shared_ptr<statement>>();
 			valid = false;
+			m_kind = module_declaration_definition_kind::MODULE_KIND_NONE;
 			return make_shared<module>(*this);
 		}
 		if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
 			identifier = nullptr;
 			statement_list = vector<shared_ptr<statement>>();
 			valid = false;
+			m_kind = module_declaration_definition_kind::MODULE_KIND_NONE;
 			return make_shared<module>(*this);
 		}
 		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_POINT_DECL);
@@ -4111,6 +4120,7 @@ namespace karma_lang {
 			identifier = nullptr;
 			statement_list = vector<shared_ptr<statement>>();
 			valid = false;
+			m_kind = module_declaration_definition_kind::MODULE_KIND_NONE;
 			return make_shared<module>(*this);
 		}
 		root->set_position(root->get_position() + 1);
@@ -4118,16 +4128,18 @@ namespace karma_lang {
 		if (!identifier->get_valid() || root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
 			statement_list = vector<shared_ptr<statement>>();
 			valid = false;
+			m_kind = module_declaration_definition_kind::MODULE_KIND_NONE;
 			return make_shared<module>(*this);
 		}
 		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_OPEN_BRACE);
 		else {
 			statement_list = vector<shared_ptr<statement>>();
-			valid = false;
-			root->get_diagnostics_reporter()->print(diagnostic_messages::partial_declarations_not_allowed, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+			valid = true;
+			m_kind = module_declaration_definition_kind::MODULE_KIND_DECLARATION;
 			return make_shared<module>(*this);
 		}
 		root->set_position(root->get_position() + 1);
+		m_kind = module_declaration_definition_kind::MODULE_KIND_DEFINITION;
 		while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() != token_kind::TOKEN_CLOSE_BRACE) {
 			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_NEW_LINE)
 				root->set_position(root->get_position() + 1);
@@ -4819,6 +4831,92 @@ namespace karma_lang {
 		return make_shared<break_continue_statement>(*this);
 	}
 
+	import_statement::import_statement(shared_ptr<root_node> r) : root_node(*r), import_statement_pos(r->get_position()) {
+		valid = false;
+		file_to_import = nullptr;
+		import_alias = nullptr;
+		is_kind = import_statement_kind::IMPORT_STATEMENT_NONE;
+	}
+
+	import_statement::~import_statement() {
+
+	}
+
+	source_token_list::iterator import_statement::get_position() {
+		return import_statement_pos;
+	}
+
+	const bool import_statement::get_valid() {
+		return valid;
+	}
+
+	shared_ptr<literal> import_statement::get_file_to_import() {
+		return file_to_import;
+	}
+
+	shared_ptr<literal> import_statement::get_import_alias() {
+		return import_alias;
+	}
+
+	const import_statement_kind import_statement::get_import_statement_kind() {
+		return is_kind;
+	}
+
+	shared_ptr<import_statement> import_statement::parse_import_statement() {
+		source_token_list::iterator save = root->get_position();
+		import_statement_pos = save;
+		if (save > root->get_lexer()->get_source_token_list()->end()) {
+			valid = false;
+			file_to_import = nullptr;
+			import_alias = nullptr;
+			is_kind = import_statement_kind::IMPORT_STATEMENT_NONE;
+			return make_shared<import_statement>(*this);
+		}
+		if ((*save)->get_token_kind() == token_kind::TOKEN_IMPORT);
+		else {
+			valid = false;
+			file_to_import = nullptr;
+			import_alias = nullptr;
+			is_kind = import_statement_kind::IMPORT_STATEMENT_NONE;
+			return make_shared<import_statement>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_POINT_DECL);
+		else {
+			valid = false;
+			file_to_import = nullptr;
+			import_alias = nullptr;
+			is_kind = import_statement_kind::IMPORT_STATEMENT_NONE;
+			return make_shared<import_statement>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		file_to_import = make_shared<literal>(root)->parse_literal();
+		if (file_to_import->get_valid());
+		else {
+			valid = false;
+			import_alias = nullptr;
+			is_kind = import_statement_kind::IMPORT_STATEMENT_NONE;
+			return make_shared<import_statement>(*this);
+		}
+		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_POINT_DECL);
+		else {
+			valid = true;
+			import_alias = nullptr;
+			is_kind = import_statement_kind::IMPORT_STATEMENT_UNALIASED;
+			return make_shared<import_statement>(*this);
+		}
+		root->set_position(root->get_position() + 1);
+		is_kind = import_statement_kind::IMPORT_STATEMENT_ALIASED;
+		import_alias = make_shared<literal>(root)->parse_literal();
+		if (import_alias->get_valid());
+		else {
+			valid = false;
+			return make_shared<import_statement>(*this);
+		}
+		valid = true;
+		return make_shared<import_statement>(*this);
+	}
+
 	statement::statement(shared_ptr<root_node> r) : root_node(*r), statement_pos(r->get_position()) {
 		valid = false;
 		decl = nullptr;
@@ -4831,6 +4929,7 @@ namespace karma_lang {
 		wloop = nullptr;
 		floop = nullptr;
 		break_continue = nullptr;
+		import = nullptr;
 		kind = statement_kind::STATEMENT_NONE;
 	}
 
@@ -4894,6 +4993,10 @@ namespace karma_lang {
 		return break_continue;
 	}
 
+	shared_ptr<import_statement> statement::get_import_statement() {
+		return import;
+	}
+
 	shared_ptr<statement> statement::parse_statement() {
 		source_token_list::iterator save = root->get_position();
 		statement_pos = root->get_position();
@@ -4911,6 +5014,7 @@ namespace karma_lang {
 			wloop = nullptr;
 			floop = nullptr;
 			break_continue = nullptr;
+			import = nullptr;
 			return make_shared<statement>(*this);
 		}
 		if((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_VAR) {
@@ -4927,6 +5031,7 @@ namespace karma_lang {
 			wloop = nullptr;
 			floop = nullptr;
 			break_continue = nullptr;
+			import = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_FUNC) {
@@ -4943,6 +5048,7 @@ namespace karma_lang {
 			wloop = nullptr;
 			floop = nullptr;
 			break_continue = nullptr;
+			import = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_STRUCT) {
@@ -4959,6 +5065,7 @@ namespace karma_lang {
 			wloop = nullptr;
 			floop = nullptr;
 			break_continue = nullptr;
+			import = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_MODULE) {
@@ -4975,6 +5082,7 @@ namespace karma_lang {
 			valid = mod->get_valid();
 			wloop = nullptr;
 			break_continue = nullptr;
+			import = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_RETURN) {
@@ -4991,6 +5099,7 @@ namespace karma_lang {
 			valid = ret->get_valid();
 			wloop = nullptr;
 			break_continue = nullptr;
+			import = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_IF) {
@@ -5007,6 +5116,7 @@ namespace karma_lang {
 			valid = cond->get_valid();
 			wloop = nullptr;
 			break_continue = nullptr;
+			import = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_ENUM) {
@@ -5023,6 +5133,7 @@ namespace karma_lang {
 			wloop = nullptr;
 			floop = nullptr;
 			break_continue = nullptr;
+			import = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_WHILE) {
@@ -5039,6 +5150,7 @@ namespace karma_lang {
 			valid = wloop->get_valid();
 			floop = nullptr;
 			break_continue = nullptr;
+			import = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_FOR) {
@@ -5055,6 +5167,7 @@ namespace karma_lang {
 			floop = make_shared<for_statement>(root)->parse_for_statement();
 			valid = floop->get_valid();
 			break_continue = nullptr;
+			import = nullptr;
 			return make_shared<statement>(*this);
 		}
 		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_BREAK || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_CONTINUE) {
@@ -5071,6 +5184,24 @@ namespace karma_lang {
 			floop = nullptr;
 			break_continue = make_shared<break_continue_statement>(root)->parse_break_continue_statement();
 			valid = break_continue->get_valid();
+			import = nullptr;
+			return make_shared<statement>(*this);
+		}
+		else if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_IMPORT) {
+			b_expression = nullptr;
+			kind = statement_kind::STATEMENT_IMPORT_STATEMENT;
+			decl = nullptr;
+			struc = nullptr;
+			func = nullptr;
+			mod = nullptr;
+			cond = nullptr;
+			ret = nullptr;
+			_enum = nullptr;
+			wloop = nullptr;
+			floop = nullptr;
+			break_continue = nullptr;
+			import = make_shared<import_statement>(root)->parse_import_statement();
+			valid = import->get_valid();
 			return make_shared<statement>(*this);
 		}
 		else {
@@ -5087,6 +5218,7 @@ namespace karma_lang {
 			wloop = nullptr;
 			floop = nullptr;
 			break_continue = nullptr;
+			import = nullptr;
 			return make_shared<statement>(*this);
 		}
 		decl = nullptr;
@@ -5102,6 +5234,7 @@ namespace karma_lang {
 		wloop = nullptr;
 		floop = nullptr;
 		break_continue = nullptr;
+		import = nullptr;
 		root->get_diagnostics_reporter()->print(diagnostic_messages::unreachable, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 		exit(1);
 		return make_shared<statement>(*this);
