@@ -26,7 +26,25 @@ namespace karma_lang {
 		for(int i = 0; i < source.length(); i++) {
 			if(source[i] == '#') {
 				i++;
-				while(source[i] != '\n') i++;
+				while(i < source.length() && source[i] != '\n') i++;
+				i--;
+			}
+			else if (i + 1 < source.length() && (source[i] == '/' && source[i + 1] == '*')) {
+				i += 2;
+				int balance = 1;
+				while (i < source.length()) {
+					if (i + 1 < source.length() && (source[i] == '/' && source[i + 1] == '*')) {
+						i++, balance++;
+					}
+					else if (i + 1 < source.length() && (source[i] == '*' && source[i + 1] == '/')) {
+						i++, balance--;
+					}
+					else if (source[i] == '\n')
+						copy += source[i];
+					i++;
+					if (balance == 0)
+						break;
+				}
 				i--;
 			}
 			else if(source[i] == '\'') {
