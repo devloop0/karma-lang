@@ -361,18 +361,41 @@ namespace karma_lang {
 					i += 2, cols += 2;
 					while (isdigit(source[i]) || source[i] == 'a' || source[i] == 'b' || source[i] == 'c' || source[i] == 'd' ||
 						source[i] == 'e' || source[i] == 'f' || source[i] == 'A' || source[i] == 'B' ||
-						source[i] == 'C' || source[i] == 'D' || source[i] == 'E' || source[i] == 'F') {
+						source[i] == 'C' || source[i] == 'D' || source[i] == 'E' || source[i] == 'F' || source[i] == '\'') {
 						acc += source[i];
 						i++, cols++;
 					}
 					i--, cols--;
-					shared_ptr<token> tok = make_shared<token>(tabs, save, cols + 1, acc, file, line_number, token_kind::TOKEN_HEX_NUMBER);
+					shared_ptr<token> tok = make_shared<token>(tabs, save, cols + 1, acc, file, line_number, token_kind::TOKEN_SPECIAL_NUMBER);
+					tok_list.push_back(tok);
+				}
+				else if (source[i + 1] == 'b' || source[i + 1] == 'B') {
+					acc += source[i + 1];
+					i += 2, cols += 2;
+					while (source[i] == '0' || source[i] == '1' || source[i] == '\'') {
+						acc += source[i];
+						i++, cols++;
+					}
+					i--, cols--;
+					shared_ptr<token> tok = make_shared<token>(tabs, save, cols + 1, acc, file, line_number, token_kind::TOKEN_SPECIAL_NUMBER);
+					tok_list.push_back(tok);
+				}
+				else if (source[i + 1] == 'o' || source[i + 1] == 'O') {
+					acc += source[i + 1];
+					i += 2, cols += 2;
+					while (source[i] == '0' || source[i] == '1' || source[i] == '2' || source[i] == '3' || source[i] == '4' ||
+						source[i] == '5' || source[i] == '6' || source[i] == '7' || source[i] == '\'') {
+						acc += source[i];
+						i++, cols++;
+					}
+					i--, cols--;
+					shared_ptr<token> tok = make_shared<token>(tabs, save, cols + 1, acc, file, line_number, token_kind::TOKEN_SPECIAL_NUMBER);
 					tok_list.push_back(tok);
 				}
 				else if (source[i + 1] == '.') {
 					acc += source[i + 1];
 					i += 2, cols += 2;
-					while (isdigit(source[i])) {
+					while (isdigit(source[i]) || source[i] == '\'') {
 						acc += source[i];
 						i++, cols++;
 					}
@@ -383,7 +406,7 @@ namespace karma_lang {
 				else {
 					i++, cols++;
 					bool decimal_flag = true;
-					while (isdigit(source[i]) || (decimal_flag && source[i] == '.')) {
+					while (isdigit(source[i]) || (decimal_flag && source[i] == '.') || source[i] == '\'') {
 						if (source[i] == '.')
 							decimal_flag = false;
 						acc += source[i];
@@ -408,7 +431,7 @@ namespace karma_lang {
 				string acc = string(1, source[i]);
 				bool decimal_flag = false;
 				i++, cols++;
-				while (isdigit(source[i]) || (!decimal_flag && source[i] == '.')) {
+				while (isdigit(source[i]) || (!decimal_flag && source[i] == '.') || source[i] == '\'') {
 					if (source[i] == '.')
 						decimal_flag = true;
 					acc += source[i];
@@ -425,15 +448,15 @@ namespace karma_lang {
 					  break;
 			case '.': {
 				int save = cols;
-				if(!isdigit(source[i + 1])) {
+				if(!isdigit(source[i + 1]) && source[i + 1] != '\'') {
 					shared_ptr<token> tok = make_shared<token>(tabs, save, cols + 1, ".", file, line_number, token_kind::TOKEN_DOT);
 					tok_list.push_back(tok);	
 				}
 				else { 
 					string acc = string(1, source[i]);
-					if (isdigit(source[i + 1])) {
+					if (isdigit(source[i + 1]) || source[i + 1] == '\'') {
 						i++, cols++;
-						while (isdigit(source[i])) {
+						while (isdigit(source[i]) || source[i] == '\'') {
 							acc += source[i];
 							i++, cols++;
 						}

@@ -130,7 +130,7 @@ namespace karma_lang {
 				root->set_position(root->get_position() + 1);
 				return make_shared<literal>(*this);
 			}
-			else if ((*save)->get_token_kind() == token_kind::TOKEN_REGULAR_NUMBER || (*save)->get_token_kind() == token_kind::TOKEN_HEX_NUMBER) {
+			else if ((*save)->get_token_kind() == token_kind::TOKEN_REGULAR_NUMBER || (*save)->get_token_kind() == token_kind::TOKEN_SPECIAL_NUMBER) {
 				valid = true;
 				kind = literal_kind::LITERAL_REGULAR_HEX_NUMBER;
 				raw_literal = *root->get_position();
