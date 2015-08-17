@@ -556,8 +556,9 @@ namespace karma_lang {
 		type_information _tuple(type_kind::TYPE_TUPLE, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 		type_information _nil(type_kind::TYPE_NIL, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
 		type_information _any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_LVALUE);
+		type_information _string(type_kind::TYPE_STRING, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_LVALUE);
 		shared_ptr<annotated_binary_expression> abexpr = analyze_binary_expression(_for->get_expression());
-		if (abexpr->get_type_information() == _list || abexpr->get_type_information() == _tuple || abexpr->get_type_information() == _nil ||
+		if (abexpr->get_type_information() == _list || abexpr->get_type_information() == _tuple || abexpr->get_type_information() == _string ||
 			abexpr->get_type_information() == _any);
 		else {
 			root->get_diagnostics_reporter()->print(diagnostic_messages::incompatible_types, _for->get_expression()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
@@ -611,6 +612,48 @@ namespace karma_lang {
 		return make_shared<annotated_break_continue_statement>(ann_root_node, break_continue, ret);
 	}
 
+	shared_ptr<annotated_match_statement> analyze_ast::analyze_match_statement(shared_ptr<match_statement> match) {
+		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
+		if (!match->get_valid())
+			return make_shared<annotated_match_statement>(ann_root_node, match, nullptr, vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>>(), vector<shared_ptr<annotated_statement>>(), bad);
+		vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>> match_arm_list;
+		vector<shared_ptr<annotated_statement>> default_arm;
+		shared_ptr<annotated_binary_expression> condition = analyze_binary_expression(match->get_condition());
+		if(condition->get_type_information() == bad)
+			return make_shared<annotated_match_statement>(ann_root_node, match, nullptr, vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>>(), vector<shared_ptr<annotated_statement>>(), bad);
+		vector<shared_ptr<statement>> stmt_list = match->get_default_arm();
+		vector<pair<shared_ptr<binary_expression>, vector<shared_ptr<statement>>>> match_list = match->get_match_arm_list();
+		for (int i = 0; i < match_list.size(); i++) {
+			pair<shared_ptr<binary_expression>, vector<shared_ptr<statement>>> pai = match_list[i];
+			shared_ptr<annotated_binary_expression> abexpr = analyze_binary_expression(pai.first);
+			if(abexpr->get_type_information() == bad)
+				return make_shared<annotated_match_statement>(ann_root_node, match, nullptr, vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>>(), vector<shared_ptr<annotated_statement>>(), bad);
+			vector<shared_ptr<annotated_statement>> ret;
+			s_kind_list.push_back(scope_kind::SCOPE_CONDITIONAL);
+			sym_table_list.push_back(make_shared<symbol_table>());
+			for (int i = 0; i < pai.second.size(); i++) {
+				shared_ptr<annotated_statement> astmt = analyze_statement(pai.second[i]);
+				if(astmt->get_type_information() == bad)
+					return make_shared<annotated_match_statement>(ann_root_node, match, nullptr, vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>>(), vector<shared_ptr<annotated_statement>>(), bad);
+				ret.push_back(astmt);
+			}
+			s_kind_list.pop_back();
+			sym_table_list.pop_back();
+			match_arm_list.push_back(make_pair(abexpr, ret));
+		}
+		s_kind_list.push_back(scope_kind::SCOPE_CONDITIONAL);
+		sym_table_list.push_back(make_shared<symbol_table>());
+		for (int i = 0; i < stmt_list.size(); i++) {
+			shared_ptr<annotated_statement> astmt = analyze_statement(stmt_list[i]);
+			if(astmt->get_type_information() == bad)
+				return make_shared<annotated_match_statement>(ann_root_node, match, nullptr, vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>>(), vector<shared_ptr<annotated_statement>>(), bad);
+			default_arm.push_back(astmt);
+		}
+		s_kind_list.pop_back();
+		sym_table_list.pop_back();
+		return make_shared<annotated_match_statement>(ann_root_node, match, condition, match_arm_list, default_arm, type_information(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_NOT_APPLICABLE));
+	}
+
 	shared_ptr<annotated_statement> analyze_ast::analyze_statement(shared_ptr<statement> stmt) {
 		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
 		shared_ptr<annotated_binary_expression> abexpr = nullptr;
@@ -625,8 +668,9 @@ namespace karma_lang {
 		shared_ptr<annotated_for_statement> afor = nullptr;
 		shared_ptr<annotated_break_continue_statement> abreak_continue = nullptr;
 		shared_ptr<annotated_import_statement> aimport = nullptr;
+		shared_ptr<annotated_match_statement> amatch = nullptr;
 		if (!stmt->get_valid())
-			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
+			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
 		if (stmt->get_statement_kind() == statement_kind::STATEMENT_DECLARATION)
 			adecl = analyze_declaration(stmt->get_declaration());
 		else if (stmt->get_statement_kind() == statement_kind::STATEMENT_EXPRESSION)
@@ -651,8 +695,10 @@ namespace karma_lang {
 			abreak_continue = analyze_break_continue_statement(stmt->get_break_continue_statement());
 		else if (stmt->get_statement_kind() == statement_kind::STATEMENT_IMPORT_STATEMENT)
 			aimport = analyze_import_statement(stmt->get_import_statement());
+		else if (stmt->get_statement_kind() == statement_kind::STATEMENT_MATCH_STATEMENT)
+			amatch = analyze_match_statement(stmt->get_match_statement());
 		else
-			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
+			return make_shared<annotated_statement>(ann_root_node, stmt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, bad);
 		type_information ret = bad;
 		if (adecl != nullptr) ret = adecl->get_type_information();
 		else if (abexpr != nullptr) ret = abexpr->get_type_information();
@@ -666,8 +712,9 @@ namespace karma_lang {
 		else if (afor != nullptr) ret = afor->get_type_information();
 		else if (abreak_continue != nullptr) ret = abreak_continue->get_type_information();
 		else if (aimport != nullptr) ret = aimport->get_type_information();
+		else if (amatch != nullptr) ret = amatch->get_type_information();
 		ret = type_information(ret, value_kind::VALUE_NOT_APPLICABLE);
-		return make_shared<annotated_statement>(ann_root_node, stmt, abexpr, adecl, afunc, astruc, amod, aret, acond, aenum, awhile, afor, abreak_continue, aimport, ret);
+		return make_shared<annotated_statement>(ann_root_node, stmt, abexpr, adecl, afunc, astruc, amod, aret, acond, aenum, awhile, afor, abreak_continue, aimport, amatch, ret);
 	}
 
 	shared_ptr<annotated_import_statement> analyze_ast::analyze_import_statement(shared_ptr<import_statement> import) {
@@ -783,6 +830,7 @@ namespace karma_lang {
 		bool unary_operator_overload = false;
 		bool print_operator_overload = false;
 		bool slice_operator_overload = false;
+		bool subscript_operator_overload = false;
 		if (func->get_lambda_kind() == lambda_kind::LAMBDA_NO) {
 			alit = make_shared<annotated_literal>(ann_root_node, func->get_identifier(), _any_func);
 			if (alit->get_literal_kind() == literal_kind::LITERAL_IDENTIFIER);
@@ -806,6 +854,7 @@ namespace karma_lang {
 				fname == builtins::builtin__numeric_positive__ || fname == builtins::builtin__complement__ || fname == builtins::builtin__boolean_negate__;
 			print_operator_overload = fname == builtins::builtin__print__;
 			slice_operator_overload = fname == builtins::builtin__slice__;
+			subscript_operator_overload = fname == builtins::builtin__subscript__;
 			operator_overload = binary_operator_overload || unary_operator_overload || print_operator_overload ||
 				slice_operator_overload;
 		}
@@ -943,6 +992,10 @@ namespace karma_lang {
 				}
 				if (slice_operator_overload && (decl_list.size() != 4 || func->get_function_va_args_kind() == function_va_args_kind::FUNCTION_VA_ARGS_YES)) {
 					root->get_diagnostics_reporter()->print(diagnostic_messages::slice_overload_must_have_four_parameters, func->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+					return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
+				}
+				if (subscript_operator_overload && (decl_list.size() != 2 || func->get_function_va_args_kind() == function_va_args_kind::FUNCTION_VA_ARGS_YES)) {
+					root->get_diagnostics_reporter()->print(diagnostic_messages::subscript_overload_must_have_two_parameters, func->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 					return make_shared<annotated_function>(ann_root_node, func, nullptr, vector<shared_ptr<annotated_declaration>>(), vector<shared_ptr<annotated_statement>>(), function_declaration_definition_kind::FUNCTION_KIND_NONE, bad);
 				}
 				if (!immut) {
@@ -1461,7 +1514,6 @@ namespace karma_lang {
 					type_information t_inf = analyze_binary_expression(subscr->get_start())->get_type_information();
 					shared_ptr<type_information> key_inf = prev.get_key_information();
 					if (t_inf == *key_inf || t_inf == _any || *key_inf == _any);
-					else if (t_inf == _nil && (key_inf->get_type_pure_kind() == type_pure_kind::TYPE_PURE_NO));
 					else {
 						root->get_diagnostics_reporter()->print(diagnostic_messages::expected_dictionary_subscript_to_equal_its_key_type, subscr->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 						return make_pair(bad, nullptr);
@@ -1476,7 +1528,7 @@ namespace karma_lang {
 					if (subscr->get_start() == nullptr);
 					else {
 						type_information t_inf = analyze_binary_expression(subscr->get_start())->get_type_information();
-						if (t_inf == _int || t_inf == _any || t_inf == _nil);
+						if (t_inf == _int || t_inf == _any);
 						else {
 							root->get_diagnostics_reporter()->print(diagnostic_messages::expected_subscript_for_sequence_to_be_integer, subscr->get_start()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 							return make_pair(bad, nullptr);
@@ -1485,7 +1537,7 @@ namespace karma_lang {
 					if (subscr->get_final() == nullptr);
 					else {
 						type_information t_inf = analyze_binary_expression(subscr->get_final())->get_type_information();
-						if (t_inf == _int || t_inf == _any || t_inf == _nil);
+						if (t_inf == _int || t_inf == _any);
 						else {
 							root->get_diagnostics_reporter()->print(diagnostic_messages::expected_subscript_for_sequence_to_be_integer, subscr->get_final()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 							return make_pair(bad, nullptr);
@@ -1494,7 +1546,7 @@ namespace karma_lang {
 					if (subscr->get_step() == nullptr);
 					else {
 						type_information t_inf = analyze_binary_expression(subscr->get_step())->get_type_information();
-						if (t_inf == _int || t_inf == _any || t_inf == _nil);
+						if (t_inf == _int || t_inf == _any);
 						else {
 							root->get_diagnostics_reporter()->print(diagnostic_messages::expected_subscript_for_sequence_to_be_integer, subscr->get_step()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 							return make_pair(bad, nullptr);
@@ -1693,7 +1745,6 @@ namespace karma_lang {
 			type_information in_t_inf = analyze_binary_expression(bexpr_list[i])->get_type_information();
 			t_inf_list.push_back(in_t_inf);
 			if (t_inf.get_type_kind() == type_kind::TYPE_ANY || t_inf == in_t_inf || in_t_inf.get_type_kind() == type_kind::TYPE_ANY);
-			else if ((t_inf == _nil && in_t_inf.get_type_pure_kind() == type_pure_kind::TYPE_PURE_NO) || (in_t_inf == _nil && t_inf.get_type_pure_kind() == type_pure_kind::TYPE_PURE_NO));
 			else if ((t_inf == _int && in_t_inf == _float) || (t_inf == _float && in_t_inf == _int)) {
 				root->get_diagnostics_reporter()->print(diagnostic_messages::unequal_but_compatible_types_list_dict, bexpr_list[i]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_WARNING);
 				root->get_diagnostics_reporter()->print(diagnostic_messages::originally_declared_here, bexpr_list[0]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_NOTE);
@@ -1742,7 +1793,6 @@ namespace karma_lang {
 			klist.push_back(analyze_binary_expression(kl[i]));
 			ktlist.push_back(in_kt_inf);
 			if (kt_inf.get_type_kind() == type_kind::TYPE_ANY || kt_inf == in_kt_inf || in_kt_inf.get_type_kind() == type_kind::TYPE_ANY);
-			else if ((kt_inf == _nil && in_kt_inf.get_type_pure_kind() == type_pure_kind::TYPE_PURE_NO) || (in_kt_inf == _nil && kt_inf.get_type_pure_kind() == type_pure_kind::TYPE_PURE_NO));
 			else if ((kt_inf == _int && in_kt_inf == _float) || (kt_inf == _float && in_kt_inf == _int)) {
 				root->get_diagnostics_reporter()->print(diagnostic_messages::unequal_but_compatible_types_list_dict, kl[i]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_WARNING);
 				root->get_diagnostics_reporter()->print(diagnostic_messages::originally_declared_here, kl[0]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_NOTE);
@@ -1759,7 +1809,6 @@ namespace karma_lang {
 			vlist.push_back(analyze_binary_expression(vl[i]));
 			vtlist.push_back(in_vt_inf);
 			if (vt_inf.get_type_kind() == type_kind::TYPE_ANY || vt_inf == in_vt_inf || in_vt_inf.get_type_kind() == type_kind::TYPE_ANY);
-			else if ((vt_inf == _nil && in_vt_inf.get_type_pure_kind() == type_pure_kind::TYPE_PURE_NO) || (in_vt_inf == _nil && vt_inf.get_type_pure_kind() == type_pure_kind::TYPE_PURE_NO));
 			else if ((vt_inf == _int && in_vt_inf == _float) || (vt_inf == _float && in_vt_inf == _int)) {
 				root->get_diagnostics_reporter()->print(diagnostic_messages::unequal_but_compatible_types_list_dict, vl[i]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_WARNING);
 				root->get_diagnostics_reporter()->print(diagnostic_messages::originally_declared_here, vl[0]->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_NOTE);
@@ -2239,7 +2288,7 @@ namespace karma_lang {
 		shared_ptr<annotated_declaration> adecl, shared_ptr<annotated_function> afunc, shared_ptr<annotated_structure> astruc,
 		shared_ptr<annotated_module> amod, shared_ptr<annotated_return_statement> aret, shared_ptr<annotated_conditional_statement> acond,
 		shared_ptr<annotated_enum_statement> aenum, shared_ptr<annotated_while_statement> awhile, shared_ptr<annotated_for_statement> afor,
-		shared_ptr<annotated_break_continue_statement> abc, shared_ptr<annotated_import_statement> ais, type_information ti) : annotated_root_node(*arn),
+		shared_ptr<annotated_break_continue_statement> abc, shared_ptr<annotated_import_statement> ais, shared_ptr<annotated_match_statement> amatch, type_information ti) : annotated_root_node(*arn),
 		statement_pos(stmt->get_position()), t_inf(ti) {
 		kind = stmt->get_statement_kind();
 		b_expression = abe;
@@ -2254,6 +2303,7 @@ namespace karma_lang {
 		floop = afor;
 		break_continue = abc;
 		import = ais;
+		match = amatch;
 	}
 
 	annotated_statement::~annotated_statement() {
@@ -2318,6 +2368,10 @@ namespace karma_lang {
 
 	shared_ptr<annotated_import_statement> annotated_statement::get_import_statement() {
 		return import;
+	}
+	
+	shared_ptr<annotated_match_statement> annotated_statement::get_match_statement() {
+		return match;
 	}
 
 	annotated_ternary_expression::annotated_ternary_expression(shared_ptr<annotated_root_node> arn, shared_ptr<ternary_expression> texpr, shared_ptr<annotated_root_node> c,
@@ -2731,6 +2785,38 @@ namespace karma_lang {
 	}
 
 	type_information annotated_import_statement::get_type_information() {
+		return t_inf;
+	}
+
+	annotated_match_statement::annotated_match_statement(shared_ptr<annotated_root_node> arn, shared_ptr<match_statement> match, shared_ptr<annotated_binary_expression> cond,
+		vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>> amal, vector<shared_ptr<annotated_statement>> da, type_information ti) :
+		annotated_root_node(*arn), match_statement_pos(match->get_position()), t_inf(ti) {
+		match_arm_list = amal;
+		default_arm = da;
+		condition = cond;
+	}
+
+	annotated_match_statement::~annotated_match_statement() {
+
+	}
+
+	shared_ptr<annotated_binary_expression> annotated_match_statement::get_condition() {
+		return condition;
+	}
+
+	vector<shared_ptr<annotated_statement>> annotated_match_statement::get_default_arm() {
+		return default_arm;
+	}
+
+	vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>> annotated_match_statement::get_match_arm_list() {
+		return match_arm_list;
+	}
+
+	source_token_list::iterator annotated_match_statement::get_position() {
+		return match_statement_pos;
+	}
+
+	type_information annotated_match_statement::get_type_information() {
 		return t_inf;
 	}
 }

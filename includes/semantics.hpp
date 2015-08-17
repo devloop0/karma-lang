@@ -528,6 +528,24 @@ namespace karma_lang {
 			type_information get_type_information();
 	};
 
+	class annotated_match_statement : public annotated_root_node {
+		shared_ptr<annotated_binary_expression> condition;
+		vector<shared_ptr<annotated_statement>> default_arm;
+		vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>> match_arm_list;
+		source_token_list::iterator match_statement_pos;
+		type_information t_inf;
+		public:
+			annotated_match_statement(shared_ptr<annotated_root_node> arn, shared_ptr<match_statement> m, shared_ptr<annotated_binary_expression> abexpr,
+				vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>> amal, vector<shared_ptr<annotated_statement>> da,
+				type_information ti);
+			~annotated_match_statement();
+			shared_ptr<annotated_binary_expression> get_condition();
+			vector<shared_ptr<annotated_statement>> get_default_arm();
+			vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>> get_match_arm_list();
+			source_token_list::iterator get_position();
+			type_information get_type_information();
+	};
+
 	class annotated_statement : public annotated_root_node {
 		statement_kind kind;
 		shared_ptr<annotated_binary_expression> b_expression;
@@ -542,6 +560,7 @@ namespace karma_lang {
 		shared_ptr<annotated_for_statement> floop;
 		shared_ptr<annotated_break_continue_statement> break_continue;
 		shared_ptr<annotated_import_statement> import;
+		shared_ptr<annotated_match_statement> match;
 		source_token_list::iterator statement_pos;
 		type_information t_inf;
 		public:
@@ -549,7 +568,8 @@ namespace karma_lang {
 				shared_ptr<annotated_declaration> adecl, shared_ptr<annotated_function> afunc, shared_ptr<annotated_structure> astruc, 
 				shared_ptr<annotated_module> amod, shared_ptr<annotated_return_statement> aret, shared_ptr<annotated_conditional_statement> acond, 
 				shared_ptr<annotated_enum_statement> aenum, shared_ptr<annotated_while_statement> awhile, shared_ptr<annotated_for_statement> afor, 
-				shared_ptr<annotated_break_continue_statement> abc, shared_ptr<annotated_import_statement> ais, type_information ti);
+				shared_ptr<annotated_break_continue_statement> abc, shared_ptr<annotated_import_statement> ais, 
+				shared_ptr<annotated_match_statement> amatch, type_information ti);
 			~annotated_statement();
 			const statement_kind get_statement_kind();
 			shared_ptr<annotated_binary_expression> get_binary_expression();
@@ -566,6 +586,7 @@ namespace karma_lang {
 			shared_ptr<annotated_for_statement> get_for_statement();
 			shared_ptr<annotated_break_continue_statement> get_break_continue_statement();
 			shared_ptr<annotated_import_statement> get_import_statement();
+			shared_ptr<annotated_match_statement> get_match_statement();
 	};
 
 	class symbol_table;
@@ -668,6 +689,7 @@ namespace karma_lang {
 		shared_ptr<annotated_for_statement> analyze_for_statement(shared_ptr<for_statement> _for);
 		shared_ptr<annotated_break_continue_statement> analyze_break_continue_statement(shared_ptr<break_continue_statement> break_continue);
 		shared_ptr<annotated_import_statement> analyze_import_statement(shared_ptr<import_statement> import);
+		shared_ptr<annotated_match_statement> analyze_match_statement(shared_ptr<match_statement> match);
 
 		pair<vector<shared_ptr<symbol>>, bool> find_all_symbols(shared_ptr<annotated_literal> sym, bool limit = false);
 		pair<vector<shared_ptr<symbol>>, bool> find_all_symbols(shared_ptr<literal> sym, bool limit = false);

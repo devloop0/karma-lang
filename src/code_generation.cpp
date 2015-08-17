@@ -960,6 +960,41 @@ namespace karma_lang {
 		return true;
 	}
 
+	bool generate_code::descend_match_statement(shared_ptr<annotated_match_statement> amatch) {
+		if (amatch->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
+			return false;
+		int reference = number;
+		descend_binary_expression(amatch->get_condition());
+		int final_label = label_count;
+		label_count++;
+		for (int i = 0; i < amatch->get_match_arm_list().size(); i++) {
+			int expr = number;
+			descend_binary_expression(amatch->get_match_arm_list()[i].first);
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::dmov, number, reference));
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::equ, number, expr));
+			int condition = number;
+			number++;
+			int next_label = label_count;
+			label_count++;
+			instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::bneg, condition));
+			instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, condition, next_label));
+			instruction_list.push_back(code_generation_utilities().generate_scope_statement(tab_count));
+			for (int j = 0; j < amatch->get_match_arm_list()[i].second.size(); j++)
+				descend_statement(amatch->get_match_arm_list()[i].second[j]);
+			instruction_list.push_back(code_generation_utilities().generate_escope_statement(tab_count));
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, number, "$true"));
+			instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, number, final_label));
+			number++;
+			instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, next_label));
+		}
+		instruction_list.push_back(code_generation_utilities().generate_scope_statement(tab_count));
+		for (int i = 0; i < amatch->get_default_arm().size(); i++)
+			descend_statement(amatch->get_default_arm()[i]);
+		instruction_list.push_back(code_generation_utilities().generate_escope_statement(tab_count));
+		instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, final_label));
+		return true;
+	}
+
 	bool generate_code::descend_statement(shared_ptr<annotated_statement> astmt) {
 		if (astmt->get_type_information() == type_information(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
@@ -989,6 +1024,8 @@ namespace karma_lang {
 			return descend_break_continue_statement(astmt->get_break_continue_statement());
 		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_IMPORT_STATEMENT)
 			return descend_import_statement(astmt->get_import_statement());
+		else if (astmt->get_statement_kind() == statement_kind::STATEMENT_MATCH_STATEMENT)
+			return descend_match_statement(astmt->get_match_statement());
 		d_reporter->print(diagnostic_messages::unreachable, astmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 		exit(1);
 	}

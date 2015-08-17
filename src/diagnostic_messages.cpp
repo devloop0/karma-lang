@@ -30,7 +30,6 @@ namespace karma_lang {
 	const string diagnostic_messages::incompatible_types = "Incompatible types with this expression; expected compatible types.";
 	const string diagnostic_messages::unknown_symbol = "Unknown symbol found here. (Did you forget to declare it somewhere)?: ";
 	const string diagnostic_messages::expected_same_type_for_all_elements_in_list_or_dictionary = "Expected all elements in the list or dictionary to have the same type.";
-	const string diagnostic_messages::subscript_applicable_only_for_sequences_and_dictionaries = "Subscripts are only applicable for lists, dictionaries, strings, and tuples.";
 	const string diagnostic_messages::empty_subscript_defaulting_to_whole_sequence = "Empty subscript; defaulting to whole sequence.";
 	const string diagnostic_messages::expected_subscript_for_sequence_to_be_integer = "Expected a sequence subscript to be an integer. (Did you mean to declare a dictionary)?";
 	const string diagnostic_messages::dictionaries_only_support_subscripting_not_slicing = "Dictionaries only support subscripting, not slicing.";
@@ -82,4 +81,5 @@ namespace karma_lang {
 	const string diagnostic_messages::print_overload_must_have_one_parameter = "Print overload must have one parameter.";
 	const string diagnostic_messages::slice_overload_must_have_four_parameters = "Slice overload must have four parameters.";
 	const string diagnostic_messages::import_statements_only_allowed_in_the_global_scope = "Import statements only allowed in the global scope.";
+	const string diagnostic_messages::subscript_overload_must_have_two_parameters = "Subscript overload must have two parameter.";
 }

@@ -19,6 +19,8 @@ using std::cout;
 using std::cerr;
 using std::shared_ptr;
 using std::make_shared;
+using std::pair;
+using std::make_pair;
 
 using namespace karma_lang;
 
@@ -565,11 +567,28 @@ namespace karma_lang {
 			shared_ptr<import_statement> parse_import_statement();
 	};
 
+	class match_statement : public root_node {
+		vector<pair<shared_ptr<binary_expression>, vector<shared_ptr<statement>>>> match_arm_list;
+		vector<shared_ptr<statement>> default_arm;
+		source_token_list::iterator match_statement_pos;
+		shared_ptr<binary_expression> condition;
+		bool valid;
+		public:
+			match_statement(shared_ptr<root_node> r);
+			~match_statement();
+			vector<pair<shared_ptr<binary_expression>, vector<shared_ptr<statement>>>> get_match_arm_list();
+			vector<shared_ptr<statement>> get_default_arm();
+			source_token_list::iterator get_position();
+			shared_ptr<binary_expression> get_condition();
+			const bool get_valid();
+			shared_ptr<match_statement> parse_match_statement();
+	};
+
 	enum statement_kind {
 		STATEMENT_DECLARATION, STATEMENT_EXPRESSION, STATEMENT_FUNCTION, STATEMENT_STRUCTURE, 
 		STATEMENT_MODULE, STATEMENT_RETURN_STATEMENT, STATEMENT_CONDITIONAL_STATEMENT, STATEMENT_ENUM_STATEMENT,
 		STATEMENT_WHILE_STATMENT, STATEMENT_FOR_STATEMENT, STATEMENT_BREAK_CONTINUE_STATEMENT, 
-		STATEMENT_IMPORT_STATEMENT, STATEMENT_NONE
+		STATEMENT_IMPORT_STATEMENT, STATEMENT_MATCH_STATEMENT, STATEMENT_NONE
 	};
 
 	class statement : public root_node {
@@ -586,6 +605,7 @@ namespace karma_lang {
 		shared_ptr<for_statement> floop;
 		shared_ptr<break_continue_statement> break_continue;
 		shared_ptr<import_statement> import;
+		shared_ptr<match_statement> match;
 		bool valid;
 		source_token_list::iterator statement_pos;
 		public:
@@ -607,6 +627,7 @@ namespace karma_lang {
 			shared_ptr<for_statement> get_for_statement();
 			shared_ptr<break_continue_statement> get_break_continue_statement();
 			shared_ptr<import_statement> get_import_statement();
+			shared_ptr<match_statement> get_match_statement();
 	};
 }
 #endif

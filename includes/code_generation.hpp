@@ -113,6 +113,7 @@ namespace karma_lang {
 		bool descend_for_statement(shared_ptr<annotated_for_statement> afor);
 		bool descend_break_continue_statement(shared_ptr<annotated_break_continue_statement> abreak_continue);
 		bool descend_import_statement(shared_ptr<annotated_import_statement> aimport);
+		bool descend_match_statement(shared_ptr<annotated_match_statement> amatch);
 
 		public:
 			generate_code(shared_ptr<analyze_ast> aa);

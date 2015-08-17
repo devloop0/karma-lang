@@ -43,7 +43,6 @@ namespace karma_lang {
 			const static string incompatible_types;
 			const static string unknown_symbol;
 			const static string expected_same_type_for_all_elements_in_list_or_dictionary;
-			const static string subscript_applicable_only_for_sequences_and_dictionaries;
 			const static string empty_subscript_defaulting_to_whole_sequence;
 			const static string expected_subscript_for_sequence_to_be_integer;
 			const static string dictionaries_only_support_subscripting_not_slicing;
@@ -92,6 +91,7 @@ namespace karma_lang {
 			const static string one_parameter_for_a_unary_operator_overload;
 			const static string overloaded_operators_must_be_immutable;
 			const static string print_overload_must_have_one_parameter;
+			const static string subscript_overload_must_have_two_parameters;
 			const static string slice_overload_must_have_four_parameters;
 			const static string import_statements_only_allowed_in_the_global_scope;
 	};

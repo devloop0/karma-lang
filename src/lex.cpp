@@ -537,6 +537,8 @@ namespace karma_lang {
 						tkind = token_kind::TOKEN_BREAK;
 					else if (acc == token_keywords::import)
 						tkind = token_kind::TOKEN_IMPORT;
+					else if (acc == token_keywords::match)
+						tkind = token_kind::TOKEN_MATCH;
 					shared_ptr<token> tok = make_shared<token>(tabs, save, cols + 1, acc, file, line_number, tkind);
 					tok_list.push_back(tok);
 				}

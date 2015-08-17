@@ -22,4 +22,5 @@ namespace karma_lang {
 	const string token_keywords::_break = "break";
 	const string token_keywords::_continue = "continue";
 	const string token_keywords::import = "import";
+	const string token_keywords::match = "match";
 }
