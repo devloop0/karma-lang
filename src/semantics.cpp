@@ -395,52 +395,35 @@ namespace karma_lang {
 	shared_ptr<annotated_conditional_statement> analyze_ast::analyze_conditional_statement(shared_ptr<conditional_statement> cond) {
 		type_information bad(type_kind::TYPE_NONE, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
 		if (!cond->get_valid())
-			return make_shared<annotated_conditional_statement>(ann_root_node, cond, nullptr, vector<shared_ptr<annotated_statement>>(), nullptr, vector<shared_ptr<annotated_statement>>(), bad);
+			return make_shared<annotated_conditional_statement>(ann_root_node, cond, vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>>(), bad);
 		type_information _cond_any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_NOT_APPLICABLE);
-		shared_ptr<annotated_binary_expression> ic = analyze_binary_expression(cond->get_if_conditional());
-		type_information _boolean(type_kind::TYPE_BOOLEAN, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
-		type_information _any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
-		type_information _nil(type_kind::TYPE_NIL, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE);
-		vector<shared_ptr<annotated_statement>> isl;
-		shared_ptr<symbol_table> sym_table = make_shared<symbol_table>();
-		s_kind_list.push_back(scope_kind::SCOPE_CONDITIONAL);
-		sym_table_list.push_back(sym_table);
-		for (int i = 0; i < cond->get_if_statement_list().size(); i++) {
-			shared_ptr<annotated_statement> astmt = analyze_statement(cond->get_if_statement_list()[i]);
-			if (astmt->get_statement_kind() == statement_kind::STATEMENT_FUNCTION || astmt->get_statement_kind() == statement_kind::STATEMENT_MODULE ||
-				astmt->get_statement_kind() == statement_kind::STATEMENT_STRUCTURE || astmt->get_statement_kind() == statement_kind::STATEMENT_ENUM_STATEMENT) {
-				root->get_diagnostics_reporter()->print(diagnostic_messages::modules_functions_structures_enums_not_expected_here, astmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-				return make_shared<annotated_conditional_statement>(ann_root_node, cond, nullptr, vector<shared_ptr<annotated_statement>>(), nullptr, vector<shared_ptr<annotated_statement>>(), bad);
-			}
-			isl.push_back(astmt);
-		}
-		s_kind_list.pop_back();
-		sym_table_list.pop_back();
-		shared_ptr<annotated_binary_expression> ec = nullptr;
-		vector<shared_ptr<annotated_statement>> esl;
-		if (cond->get_conditional_else_conditional_kind() == conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NOT_PRESENT ||
-			cond->get_conditional_else_conditional_kind() == conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE);
-		else
-			ec = analyze_binary_expression(cond->get_else_conditional());
-		if (cond->get_conditional_else_statement_kind() == conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE ||
-			cond->get_conditional_else_statement_kind() == conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NOT_PRESENT);
-		else {
-			shared_ptr<symbol_table> sym_table2 = make_shared<symbol_table>();
-			s_kind_list.push_back(scope_kind::SCOPE_CONDITIONAL);
-			sym_table_list.push_back(sym_table2);
-			for (int i = 0; i < cond->get_else_statement_list().size(); i++) {
-				shared_ptr<annotated_statement> astmt = analyze_statement(cond->get_else_statement_list()[i]);
-				if (astmt->get_statement_kind() == statement_kind::STATEMENT_FUNCTION || astmt->get_statement_kind() == statement_kind::STATEMENT_MODULE ||
-					astmt->get_statement_kind() == statement_kind::STATEMENT_STRUCTURE || astmt->get_statement_kind() == statement_kind::STATEMENT_ENUM_STATEMENT) {
-					root->get_diagnostics_reporter()->print(diagnostic_messages::modules_functions_structures_enums_not_expected_here, astmt->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-					return make_shared<annotated_conditional_statement>(ann_root_node, cond, nullptr, vector<shared_ptr<annotated_statement>>(), nullptr, vector<shared_ptr<annotated_statement>>(), bad);
+		type_information _boolean(type_kind::TYPE_BOOLEAN, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
+		type_information _any(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NO, type_class_kind::TYPE_CLASS_NO, value_kind::VALUE_RVALUE);
+		vector<pair<shared_ptr<binary_expression>, vector<shared_ptr<statement>>>> orig_cond_list = cond->get_conditional_list();
+		vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>> cond_list;
+		for (int i = 0; i < orig_cond_list.size(); i++) {
+			shared_ptr<annotated_binary_expression> abexpr = nullptr;
+			if (orig_cond_list[i].first == nullptr);
+			else {
+				abexpr = analyze_binary_expression(orig_cond_list[i].first);
+				if (abexpr->get_type_information() == _boolean || abexpr->get_type_information() == _any);
+				else {
+					root->get_diagnostics_reporter()->print(diagnostic_messages::incompatible_types, orig_cond_list[i].first->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
+					return make_shared<annotated_conditional_statement>(ann_root_node, cond, vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>>(), bad);
 				}
-				esl.push_back(astmt);
+			}
+			sym_table_list.push_back(make_shared<symbol_table>());
+			s_kind_list.push_back(scope_kind::SCOPE_CONDITIONAL);
+			vector<shared_ptr<annotated_statement>> astmt_list;
+			for (int j = 0; j < orig_cond_list[i].second.size(); j++) {
+				shared_ptr<annotated_statement> astmt = analyze_statement(orig_cond_list[i].second[j]);
+				astmt_list.push_back(astmt);
 			}
 			sym_table_list.pop_back();
 			s_kind_list.pop_back();
+			cond_list.push_back(make_pair(abexpr, astmt_list));
 		}
-		return make_shared<annotated_conditional_statement>(ann_root_node, cond, ic, isl, ec, esl, _cond_any);
+		return make_shared<annotated_conditional_statement>(ann_root_node, cond, cond_list, _cond_any);
 	}
 
 	shared_ptr<annotated_enum_statement> analyze_ast::analyze_enum_statement(shared_ptr<enum_statement> _enum) {
@@ -1300,10 +1283,8 @@ namespace karma_lang {
 			return make_shared<annotated_binary_expression>(ann_root_node, bexpr, nullptr, nullptr, bad, bad, bad, bad, bad, bad);
 		}
 		binary_operation_kind bopk = bexpr->get_binary_operation_kind();
-		if ((lhs == _int && rhs == _float) || (lhs == _float && rhs == _int)) {
-			
+		if ((lhs == _int && rhs == _float) || (lhs == _float && rhs == _int))
 			root->get_diagnostics_reporter()->print(diagnostic_messages::unequal_but_compatible_types, bexpr->get_lhs()->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_WARNING);
-		}
 		if (bopk == binary_operation_kind::BINARY_OPERATION_EQUALS || bopk == binary_operation_kind::BINARY_OPERATION_PLUS_EQUALS || bopk == binary_operation_kind::BINARY_OPERATION_MINUS_EQUALS ||
 			bopk == binary_operation_kind::BINARY_OPERATION_MULTIPLY_EQUALS || bopk == binary_operation_kind::BINARY_OPERATION_DIVIDE_EQUALS || bopk == binary_operation_kind::BINARY_OPERATION_MODULUS_EQUALS ||
 			bopk == binary_operation_kind::BINARY_OPERATION_SHIFT_LEFT_EQUALS || bopk == binary_operation_kind::BINARY_OPERATION_SHIFT_RIGHT_EQUALS || bopk == binary_operation_kind::BINARY_OPERATION_EXPONENT_EQUALS ||
@@ -2600,35 +2581,18 @@ namespace karma_lang {
 		return t_inf;
 	}
 
-	annotated_conditional_statement::annotated_conditional_statement(shared_ptr<annotated_root_node> arn, shared_ptr<conditional_statement> cond, shared_ptr<annotated_binary_expression> ic,
-		vector<shared_ptr<annotated_statement>> isl, shared_ptr<annotated_binary_expression> ec, vector<shared_ptr<annotated_statement>> esl, type_information ti) :
+	annotated_conditional_statement::annotated_conditional_statement(shared_ptr<annotated_root_node> arn, shared_ptr<conditional_statement> cond,
+		vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>> acond_list, type_information ti) :
 		annotated_root_node(*arn), conditional_statement_pos(cond->get_position()), t_inf(ti) {
-		if_conditional = ic;
-		else_conditional = ec;
-		if_statement_list = isl;
-		else_statement_list = esl;
-		cec_kind = cond->get_conditional_else_conditional_kind();
-		ces_kind = cond->get_conditional_else_statement_kind();
+		conditional_list = acond_list;
 	}
 
 	annotated_conditional_statement::~annotated_conditional_statement() {
 
 	}
 
-	shared_ptr<annotated_binary_expression> annotated_conditional_statement::get_if_conditional() {
-		return if_conditional;
-	}
-
-	shared_ptr<annotated_binary_expression> annotated_conditional_statement::get_else_conditional() {
-		return else_conditional;
-	}
-
-	vector<shared_ptr<annotated_statement>> annotated_conditional_statement::get_if_statement_list() {
-		return if_statement_list;
-	}
-
-	vector<shared_ptr<annotated_statement>> annotated_conditional_statement::get_else_statement_list() {
-		return else_statement_list;
+	vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>> annotated_conditional_statement::get_conditional_list() {
+		return conditional_list;
 	}
 
 	source_token_list::iterator annotated_conditional_statement::get_position() {
@@ -2637,14 +2601,6 @@ namespace karma_lang {
 
 	type_information annotated_conditional_statement::get_type_information() {
 		return t_inf;
-	}
-
-	const conditional_else_conditional_kind annotated_conditional_statement::get_conditional_else_conditional_kind() {
-		return cec_kind;
-	}
-
-	const conditional_else_statement_kind annotated_conditional_statement::get_conditional_else_statement_kind() {
-		return ces_kind;
 	}
 
 	annotated_enum_statement::annotated_enum_statement(shared_ptr<annotated_root_node> arn, shared_ptr<enum_statement> _enum, shared_ptr<annotated_literal> alit,

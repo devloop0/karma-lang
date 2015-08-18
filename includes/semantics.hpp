@@ -429,25 +429,15 @@ namespace karma_lang {
 	};
 
 	class annotated_conditional_statement : public annotated_root_node {
-		shared_ptr<annotated_binary_expression> if_conditional;
-		vector<shared_ptr<annotated_statement>> if_statement_list;
-		shared_ptr<annotated_binary_expression> else_conditional;
-		vector<shared_ptr<annotated_statement>> else_statement_list;
+		vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>> conditional_list;
 		source_token_list::iterator conditional_statement_pos;
-		conditional_else_conditional_kind cec_kind;
-		conditional_else_statement_kind ces_kind;
 		type_information t_inf;
 		public:
-			annotated_conditional_statement(shared_ptr<annotated_root_node> arn, shared_ptr<conditional_statement> cond, shared_ptr<annotated_binary_expression> ic,
-				vector<shared_ptr<annotated_statement>> isl, shared_ptr<annotated_binary_expression> ec, vector<shared_ptr<annotated_statement>> esl, type_information ti);
+			annotated_conditional_statement(shared_ptr<annotated_root_node> arn, shared_ptr<conditional_statement> cond,
+				vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>> acond_list, type_information ti);
 			~annotated_conditional_statement();
-			shared_ptr<annotated_binary_expression> get_if_conditional();
-			vector<shared_ptr<annotated_statement>> get_if_statement_list();
-			shared_ptr<annotated_binary_expression> get_else_conditional();
-			vector<shared_ptr<annotated_statement>> get_else_statement_list();
 			source_token_list::iterator get_position();
-			const conditional_else_conditional_kind get_conditional_else_conditional_kind();
-			const conditional_else_statement_kind get_conditional_else_statement_kind();
+			vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>> get_conditional_list();
 			type_information get_type_information();
 	};
 

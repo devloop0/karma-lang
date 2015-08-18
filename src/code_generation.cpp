@@ -814,36 +814,28 @@ namespace karma_lang {
 	bool generate_code::descend_conditional_statement(shared_ptr<annotated_conditional_statement> acond) {
 		if (acond->get_type_information() == type_information(type_kind::TYPE_ANY, type_pure_kind::TYPE_PURE_NONE, type_class_kind::TYPE_CLASS_NONE, value_kind::VALUE_NONE))
 			return false;
-		int store = number;
-		descend_binary_expression(acond->get_if_conditional());
-		int label_store = label_count;
-		label_count++;
+		vector<pair<shared_ptr<annotated_binary_expression>, vector<shared_ptr<annotated_statement>>>> acond_list = acond->get_conditional_list();
 		int final_label = label_count;
 		label_count++;
-		int temp = number;
-		number++;
-		instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::bneg, store));
-		instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store, label_store));
-		instruction_list.push_back(code_generation_utilities().generate_scope_statement(tab_count));
-		for (int i = 0; i < acond->get_if_statement_list().size(); i++)
-			descend_statement(acond->get_if_statement_list()[i]);
-		instruction_list.push_back(code_generation_utilities().generate_escope_statement(tab_count));
-		instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, temp, "$true"));
-		instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, temp, final_label));
-		instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_store));
-		int store2 = number;
-		if (acond->get_conditional_else_conditional_kind() == conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE ||
-			acond->get_conditional_else_conditional_kind() == conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NOT_PRESENT)
+		for (int i = 0; i < acond_list.size(); i++) {
+			int label_store = label_count;
+			label_count++;
+			if (acond_list[i].first != nullptr) {
+				int store = number;
+				descend_binary_expression(acond_list[i].first);
+				instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::bneg, store));
+				instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store, label_store));
+			}
+			instruction_list.push_back(code_generation_utilities().generate_scope_statement(tab_count));
+			for (int j = 0; j < acond_list[i].second.size(); j++)
+				descend_statement(acond_list[i].second[j]);
+			int temp = number;
 			number++;
-		else {
-			descend_binary_expression(acond->get_else_conditional());
-			instruction_list.push_back(code_generation_utilities().generate_unary_instruction(tab_count, vm_instruction_list::bneg, store2));
-			instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, store2, final_label));
+			instruction_list.push_back(code_generation_utilities().generate_escope_statement(tab_count));
+			instruction_list.push_back(code_generation_utilities().generate_binary_instruction(tab_count, vm_instruction_list::mov, temp, "$true"));
+			instruction_list.push_back(code_generation_utilities().generate_jump_instruction(tab_count, temp, final_label));
+			instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, label_store));
 		}
-		instruction_list.push_back(code_generation_utilities().generate_scope_statement(tab_count));
-		for (int i = 0; i < acond->get_else_statement_list().size(); i++)
-			descend_statement(acond->get_else_statement_list()[i]);
-		instruction_list.push_back(code_generation_utilities().generate_escope_statement(tab_count));
 		instruction_list.push_back(code_generation_utilities().generate_label_instruction(tab_count, final_label));
 		return true;
 	}

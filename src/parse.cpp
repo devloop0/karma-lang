@@ -4241,33 +4241,12 @@ namespace karma_lang {
 	}
 
 	conditional_statement::conditional_statement(shared_ptr<root_node> r) : root_node(*r), conditional_statement_pos(r->get_position()) {
-		if_conditional = nullptr;
-		if_statement_list = vector<shared_ptr<statement>>();
-		else_conditional = nullptr;
-		else_statement_list = vector<shared_ptr<statement>>();
+		conditional_list = vector<pair<shared_ptr<binary_expression>, vector<shared_ptr<statement>>>>();
 		valid = false;
-		ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
-		cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
 	}
 
 	conditional_statement::~conditional_statement() {
 
-	}
-
-	shared_ptr<binary_expression> conditional_statement::get_if_conditional() {
-		return if_conditional;
-	}
-
-	vector<shared_ptr<statement>> conditional_statement::get_if_statement_list() {
-		return if_statement_list;
-	}
-
-	shared_ptr<binary_expression> conditional_statement::get_else_conditional() {
-		return else_conditional;
-	}
-
-	vector<shared_ptr<statement>> conditional_statement::get_else_statement_list() {
-		return else_statement_list;
 	}
 
 	const bool conditional_statement::get_valid() {
@@ -4278,70 +4257,45 @@ namespace karma_lang {
 		return conditional_statement_pos;
 	}
 
-	const conditional_else_statement_kind conditional_statement::get_conditional_else_statement_kind() {
-		return ces_kind;
-	}
-
-	const conditional_else_conditional_kind conditional_statement::get_conditional_else_conditional_kind() {
-		return cec_kind;
+	vector<pair<shared_ptr<binary_expression>, vector<shared_ptr<statement>>>> conditional_statement::get_conditional_list() {
+		return conditional_list;
 	}
 
 	shared_ptr<conditional_statement> conditional_statement::parse_conditional_statement() {
 		source_token_list::iterator save = root->get_position();
 		conditional_statement_pos = save;
 		if (save > root->get_lexer()->get_source_token_list()->end()) {
-			if_conditional = nullptr;
-			if_statement_list = vector<shared_ptr<statement>>();
-			else_statement_list = vector<shared_ptr<statement>>();
-			else_conditional = nullptr;
 			valid = false;
-			ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
-			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+			conditional_list = vector<pair<shared_ptr<binary_expression>, vector<shared_ptr<statement>>>>();
 			return make_shared<conditional_statement>(*this);
 		}
 		if ((*save)->get_token_kind() == token_kind::TOKEN_IF);
 		else {
-			if_conditional = nullptr;
-			else_conditional = nullptr;
-			if_statement_list = vector<shared_ptr<statement>>();
-			else_statement_list = vector<shared_ptr<statement>>();
 			valid = false;
-			ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
-			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+			conditional_list = vector<pair<shared_ptr<binary_expression>, vector<shared_ptr<statement>>>>();
 			return make_shared<conditional_statement>(*this);
 		}
 		root->set_position(root->get_position() + 1);
-		if_conditional = make_shared<binary_expression>(root)->parse_binary_expression();
+		shared_ptr<binary_expression> if_conditional = make_shared<binary_expression>(root)->parse_binary_expression();
 		if (if_conditional->get_valid());
 		else {
-			else_conditional = nullptr;
-			if_statement_list = vector<shared_ptr<statement>>();
-			else_statement_list = vector<shared_ptr<statement>>();
 			valid = false;
-			ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
-			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+			conditional_list = vector<pair<shared_ptr<binary_expression>, vector<shared_ptr<statement>>>>();
 			return make_shared<conditional_statement>(*this);
 		}
 		if (root->get_position() > root->get_lexer()->get_source_token_list()->end()) {
-			else_conditional = nullptr;
-			if_statement_list = vector<shared_ptr<statement>>();
-			else_statement_list = vector<shared_ptr<statement>>();
 			valid = false;
-			ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
-			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+			conditional_list = vector<pair<shared_ptr<binary_expression>, vector<shared_ptr<statement>>>>();
 			return make_shared<conditional_statement>(*this);
 		}
 		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_OPEN_BRACE);
 		else {
-			else_conditional = nullptr;
-			if_statement_list = vector<shared_ptr<statement>>();
-			else_statement_list = vector<shared_ptr<statement>>();
 			valid = false;
-			ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
-			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+			conditional_list = vector<pair<shared_ptr<binary_expression>, vector<shared_ptr<statement>>>>();
 			return make_shared<conditional_statement>(*this);
 		}
 		root->set_position(root->get_position() + 1);
+		vector<shared_ptr<statement>> stmt_list;
 		while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() != token_kind::TOKEN_CLOSE_BRACE) {
 			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_NEW_LINE)
 				root->set_position(root->get_position() + 1);
@@ -4350,109 +4304,87 @@ namespace karma_lang {
 			shared_ptr<statement> stmt = make_shared<statement>(root)->parse_statement();
 			if (stmt->get_valid());
 			else {
-				else_conditional = nullptr;
-				else_statement_list = vector<shared_ptr<statement>>();
 				valid = false;
-				ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
-				cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
 				return make_shared<conditional_statement>(*this);
 			}
 			if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
 				valid = false;
-				else_conditional = nullptr;
-				else_statement_list = vector<shared_ptr<statement>>();
-				cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
-				valid = false;
-				ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
+				conditional_list = vector<pair<shared_ptr<binary_expression>, vector<shared_ptr<statement>>>>();
 				return make_shared<conditional_statement>(*this);
 			}
 			if ((*(root->get_position()))->get_token_kind() != token_kind::TOKEN_NEW_LINE) {
 				root->get_diagnostics_reporter()->print(diagnostic_messages::expected_new_line, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 				valid = false;
-				else_conditional = nullptr;
-				else_statement_list = vector<shared_ptr<statement>>();
-				ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
-				cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+				conditional_list = vector<pair<shared_ptr<binary_expression>, vector<shared_ptr<statement>>>>();
 				return make_shared<conditional_statement>(*this);
 			}
 			root->set_position(root->get_position() + 1);
-			if_statement_list.push_back(stmt);
+			stmt_list.push_back(stmt);
 		}
 		if (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_CLOSE_BRACE);
 		else {
 			valid = false;
-			else_conditional = nullptr;
-			else_statement_list = vector<shared_ptr<statement>>();
-			ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NONE;
-			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
+			conditional_list = vector<pair<shared_ptr<binary_expression>, vector<shared_ptr<statement>>>>();
 			return make_shared<conditional_statement>(*this);
 		}
+		conditional_list.push_back(make_pair(if_conditional, stmt_list));
 		root->set_position(root->get_position() + 1);
 		if (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_POINT_DECL);
 		else {
 			valid = true;
-			else_conditional = nullptr;
-			else_statement_list = vector<shared_ptr<statement>>();
-			ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_NOT_PRESENT;
-			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NONE;
 			return make_shared<conditional_statement>(*this);
 		}
-		ces_kind = conditional_else_statement_kind::CONDITIONAL_ELSE_STATEMENT_PRESENT;
-		root->set_position(root->get_position() + 1);
-		if (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_OPEN_BRACE)
-			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_NOT_PRESENT;
-		else {
-			cec_kind = conditional_else_conditional_kind::CONDITIONAL_ELSE_CONDITIONAL_PRESENT;
-			else_conditional = make_shared<binary_expression>(root)->parse_binary_expression();
-			if (else_conditional->get_valid());
-			else {
-				else_statement_list = vector<shared_ptr<statement>>();
-				valid = false;
-				make_shared<conditional_statement>(*this);
-			}
-		}
-		if (root->get_position() > root->get_lexer()->get_source_token_list()->end()) {
-			else_statement_list = vector<shared_ptr<statement>>();
-			valid = false;
-			return make_shared<conditional_statement>(*this);
-		}
-		if ((*(root->get_position()))->get_token_kind() == token_kind::TOKEN_OPEN_BRACE);
-		else {
-			valid = false;
-			else_statement_list = vector<shared_ptr<statement>>();
-			return make_shared<conditional_statement>(*this);
-		}
-		root->set_position(root->get_position() + 1);
-		while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() != token_kind::TOKEN_CLOSE_BRACE) {
-			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_NEW_LINE)
+		bool else_done = false;
+		while (!else_done && root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_POINT_DECL) {
+			root->set_position(root->get_position() + 1);
+			shared_ptr<binary_expression> expr = nullptr;
+			if (root->get_position() > root->get_lexer()->get_source_token_list()->end() || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_OPEN_BRACE) {
 				root->set_position(root->get_position() + 1);
-			if (root->get_position() > root->get_lexer()->get_source_token_list()->end() || (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_CLOSE_BRACE)
-				break;
-			shared_ptr<statement> stmt = make_shared<statement>(root)->parse_statement();
-			if (stmt->get_valid());
+				else_done = true;
+			}
+			else {
+				expr = make_shared<binary_expression>(root)->parse_binary_expression();
+				if (expr->get_valid());
+				else {
+					valid = false;
+					return make_shared<conditional_statement>(*this);
+				}
+				if (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_OPEN_BRACE);
+				else {
+					valid = false;
+					return make_shared<conditional_statement>(*this);
+				}
+				root->set_position(root->get_position() + 1);
+			}
+			vector<shared_ptr<statement>> to_add;
+			while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() != token_kind::TOKEN_CLOSE_BRACE) {
+				while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_NEW_LINE)
+					root->set_position(root->get_position() + 1);
+				if (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_CLOSE_BRACE)
+					break;
+				shared_ptr<statement> stmt = make_shared<statement>(root)->parse_statement();
+				if (stmt->get_valid());
+				else {
+					valid = false;
+					return make_shared<conditional_statement>(*this);
+				}
+				if (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_NEW_LINE);
+				else {
+					valid = false;
+					return make_shared<conditional_statement>(*this);
+				}
+				to_add.push_back(stmt);
+				while (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_NEW_LINE)
+					root->set_position(root->get_position() + 1);
+			}
+			if (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_CLOSE_BRACE);
 			else {
 				valid = false;
-				return make_shared<conditional_statement>(*this);
-			}
-			if (root->get_position() >= root->get_lexer()->get_source_token_list()->end()) {
-				valid = false;
-				return make_shared<conditional_statement>(*this);
-			}
-			if ((*(root->get_position()))->get_token_kind() != token_kind::TOKEN_NEW_LINE) {
-				root->get_diagnostics_reporter()->print(diagnostic_messages::expected_new_line, root->get_position(), diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
 				return make_shared<conditional_statement>(*this);
 			}
 			root->set_position(root->get_position() + 1);
-			else_statement_list.push_back(stmt);
+			conditional_list.push_back(make_pair(expr, to_add));
 		}
-		if (root->get_position() < root->get_lexer()->get_source_token_list()->end() && (*(root->get_position()))->get_token_kind() == token_kind::TOKEN_CLOSE_BRACE);
-		else {
-			valid = false;
-			root->get_diagnostics_reporter()->print(diagnostic_messages::expected_close_brace, root->get_position() < root->get_lexer()->get_source_token_list()->end() ? root->get_position() :
-				root->get_lexer()->get_source_token_list()->end() - 1, diagnostics_reporter_kind::DIAGNOSTICS_REPORTER_ERROR);
-			return make_shared<conditional_statement>(*this);
-		}
-		root->set_position(root->get_position() + 1);
 		valid = true;
 		return make_shared<conditional_statement>(*this);
 	}

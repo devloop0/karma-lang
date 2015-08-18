@@ -445,35 +445,17 @@ namespace karma_lang {
 			const return_statement_kind get_return_statement_kind();
 	};
 
-	enum conditional_else_statement_kind {
-		CONDITIONAL_ELSE_STATEMENT_PRESENT, CONDITIONAL_ELSE_STATEMENT_NOT_PRESENT, CONDITIONAL_ELSE_STATEMENT_NONE
-	};
-	
-	enum conditional_else_conditional_kind {
-		CONDITIONAL_ELSE_CONDITIONAL_PRESENT, CONDITIONAL_ELSE_CONDITIONAL_NOT_PRESENT, CONDITIONAL_ELSE_CONDITIONAL_NONE
-	};
-
 	class conditional_statement : public root_node {
-		shared_ptr<binary_expression> if_conditional;
-		vector<shared_ptr<statement>> if_statement_list;
-		shared_ptr<binary_expression> else_conditional;
-		vector<shared_ptr<statement>> else_statement_list;
+		vector<pair<shared_ptr<binary_expression>, vector<shared_ptr<statement>>>> conditional_list;
 		bool valid;
 		source_token_list::iterator conditional_statement_pos;
-		conditional_else_statement_kind ces_kind;
-		conditional_else_conditional_kind cec_kind;
 		public:
 			conditional_statement(shared_ptr<root_node> r);
 			~conditional_statement();
-			shared_ptr<binary_expression> get_if_conditional();
-			vector<shared_ptr<statement>> get_if_statement_list();
-			shared_ptr<binary_expression> get_else_conditional();
-			vector<shared_ptr<statement>> get_else_statement_list();
 			const bool get_valid();
 			source_token_list::iterator get_position();
-			const conditional_else_statement_kind get_conditional_else_statement_kind();
 			shared_ptr<conditional_statement> parse_conditional_statement();
-			const conditional_else_conditional_kind get_conditional_else_conditional_kind();
+			vector<pair<shared_ptr<binary_expression>, vector<shared_ptr<statement>>>> get_conditional_list();
 	};
 
 	class while_statement : public root_node {
