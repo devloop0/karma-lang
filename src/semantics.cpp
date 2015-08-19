@@ -327,6 +327,12 @@ namespace karma_lang {
 			sym_table_list[0]->add_symbol(make_shared<symbol>(_any, immut_kind::IMMUT_YES, make_shared<literal>(root, make_shared<token>(-1, -1, -1, builtins::builtin_exit, "", -1, token_kind::TOKEN_IDENTIFIER)), function_kind::FUNCTION_YES, structure_kind::STRUCTURE_NONE,
 				vector<type_information> { _any, _any }, make_shared<symbol_table>(), function_declaration_definition_kind::FUNCTION_KIND_DEFINITION, function_va_args_kind::FUNCTION_VA_ARGS_NO, structure_declaration_definition_kind::STRUCTURE_KIND_NONE, module_kind::MODULE_NONE, enum_kind::ENUM_NONE, enum_statement_kind::ENUM_STATEMENT_NONE,
 				module_declaration_definition_kind::MODULE_KIND_NONE));
+			sym_table_list[0]->add_symbol(make_shared<symbol>(_any, immut_kind::IMMUT_YES, make_shared<literal>(root, make_shared<token>(-1, -1, -1, builtins::builtin_add, "", -1, token_kind::TOKEN_IDENTIFIER)), function_kind::FUNCTION_YES, structure_kind::STRUCTURE_NONE,
+				vector<type_information> { _any, _any }, make_shared<symbol_table>(), function_declaration_definition_kind::FUNCTION_KIND_DEFINITION, function_va_args_kind::FUNCTION_VA_ARGS_NO, structure_declaration_definition_kind::STRUCTURE_KIND_NONE, module_kind::MODULE_NONE, enum_kind::ENUM_NONE, enum_statement_kind::ENUM_STATEMENT_NONE,
+				module_declaration_definition_kind::MODULE_KIND_NONE));
+			sym_table_list[0]->add_symbol(make_shared<symbol>(_any, immut_kind::IMMUT_YES, make_shared<literal>(root, make_shared<token>(-1, -1, -1, builtins::builtin_add, "", -1, token_kind::TOKEN_IDENTIFIER)), function_kind::FUNCTION_YES, structure_kind::STRUCTURE_NONE,
+				vector<type_information> { _any, _any, _any }, make_shared<symbol_table>(), function_declaration_definition_kind::FUNCTION_KIND_DEFINITION, function_va_args_kind::FUNCTION_VA_ARGS_NO, structure_declaration_definition_kind::STRUCTURE_KIND_NONE, module_kind::MODULE_NONE, enum_kind::ENUM_NONE, enum_statement_kind::ENUM_STATEMENT_NONE,
+				module_declaration_definition_kind::MODULE_KIND_NONE));
 		}
 		bool ret = true;
 		if (root->get_diagnostics_reporter()->get_error_count() > 0)
