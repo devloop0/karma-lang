@@ -94,6 +94,7 @@ namespace karma_lang {
 			const static string subscript_overload_must_have_two_parameters;
 			const static string slice_overload_must_have_four_parameters;
 			const static string import_statements_only_allowed_in_the_global_scope;
+			const static string builtin_functions_cannot_be_redefined_or_overloaded;
 	};
 }
 

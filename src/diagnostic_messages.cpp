@@ -82,4 +82,5 @@ namespace karma_lang {
 	const string diagnostic_messages::slice_overload_must_have_four_parameters = "Slice overload must have four parameters.";
 	const string diagnostic_messages::import_statements_only_allowed_in_the_global_scope = "Import statements only allowed in the global scope.";
 	const string diagnostic_messages::subscript_overload_must_have_two_parameters = "Subscript overload must have two parameter.";
+	const string diagnostic_messages::builtin_functions_cannot_be_redefined_or_overloaded = "Builtin functions cannot be redefined or overloaded.";
 }
