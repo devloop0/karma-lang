@@ -1,0 +1,95 @@
+import -> lang
+import -> util
+import -> core_types
+
+func immut -> elem(var -> l)
+func immut -> rest(var -> l)
+func immut -> end(var -> l)
+func immut -> len(var -> l)
+
+module -> internal_implementation {
+	struct -> linked_list {
+		var -> elem : [ [[[]]] ]
+		var -> rest : [ [[[]]] ]
+		var -> end : [false]
+		var -> size : [0]
+	}
+
+	func immut -> generate_print_string(var -> l) {
+		if end(l) {
+			return 'linked_list(' + util.to_string(elem(l)) + ')'
+		}
+		var -> s = 'linked_list(' + util.to_string(elem(l)) + ', '
+		s += generate_print_string(rest(l))
+		s += ')'
+		return s
+	}
+}
+
+func immut -> linked_list(var -> elem, var -> link) {
+	var -> ret = internal_implementation.linked_list
+	ret.elem = [[[ elem ]]]
+	if [link] != [internal_implementation.linked_list] {
+		exit(1, 'The links in a linked_list must be an instance of a linked_list.')
+	}
+	ret.rest = [[[ link ]]]
+	ret.end = false
+	ret.size = len(link) + 1
+	return ret
+}
+
+func immut -> linked_list(var -> elem) {
+	var -> ret = internal_implementation.linked_list
+	ret.elem = [[[ elem ]]]
+	ret.rest = [[[ ]]]
+	ret.end = true
+	ret.size = 1
+	return ret
+}
+
+func immut -> elem(var -> l) {
+	return l.elem[0]
+}
+
+func immut -> rest(var -> l) {
+	return l.rest[0]
+}
+
+func immut -> end(var -> l) {
+	return l.end
+}
+
+func immut -> len(var -> l) {
+	if end(l) {
+		return 1
+	} -> {
+		return 1 + len(rest(l))
+	}
+}
+
+func immut -> __subscript__(var -> l, var -> a) {
+	if len(l) <= a {
+		exit(1, 'The index is out of bounds of the list')
+	}
+	if a == 0 {
+		return elem(l)
+	} -> {
+		return rest(l)[a - 1]
+	}
+	return nil
+}
+
+func immut -> __print__(var -> l) {
+	if [l] == [internal_implementation.linked_list] {
+		return internal_implementation.generate_print_string(l)
+	}
+	return nil
+}
+
+func immut -> extend(var -> a, var -> b) {
+	if end(a) {
+		return linked_list(elem(a), b)
+	} -> {
+		return linked_list(elem(a), extend(rest(a), b))
+	}
+}

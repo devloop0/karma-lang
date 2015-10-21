@@ -1,0 +1,268 @@
+imprt lang lang
+imprt util util
+imprt core_types core_types
+module internal_implementation
+struc linked_list elem rest end size
+list r0
+mov [__temp__0] r0
+mov r0 [__temp__0]
+dmov [__temp__1] r0
+tyof r0
+list r1
+mov [__temp__2] r1
+mov r1 [__temp__2]
+dmov [__temp__3] r1
+tyof r1
+mov r2 [$false]
+dmov [__temp__4] r2
+tyof r2
+mov r3 [$0]
+dmov [__temp__5] r3
+tyof r3
+dmov [elem] r0
+dmov [rest] r1
+dmov [end] r2
+dmov [size] r3
+estruc
+ifunc generate_print_string l 
+mov r5 [l]
+mov r4 [end:r5]
+bneg r4
+jmp r4 .L1
+scope
+mov r6 [$'linked_list(']
+mov r9 [l]
+mov r8 [elem:r9]
+mov r7 [util@to_string:r8]
+add r6 r7
+mov r10 [$')']
+add r6 r10
+ret r6
+escope
+mov r11 [$true]
+jmp r11 .L0
+.L1
+.L0
+mov r12 [$'linked_list(']
+mov r15 [l]
+mov r14 [elem:r15]
+mov r13 [util@to_string:r14]
+add r12 r13
+mov r16 [$', ']
+add r12 r16
+dmov [s] r12
+mov r17 [s]
+mov r20 [l]
+mov r19 [rest:r20]
+mov r18 [generate_print_string:r19]
+adde [s] r18
+mov r21 [s]
+mov r22 [$')']
+adde [s] r22
+mov r23 [s]
+ret r23
+efunc
+emodule
+ifunc linked_list elem link 
+mov r24 [internal_implementation@linked_list]
+dmov [ret] r24
+mov r25 [ret@elem]
+mov r27 [elem]
+list r26 r27
+mov [__temp__6] r26
+mov r26 [__temp__6]
+mov [ret@elem] r26
+mov r28 [link]
+dmov [__temp__7] r28
+tyof r28
+mov r29 [internal_implementation@linked_list]
+dmov [__temp__8] r29
+tyof r29
+nequ r28 r29
+bneg r28
+jmp r28 .L3
+scope
+mov r31 [$1]
+mov r32 [$'The links in a linked_list must be an instance of a linked_list.']
+mov r30 [exit:r31,r32]
+escope
+mov r33 [$true]
+jmp r33 .L2
+.L3
+.L2
+mov r34 [ret@rest]
+mov r36 [link]
+list r35 r36
+mov [__temp__9] r35
+mov r35 [__temp__9]
+mov [ret@rest] r35
+mov r37 [ret@end]
+mov r38 [$false]
+mov [ret@end] r38
+mov r39 [ret@size]
+mov r41 [link]
+mov r40 [len:r41]
+mov r42 [$1]
+add r40 r42
+mov [ret@size] r40
+mov r43 [ret]
+ret r43
+efunc
+ifunc linked_list elem 
+mov r44 [internal_implementation@linked_list]
+dmov [ret] r44
+mov r45 [ret@elem]
+mov r47 [elem]
+list r46 r47
+mov [__temp__10] r46
+mov r46 [__temp__10]
+mov [ret@elem] r46
+mov r48 [ret@rest]
+list r49
+mov [__temp__11] r49
+mov r49 [__temp__11]
+mov [ret@rest] r49
+mov r50 [ret@end]
+mov r51 [$true]
+mov [ret@end] r51
+mov r52 [ret@size]
+mov r53 [$1]
+mov [ret@size] r53
+mov r54 [ret]
+ret r54
+efunc
+ifunc elem l 
+mov r57 [$0]
+mov r55 [l@elem|r57]
+ret r55
+efunc
+ifunc rest l 
+mov r60 [$0]
+mov r58 [l@rest|r60]
+ret r58
+efunc
+ifunc end l 
+mov r61 [l@end]
+ret r61
+efunc
+ifunc len l 
+mov r63 [l]
+mov r62 [end:r63]
+bneg r62
+jmp r62 .L5
+scope
+mov r64 [$1]
+ret r64
+escope
+mov r65 [$true]
+jmp r65 .L4
+.L5
+scope
+mov r66 [$1]
+mov r69 [l]
+mov r68 [rest:r69]
+mov r67 [len:r68]
+add r66 r67
+ret r66
+escope
+mov r70 [$true]
+jmp r70 .L4
+.L6
+.L4
+efunc
+ifunc __subscript__ l a 
+mov r72 [l]
+mov r71 [len:r72]
+mov r73 [a]
+lte r71 r73
+bneg r71
+jmp r71 .L8
+scope
+mov r75 [$1]
+mov r76 [$'The index is out of bounds of the list']
+mov r74 [exit:r75,r76]
+escope
+mov r77 [$true]
+jmp r77 .L7
+.L8
+.L7
+mov r78 [a]
+mov r79 [$0]
+equ r78 r79
+bneg r78
+jmp r78 .L10
+scope
+mov r81 [l]
+mov r80 [elem:r81]
+ret r80
+escope
+mov r82 [$true]
+jmp r82 .L9
+.L10
+scope
+mov r84 [l]
+mov r86 [a]
+mov r87 [$1]
+sub r86 r87
+mov r83 [rest:r84|r86]
+ret r83
+escope
+mov r88 [$true]
+jmp r88 .L9
+.L11
+.L9
+mov r89 [$nil]
+ret r89
+efunc
+ifunc __print__ l 
+mov r90 [l]
+dmov [__temp__12] r90
+tyof r90
+mov r91 [internal_implementation@linked_list]
+dmov [__temp__13] r91
+tyof r91
+equ r90 r91
+bneg r90
+jmp r90 .L13
+scope
+mov r93 [l]
+mov r92 [internal_implementation@generate_print_string:r93]
+ret r92
+escope
+mov r94 [$true]
+jmp r94 .L12
+.L13
+.L12
+mov r95 [$nil]
+ret r95
+efunc
+ifunc extend a b 
+mov r97 [a]
+mov r96 [end:r97]
+bneg r96
+jmp r96 .L15
+scope
+mov r100 [a]
+mov r99 [elem:r100]
+mov r101 [b]
+mov r98 [linked_list:r99,r101]
+ret r98
+escope
+mov r102 [$true]
+jmp r102 .L14
+.L15
+scope
+mov r105 [a]
+mov r104 [elem:r105]
+mov r108 [a]
+mov r107 [rest:r108]
+mov r109 [b]
+mov r106 [extend:r107,r109]
+mov r103 [linked_list:r104,r106]
+ret r103
+escope
+mov r110 [$true]
+jmp r110 .L14
+.L16
+.L14
+efunc

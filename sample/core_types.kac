@@ -1,0 +1,58 @@
+enum base_enum
+imodule base_module
+emodule
+mov r0 [$0]
+dmov [__temp__0] r0
+tyof r0
+dmov [integer_type] r0
+mov r1 [$'']
+dmov [__temp__1] r1
+tyof r1
+dmov [string_type] r1
+mov r2 [$0.0]
+dmov [__temp__2] r2
+tyof r2
+dmov [decimal_type] r2
+mov r3 [$false]
+dmov [__temp__3] r3
+tyof r3
+dmov [boolean_type] r3
+mov r4 [base_function]
+dmov [__temp__4] r4
+tyof r4
+dmov [function_type] r4
+mov r5 [base_module]
+dmov [__temp__5] r5
+tyof r5
+dmov [module_type] r5
+mov r6 [base_struct]
+dmov [__temp__6] r6
+tyof r6
+dmov [struct_type] r6
+list r7
+mov [__temp__7] r7
+mov r7 [__temp__7]
+dmov [__temp__8] r7
+tyof r7
+dmov [list_type] r7
+tupl r8
+mov [__temp__9] r8
+mov r8 [__temp__9]
+dmov [__temp__10] r8
+tyof r8
+dmov [tuple_type] r8
+dict r9
+mov [__temp__11] r9
+mov r9 [__temp__11]
+dmov [__temp__12] r9
+tyof r9
+dmov [dict_type] r9
+mov r12 [base_enum]
+dmov [__temp__13] r12
+tyof r12
+dmov [enum_type] r12
+enum base_enum
+istruc base_struct 
+estruc
+ifunc base_function 
+efunc

@@ -1,0 +1,195 @@
+imprt lang lang
+imprt core_types ct
+imprt util util
+module wrapped_tree
+struc tree root branches
+tupl r0
+mov [__temp__0] r0
+mov r0 [__temp__0]
+dmov [__temp__1] r0
+tyof r0
+list r1
+mov [__temp__2] r1
+mov r1 [__temp__2]
+dmov [__temp__3] r1
+tyof r1
+dmov [root] r0
+dmov [branches] r1
+estruc
+func generate_print_string a 
+mov r2 [a@branches@size]
+mov r3 [$0]
+equ r2 r3
+bneg r2
+jmp r2 .L1
+scope
+mov r4 [$'tree(']
+mov r8 [$0]
+mov r6 [a@root|r8]
+mov r5 [util@to_string:r6]
+add r4 r5
+mov r9 [$')']
+add r4 r9
+ret r4
+escope
+mov r10 [$true]
+jmp r10 .L0
+.L1
+.L0
+mov r11 [$'tree(']
+mov r15 [$0]
+mov r13 [a@root|r15]
+mov r12 [util@to_string:r13]
+add r11 r12
+mov r16 [$', [[[ ']
+add r11 r16
+dmov [s] r11
+mov r18 [$0]
+mov r17 [lang@int:r18]
+dmov [index] r17
+.L2
+scope
+mov r20 [index]
+mov r21 [a@branches@size]
+lt r20 r21
+mov r19 [lang@b:r20]
+pos r19
+bneg r19
+jmp r19 .L3
+mov r22 [s]
+mov r26 [index@int]
+mov r24 [a@branches|r26]
+mov r23 [generate_print_string:r24]
+adde [s] r23
+mov r28 [index]
+mov r29 [a@branches@size]
+mov r30 [$1]
+sub r29 r30
+nequ r28 r29
+mov r27 [lang@b:r28]
+pos r27
+bneg r27
+jmp r27 .L5
+scope
+mov r31 [s]
+mov r32 [$', ']
+adde [s] r32
+escope
+mov r33 [$true]
+jmp r33 .L4
+.L5
+.L4
+dmov r35 [index]
+poinc [index]
+mov [__temp__4] r35
+mov r34 [__temp__4]
+escope
+mov r36 [$true]
+jmp r36 .L2
+.L3
+mov r37 [s]
+mov r38 [$' ]]])']
+adde [s] r38
+mov r39 [s]
+ret r39
+efunc
+emodule
+func root a 
+mov r42 [$0]
+mov r40 [a@root|r42]
+ret r40
+efunc
+func tree r b 
+dmov [__temp__5] [$0]
+mov r43 [b]
+dmov [__temp__6] r43
+.L6
+scope
+mov r44 [__temp__5]
+mov r45 [__temp__6@size]
+lt r44 r45
+bneg r44
+jmp r44 .L7
+dmov [i] [__temp__6|__temp__5]
+mov r46 [i]
+dmov [__temp__7] r46
+tyof r46
+mov r47 [wrapped_tree@tree]
+dmov [__temp__8] r47
+tyof r47
+nequ r46 r47
+bneg r46
+jmp r46 .L9
+scope
+mov r49 [$1]
+mov r50 [$'All sub-branches of a tree should be a tree as well']
+mov r48 [exit:r49,r50]
+escope
+mov r51 [$true]
+jmp r51 .L8
+.L9
+.L8
+poinc [__temp__5]
+escope
+mov r52 [$true]
+jmp r52 .L6
+.L7
+mov r53 [wrapped_tree@tree]
+dmov [ret] r53
+mov r54 [ret@root]
+mov r56 [r]
+tupl r55 r56
+mov [__temp__9] r55
+mov r55 [__temp__9]
+mov [ret@root] r55
+mov r57 [ret@branches]
+mov r58 [b]
+mov [ret@branches] r58
+mov r59 [ret]
+ret r59
+efunc
+func tree r 
+mov r60 [wrapped_tree@tree]
+dmov [ret] r60
+mov r61 [ret@root]
+mov r63 [r]
+tupl r62 r63
+mov [__temp__10] r62
+mov r62 [__temp__10]
+mov [ret@root] r62
+mov r64 [ret@branches]
+list r65
+mov [__temp__11] r65
+mov r65 [__temp__11]
+mov [ret@branches] r65
+mov r66 [ret]
+ret r66
+efunc
+ifunc __print__ a 
+mov r67 [a]
+dmov [__temp__12] r67
+tyof r67
+mov r68 [wrapped_tree@tree]
+dmov [__temp__13] r68
+tyof r68
+equ r67 r68
+bneg r67
+jmp r67 .L11
+scope
+mov r70 [a]
+mov r69 [wrapped_tree@generate_print_string:r70]
+ret r69
+escope
+mov r71 [$true]
+jmp r71 .L10
+.L11
+.L10
+mov r72 [$nil]
+ret r72
+efunc
+ifunc is_leaf t 
+mov r73 [t@branches@size]
+mov r74 [$0]
+equ r73 r74
+ret r73
+efunc

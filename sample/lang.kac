@@ -1,0 +1,7703 @@
+imprt core_types ct
+module wrapped_types
+struc int int
+mov r0 [$0]
+dmov [__temp__0] r0
+tyof r0
+dmov [int] r0
+estruc
+struc decimal decimal
+mov r1 [$0]
+dmov [__temp__1] r1
+tyof r1
+dmov [decimal] r1
+estruc
+struc string string size
+mov r2 [$'']
+dmov [__temp__2] r2
+tyof r2
+mov r3 [$0]
+dmov [__temp__3] r3
+tyof r3
+dmov [string] r2
+dmov [size] r3
+estruc
+struc boolean boolean
+mov r4 [$true]
+dmov [__temp__4] r4
+tyof r4
+dmov [boolean] r4
+estruc
+emodule
+func int i 
+mov r5 [wrapped_types@int]
+dmov [ret] r5
+mov r6 [ret@int]
+mov r7 [i]
+mov [ret@int] r7
+mov r8 [ret]
+ret r8
+efunc
+func decimal d 
+mov r9 [wrapped_types@decimal]
+dmov [ret] r9
+mov r10 [ret@decimal]
+mov r11 [d]
+mov [ret@decimal] r11
+mov r12 [ret]
+ret r12
+efunc
+func string s 
+mov r13 [wrapped_types@string]
+dmov [ret] r13
+mov r14 [ret@string]
+mov r15 [s]
+mov [ret@string] r15
+mov r16 [ret@size]
+mov r17 [s@size]
+mov [ret@size] r17
+mov r18 [ret]
+ret r18
+efunc
+func boolean b 
+mov r19 [wrapped_types@boolean]
+dmov [ret] r19
+mov r20 [ret@boolean]
+mov r21 [b]
+mov [ret@boolean] r21
+mov r22 [ret]
+ret r22
+efunc
+ifunc __add__ a b 
+mov r24 [a]
+mov r23 [is_pure:r24]
+mov r26 [b]
+mov r25 [is_pure:r26]
+lor r23 r25
+bneg r23
+jmp r23 .L1
+scope
+mov r27 [$nil]
+ret r27
+escope
+mov r28 [$true]
+jmp r28 .L0
+.L1
+.L0
+mov r29 [a]
+dmov [__temp__5] r29
+tyof r29
+mov r30 [wrapped_types@int]
+dmov [__temp__6] r30
+tyof r30
+equ r29 r30
+bneg r29
+jmp r29 .L3
+scope
+mov r31 [b]
+dmov [__temp__7] r31
+tyof r31
+mov r32 [wrapped_types@int]
+dmov [__temp__8] r32
+tyof r32
+equ r31 r32
+bneg r31
+jmp r31 .L5
+scope
+mov r34 [a@int]
+mov r35 [b@int]
+add r34 r35
+mov r33 [int:r34]
+ret r33
+escope
+mov r36 [$true]
+jmp r36 .L4
+.L5
+mov r37 [b]
+dmov [__temp__9] r37
+tyof r37
+mov r38 [wrapped_types@decimal]
+dmov [__temp__10] r38
+tyof r38
+equ r37 r38
+bneg r37
+jmp r37 .L6
+scope
+mov r40 [b@decimal]
+mov r41 [a@int]
+add r40 r41
+mov r39 [decimal:r40]
+ret r39
+escope
+mov r42 [$true]
+jmp r42 .L4
+.L6
+mov r43 [b]
+dmov [__temp__11] r43
+tyof r43
+mov r44 [ct@integer_type]
+equ r43 r44
+bneg r43
+jmp r43 .L7
+scope
+mov r46 [a@int]
+mov r47 [b]
+add r46 r47
+mov r45 [int:r46]
+ret r45
+escope
+mov r48 [$true]
+jmp r48 .L4
+.L7
+mov r49 [b]
+dmov [__temp__12] r49
+tyof r49
+mov r50 [ct@decimal_type]
+equ r49 r50
+bneg r49
+jmp r49 .L8
+scope
+mov r52 [b]
+mov r53 [a@int]
+add r52 r53
+mov r51 [decimal:r52]
+ret r51
+escope
+mov r54 [$true]
+jmp r54 .L4
+.L8
+.L4
+escope
+mov r55 [$true]
+jmp r55 .L2
+.L3
+mov r56 [a]
+dmov [__temp__13] r56
+tyof r56
+mov r57 [ct@integer_type]
+equ r56 r57
+bneg r56
+jmp r56 .L9
+scope
+mov r58 [b]
+dmov [__temp__14] r58
+tyof r58
+mov r59 [wrapped_types@int]
+dmov [__temp__15] r59
+tyof r59
+equ r58 r59
+bneg r58
+jmp r58 .L11
+scope
+mov r61 [b@int]
+mov r62 [a]
+add r61 r62
+mov r60 [int:r61]
+ret r60
+escope
+mov r63 [$true]
+jmp r63 .L10
+.L11
+mov r64 [b]
+dmov [__temp__16] r64
+tyof r64
+mov r65 [wrapped_types@decimal]
+dmov [__temp__17] r65
+tyof r65
+equ r64 r65
+bneg r64
+jmp r64 .L12
+scope
+mov r67 [b@decimal]
+mov r68 [a]
+add r67 r68
+mov r66 [decimal:r67]
+ret r66
+escope
+mov r69 [$true]
+jmp r69 .L10
+.L12
+.L10
+escope
+mov r70 [$true]
+jmp r70 .L2
+.L9
+mov r71 [a]
+dmov [__temp__18] r71
+tyof r71
+mov r72 [wrapped_types@decimal]
+dmov [__temp__19] r72
+tyof r72
+equ r71 r72
+bneg r71
+jmp r71 .L13
+scope
+mov r73 [b]
+dmov [__temp__20] r73
+tyof r73
+mov r74 [wrapped_types@int]
+dmov [__temp__21] r74
+tyof r74
+equ r73 r74
+bneg r73
+jmp r73 .L15
+scope
+mov r76 [a@decimal]
+mov r77 [b@int]
+add r76 r77
+mov r75 [decimal:r76]
+ret r75
+escope
+mov r78 [$true]
+jmp r78 .L14
+.L15
+mov r79 [b]
+dmov [__temp__22] r79
+tyof r79
+mov r80 [wrapped_types@decimal]
+dmov [__temp__23] r80
+tyof r80
+equ r79 r80
+bneg r79
+jmp r79 .L16
+scope
+mov r82 [a@decimal]
+mov r83 [b@decimal]
+add r82 r83
+mov r81 [decimal:r82]
+ret r81
+escope
+mov r84 [$true]
+jmp r84 .L14
+.L16
+mov r85 [b]
+dmov [__temp__24] r85
+tyof r85
+mov r86 [ct@integer_type]
+equ r85 r86
+bneg r85
+jmp r85 .L17
+scope
+mov r88 [a@decimal]
+mov r89 [b]
+add r88 r89
+mov r87 [decimal:r88]
+ret r87
+escope
+mov r90 [$true]
+jmp r90 .L14
+.L17
+mov r91 [b]
+dmov [__temp__25] r91
+tyof r91
+mov r92 [ct@decimal_type]
+equ r91 r92
+bneg r91
+jmp r91 .L18
+scope
+mov r94 [a@decimal]
+mov r95 [b]
+add r94 r95
+mov r93 [decimal:r94]
+ret r93
+escope
+mov r96 [$true]
+jmp r96 .L14
+.L18
+.L14
+escope
+mov r97 [$true]
+jmp r97 .L2
+.L13
+mov r98 [a]
+dmov [__temp__26] r98
+tyof r98
+mov r99 [ct@decimal_type]
+equ r98 r99
+bneg r98
+jmp r98 .L19
+scope
+mov r100 [b]
+dmov [__temp__27] r100
+tyof r100
+mov r101 [wrapped_types@decimal]
+dmov [__temp__28] r101
+tyof r101
+equ r100 r101
+bneg r100
+jmp r100 .L21
+scope
+mov r103 [a]
+mov r104 [b@decimal]
+add r103 r104
+mov r102 [decimal:r103]
+ret r102
+escope
+mov r105 [$true]
+jmp r105 .L20
+.L21
+mov r106 [b]
+dmov [__temp__29] r106
+tyof r106
+mov r107 [wrapped_types@int]
+dmov [__temp__30] r107
+tyof r107
+equ r106 r107
+bneg r106
+jmp r106 .L22
+scope
+mov r109 [a]
+mov r110 [b@int]
+add r109 r110
+mov r108 [decimal:r109]
+ret r108
+escope
+mov r111 [$true]
+jmp r111 .L20
+.L22
+.L20
+escope
+mov r112 [$true]
+jmp r112 .L2
+.L19
+mov r113 [a]
+dmov [__temp__31] r113
+tyof r113
+mov r114 [wrapped_types@string]
+dmov [__temp__32] r114
+tyof r114
+equ r113 r114
+bneg r113
+jmp r113 .L23
+scope
+mov r115 [b]
+dmov [__temp__33] r115
+tyof r115
+mov r116 [wrapped_types@string]
+dmov [__temp__34] r116
+tyof r116
+equ r115 r116
+bneg r115
+jmp r115 .L25
+scope
+mov r119 [a@string]
+mov r120 [b@string]
+mov r118 [add:r119,r120]
+mov r117 [string:r118]
+ret r117
+escope
+mov r121 [$true]
+jmp r121 .L24
+.L25
+mov r122 [b]
+dmov [__temp__35] r122
+tyof r122
+mov r123 [ct@string_type]
+equ r122 r123
+bneg r122
+jmp r122 .L26
+scope
+mov r126 [a@string]
+mov r127 [b]
+mov r125 [add:r126,r127]
+mov r124 [string:r125]
+ret r124
+escope
+mov r128 [$true]
+jmp r128 .L24
+.L26
+.L24
+escope
+mov r129 [$true]
+jmp r129 .L2
+.L23
+mov r130 [a]
+dmov [__temp__36] r130
+tyof r130
+mov r131 [ct@string_type]
+equ r130 r131
+bneg r130
+jmp r130 .L27
+scope
+mov r132 [b]
+dmov [__temp__37] r132
+tyof r132
+mov r133 [wrapped_types@string]
+dmov [__temp__38] r133
+tyof r133
+equ r132 r133
+bneg r132
+jmp r132 .L29
+scope
+mov r135 [a]
+mov r136 [b@string]
+mov r134 [add:r135,r136]
+ret r134
+escope
+mov r137 [$true]
+jmp r137 .L28
+.L29
+mov r138 [b]
+dmov [__temp__39] r138
+tyof r138
+mov r139 [ct@string_type]
+equ r138 r139
+bneg r138
+jmp r138 .L30
+scope
+mov r141 [a]
+mov r142 [b]
+mov r140 [add:r141,r142]
+ret r140
+escope
+mov r143 [$true]
+jmp r143 .L28
+.L30
+.L28
+escope
+mov r144 [$true]
+jmp r144 .L2
+.L27
+.L2
+mov r145 [$nil]
+ret r145
+efunc
+ifunc __add_equals__ a b 
+mov r147 [a]
+mov r146 [is_pure:r147]
+mov r149 [b]
+mov r148 [is_pure:r149]
+lor r146 r148
+bneg r146
+jmp r146 .L32
+scope
+mov r150 [$nil]
+ret r150
+escope
+mov r151 [$true]
+jmp r151 .L31
+.L32
+.L31
+mov r152 [a]
+dmov [__temp__40] r152
+tyof r152
+mov r153 [wrapped_types@int]
+dmov [__temp__41] r153
+tyof r153
+equ r152 r153
+bneg r152
+jmp r152 .L34
+scope
+mov r154 [b]
+dmov [__temp__42] r154
+tyof r154
+mov r155 [wrapped_types@int]
+dmov [__temp__43] r155
+tyof r155
+equ r154 r155
+bneg r154
+jmp r154 .L36
+scope
+mov r156 [a@int]
+mov r157 [b@int]
+adde [a@int] r157
+mov r158 [a]
+ret r158
+escope
+mov r159 [$true]
+jmp r159 .L35
+.L36
+mov r160 [b]
+dmov [__temp__44] r160
+tyof r160
+mov r161 [wrapped_types@decimal]
+dmov [__temp__45] r161
+tyof r161
+equ r160 r161
+bneg r160
+jmp r160 .L37
+scope
+mov r162 [a@int]
+mov r163 [b@decimal]
+adde [a@int] r163
+mov r164 [a]
+ret r164
+escope
+mov r165 [$true]
+jmp r165 .L35
+.L37
+mov r166 [b]
+dmov [__temp__46] r166
+tyof r166
+mov r167 [ct@integer_type]
+equ r166 r167
+bneg r166
+jmp r166 .L38
+scope
+mov r168 [a@int]
+mov r169 [b]
+adde [a@int] r169
+mov r170 [a]
+ret r170
+escope
+mov r171 [$true]
+jmp r171 .L35
+.L38
+mov r172 [b]
+dmov [__temp__47] r172
+tyof r172
+mov r173 [ct@decimal_type]
+equ r172 r173
+bneg r172
+jmp r172 .L39
+scope
+mov r174 [a@int]
+mov r175 [b]
+adde [a@int] r175
+mov r176 [a]
+ret r176
+escope
+mov r177 [$true]
+jmp r177 .L35
+.L39
+.L35
+escope
+mov r178 [$true]
+jmp r178 .L33
+.L34
+mov r179 [a]
+dmov [__temp__48] r179
+tyof r179
+mov r180 [ct@integer_type]
+equ r179 r180
+bneg r179
+jmp r179 .L40
+scope
+mov r181 [b]
+dmov [__temp__49] r181
+tyof r181
+mov r182 [wrapped_types@int]
+dmov [__temp__50] r182
+tyof r182
+equ r181 r182
+bneg r181
+jmp r181 .L42
+scope
+mov r183 [a]
+mov r184 [b@int]
+adde [a] r184
+mov r185 [a]
+ret r185
+escope
+mov r186 [$true]
+jmp r186 .L41
+.L42
+mov r187 [b]
+dmov [__temp__51] r187
+tyof r187
+mov r188 [wrapped_types@decimal]
+dmov [__temp__52] r188
+tyof r188
+equ r187 r188
+bneg r187
+jmp r187 .L43
+scope
+mov r189 [a]
+mov r190 [b@decimal]
+adde [a] r190
+mov r191 [a]
+ret r191
+escope
+mov r192 [$true]
+jmp r192 .L41
+.L43
+.L41
+escope
+mov r193 [$true]
+jmp r193 .L33
+.L40
+mov r194 [a]
+dmov [__temp__53] r194
+tyof r194
+mov r195 [wrapped_types@decimal]
+dmov [__temp__54] r195
+tyof r195
+equ r194 r195
+bneg r194
+jmp r194 .L44
+scope
+mov r196 [b]
+dmov [__temp__55] r196
+tyof r196
+mov r197 [wrapped_types@int]
+dmov [__temp__56] r197
+tyof r197
+equ r196 r197
+bneg r196
+jmp r196 .L46
+scope
+mov r198 [a@decimal]
+mov r199 [b@int]
+adde [a@decimal] r199
+mov r200 [a]
+ret r200
+escope
+mov r201 [$true]
+jmp r201 .L45
+.L46
+mov r202 [b]
+dmov [__temp__57] r202
+tyof r202
+mov r203 [wrapped_types@decimal]
+dmov [__temp__58] r203
+tyof r203
+equ r202 r203
+bneg r202
+jmp r202 .L47
+scope
+mov r204 [a@decimal]
+mov r205 [b@decimal]
+adde [a@decimal] r205
+mov r206 [a]
+ret r206
+escope
+mov r207 [$true]
+jmp r207 .L45
+.L47
+mov r208 [b]
+dmov [__temp__59] r208
+tyof r208
+mov r209 [ct@integer_type]
+equ r208 r209
+bneg r208
+jmp r208 .L48
+scope
+mov r210 [a@decimal]
+mov r211 [b]
+adde [a@decimal] r211
+mov r212 [a]
+ret r212
+escope
+mov r213 [$true]
+jmp r213 .L45
+.L48
+mov r214 [b]
+dmov [__temp__60] r214
+tyof r214
+mov r215 [ct@decimal_type]
+equ r214 r215
+bneg r214
+jmp r214 .L49
+scope
+mov r216 [a@decimal]
+mov r217 [b]
+adde [a@decimal] r217
+mov r218 [a]
+ret r218
+escope
+mov r219 [$true]
+jmp r219 .L45
+.L49
+.L45
+escope
+mov r220 [$true]
+jmp r220 .L33
+.L44
+mov r221 [a]
+dmov [__temp__61] r221
+tyof r221
+mov r222 [ct@decimal_type]
+equ r221 r222
+bneg r221
+jmp r221 .L50
+scope
+mov r223 [b]
+dmov [__temp__62] r223
+tyof r223
+mov r224 [wrapped_types@decimal]
+dmov [__temp__63] r224
+tyof r224
+equ r223 r224
+bneg r223
+jmp r223 .L52
+scope
+mov r225 [a]
+mov r226 [b@decimal]
+adde [a] r226
+ret r225
+mov r227 [a]
+ret r227
+escope
+mov r228 [$true]
+jmp r228 .L51
+.L52
+mov r229 [b]
+dmov [__temp__64] r229
+tyof r229
+mov r230 [wrapped_types@int]
+dmov [__temp__65] r230
+tyof r230
+equ r229 r230
+bneg r229
+jmp r229 .L53
+scope
+mov r231 [a]
+mov r232 [b@int]
+adde [a] r232
+ret r231
+mov r233 [a]
+ret r233
+escope
+mov r234 [$true]
+jmp r234 .L51
+.L53
+.L51
+escope
+mov r235 [$true]
+jmp r235 .L33
+.L50
+mov r236 [a]
+dmov [__temp__66] r236
+tyof r236
+mov r237 [wrapped_types@string]
+dmov [__temp__67] r237
+tyof r237
+equ r236 r237
+bneg r236
+jmp r236 .L54
+scope
+mov r238 [b]
+dmov [__temp__68] r238
+tyof r238
+mov r239 [wrapped_types@string]
+dmov [__temp__69] r239
+tyof r239
+equ r238 r239
+bneg r238
+jmp r238 .L56
+scope
+mov r240 [a@string]
+mov r242 [a@string]
+mov r243 [b@string]
+mov r241 [add:r242,r243]
+mov [a@string] r241
+mov r244 [a]
+ret r244
+escope
+mov r245 [$true]
+jmp r245 .L55
+.L56
+mov r246 [b]
+dmov [__temp__70] r246
+tyof r246
+mov r247 [ct@string_type]
+equ r246 r247
+bneg r246
+jmp r246 .L57
+scope
+mov r248 [a@string]
+mov r250 [a@string]
+mov r251 [b]
+mov r249 [add:r250,r251]
+mov [a@string] r249
+mov r252 [a]
+ret r252
+escope
+mov r253 [$true]
+jmp r253 .L55
+.L57
+.L55
+escope
+mov r254 [$true]
+jmp r254 .L33
+.L54
+mov r255 [a]
+dmov [__temp__71] r255
+tyof r255
+mov r256 [ct@string_type]
+equ r255 r256
+bneg r255
+jmp r255 .L58
+scope
+mov r257 [b]
+dmov [__temp__72] r257
+tyof r257
+mov r258 [wrapped_types@string]
+dmov [__temp__73] r258
+tyof r258
+equ r257 r258
+bneg r257
+jmp r257 .L60
+scope
+mov r259 [a]
+mov r261 [a]
+mov r262 [b@string]
+mov r260 [add:r261,r262]
+mov [a] r260
+mov r263 [a]
+ret r263
+escope
+mov r264 [$true]
+jmp r264 .L59
+.L60
+mov r265 [b]
+dmov [__temp__74] r265
+tyof r265
+mov r266 [ct@string_type]
+equ r265 r266
+bneg r265
+jmp r265 .L61
+scope
+mov r267 [a]
+mov r269 [a]
+mov r270 [b]
+mov r268 [add:r269,r270]
+mov [a] r268
+mov r271 [a]
+ret r271
+escope
+mov r272 [$true]
+jmp r272 .L59
+.L61
+.L59
+escope
+mov r273 [$true]
+jmp r273 .L33
+.L58
+.L33
+mov r274 [$nil]
+ret r274
+efunc
+ifunc __subtract__ a b 
+mov r276 [a]
+mov r275 [is_pure:r276]
+mov r278 [b]
+mov r277 [is_pure:r278]
+lor r275 r277
+bneg r275
+jmp r275 .L63
+scope
+mov r279 [$nil]
+ret r279
+escope
+mov r280 [$true]
+jmp r280 .L62
+.L63
+.L62
+mov r281 [a]
+dmov [__temp__75] r281
+tyof r281
+mov r282 [wrapped_types@int]
+dmov [__temp__76] r282
+tyof r282
+equ r281 r282
+bneg r281
+jmp r281 .L65
+scope
+mov r283 [b]
+dmov [__temp__77] r283
+tyof r283
+mov r284 [wrapped_types@int]
+dmov [__temp__78] r284
+tyof r284
+equ r283 r284
+bneg r283
+jmp r283 .L67
+scope
+mov r286 [a@int]
+mov r287 [b@int]
+sub r286 r287
+mov r285 [int:r286]
+ret r285
+escope
+mov r288 [$true]
+jmp r288 .L66
+.L67
+mov r289 [b]
+dmov [__temp__79] r289
+tyof r289
+mov r290 [wrapped_types@decimal]
+dmov [__temp__80] r290
+tyof r290
+equ r289 r290
+bneg r289
+jmp r289 .L68
+scope
+mov r292 [b@decimal]
+mov r293 [a@int]
+sub r292 r293
+mov r291 [decimal:r292]
+ret r291
+escope
+mov r294 [$true]
+jmp r294 .L66
+.L68
+mov r295 [b]
+dmov [__temp__81] r295
+tyof r295
+mov r296 [ct@integer_type]
+equ r295 r296
+bneg r295
+jmp r295 .L69
+scope
+mov r298 [a@int]
+mov r299 [b]
+sub r298 r299
+mov r297 [int:r298]
+ret r297
+escope
+mov r300 [$true]
+jmp r300 .L66
+.L69
+mov r301 [b]
+dmov [__temp__82] r301
+tyof r301
+mov r302 [ct@decimal_type]
+equ r301 r302
+bneg r301
+jmp r301 .L70
+scope
+mov r304 [b]
+mov r305 [a@int]
+sub r304 r305
+mov r303 [decimal:r304]
+ret r303
+escope
+mov r306 [$true]
+jmp r306 .L66
+.L70
+.L66
+escope
+mov r307 [$true]
+jmp r307 .L64
+.L65
+mov r308 [a]
+dmov [__temp__83] r308
+tyof r308
+mov r309 [ct@integer_type]
+equ r308 r309
+bneg r308
+jmp r308 .L71
+scope
+mov r310 [b]
+dmov [__temp__84] r310
+tyof r310
+mov r311 [wrapped_types@int]
+dmov [__temp__85] r311
+tyof r311
+equ r310 r311
+bneg r310
+jmp r310 .L73
+scope
+mov r313 [b@int]
+mov r314 [a]
+sub r313 r314
+mov r312 [int:r313]
+ret r312
+escope
+mov r315 [$true]
+jmp r315 .L72
+.L73
+mov r316 [b]
+dmov [__temp__86] r316
+tyof r316
+mov r317 [wrapped_types@decimal]
+dmov [__temp__87] r317
+tyof r317
+equ r316 r317
+bneg r316
+jmp r316 .L74
+scope
+mov r319 [b@decimal]
+mov r320 [a]
+sub r319 r320
+mov r318 [decimal:r319]
+ret r318
+escope
+mov r321 [$true]
+jmp r321 .L72
+.L74
+.L72
+escope
+mov r322 [$true]
+jmp r322 .L64
+.L71
+mov r323 [a]
+dmov [__temp__88] r323
+tyof r323
+mov r324 [wrapped_types@decimal]
+dmov [__temp__89] r324
+tyof r324
+equ r323 r324
+bneg r323
+jmp r323 .L75
+scope
+mov r325 [b]
+dmov [__temp__90] r325
+tyof r325
+mov r326 [wrapped_types@int]
+dmov [__temp__91] r326
+tyof r326
+equ r325 r326
+bneg r325
+jmp r325 .L77
+scope
+mov r328 [a@decimal]
+mov r329 [b@int]
+sub r328 r329
+mov r327 [decimal:r328]
+ret r327
+escope
+mov r330 [$true]
+jmp r330 .L76
+.L77
+mov r331 [b]
+dmov [__temp__92] r331
+tyof r331
+mov r332 [wrapped_types@decimal]
+dmov [__temp__93] r332
+tyof r332
+equ r331 r332
+bneg r331
+jmp r331 .L78
+scope
+mov r334 [a@decimal]
+mov r335 [b@decimal]
+sub r334 r335
+mov r333 [decimal:r334]
+ret r333
+escope
+mov r336 [$true]
+jmp r336 .L76
+.L78
+mov r337 [b]
+dmov [__temp__94] r337
+tyof r337
+mov r338 [ct@integer_type]
+equ r337 r338
+bneg r337
+jmp r337 .L79
+scope
+mov r340 [a@decimal]
+mov r341 [b]
+sub r340 r341
+mov r339 [decimal:r340]
+ret r339
+escope
+mov r342 [$true]
+jmp r342 .L76
+.L79
+mov r343 [b]
+dmov [__temp__95] r343
+tyof r343
+mov r344 [ct@decimal_type]
+equ r343 r344
+bneg r343
+jmp r343 .L80
+scope
+mov r346 [a@decimal]
+mov r347 [b]
+sub r346 r347
+mov r345 [decimal:r346]
+ret r345
+escope
+mov r348 [$true]
+jmp r348 .L76
+.L80
+.L76
+escope
+mov r349 [$true]
+jmp r349 .L64
+.L75
+mov r350 [a]
+dmov [__temp__96] r350
+tyof r350
+mov r351 [ct@decimal_type]
+equ r350 r351
+bneg r350
+jmp r350 .L81
+scope
+mov r352 [b]
+dmov [__temp__97] r352
+tyof r352
+mov r353 [wrapped_types@decimal]
+dmov [__temp__98] r353
+tyof r353
+equ r352 r353
+bneg r352
+jmp r352 .L83
+scope
+mov r355 [a]
+mov r356 [b@decimal]
+sub r355 r356
+mov r354 [decimal:r355]
+ret r354
+escope
+mov r357 [$true]
+jmp r357 .L82
+.L83
+mov r358 [b]
+dmov [__temp__99] r358
+tyof r358
+mov r359 [wrapped_types@int]
+dmov [__temp__100] r359
+tyof r359
+equ r358 r359
+bneg r358
+jmp r358 .L84
+scope
+mov r361 [a]
+mov r362 [b@int]
+sub r361 r362
+mov r360 [decimal:r361]
+ret r360
+escope
+mov r363 [$true]
+jmp r363 .L82
+.L84
+.L82
+escope
+mov r364 [$true]
+jmp r364 .L64
+.L81
+.L64
+mov r365 [$nil]
+ret r365
+efunc
+ifunc __subtract_equals__ a b 
+mov r367 [a]
+mov r366 [is_pure:r367]
+mov r369 [b]
+mov r368 [is_pure:r369]
+lor r366 r368
+bneg r366
+jmp r366 .L86
+scope
+mov r370 [$nil]
+ret r370
+escope
+mov r371 [$true]
+jmp r371 .L85
+.L86
+.L85
+mov r372 [a]
+dmov [__temp__101] r372
+tyof r372
+mov r373 [wrapped_types@int]
+dmov [__temp__102] r373
+tyof r373
+equ r372 r373
+bneg r372
+jmp r372 .L88
+scope
+mov r374 [b]
+dmov [__temp__103] r374
+tyof r374
+mov r375 [wrapped_types@int]
+dmov [__temp__104] r375
+tyof r375
+equ r374 r375
+bneg r374
+jmp r374 .L90
+scope
+mov r376 [a@int]
+mov r377 [b@int]
+sube [a@int] r377
+mov r378 [a]
+ret r378
+escope
+mov r379 [$true]
+jmp r379 .L89
+.L90
+mov r380 [b]
+dmov [__temp__105] r380
+tyof r380
+mov r381 [wrapped_types@decimal]
+dmov [__temp__106] r381
+tyof r381
+equ r380 r381
+bneg r380
+jmp r380 .L91
+scope
+mov r382 [a@int]
+mov r383 [b@decimal]
+sube [a@int] r383
+mov r384 [a]
+ret r384
+escope
+mov r385 [$true]
+jmp r385 .L89
+.L91
+mov r386 [b]
+dmov [__temp__107] r386
+tyof r386
+mov r387 [ct@integer_type]
+equ r386 r387
+bneg r386
+jmp r386 .L92
+scope
+mov r388 [a@int]
+mov r389 [b]
+sube [a@int] r389
+mov r390 [a]
+ret r390
+escope
+mov r391 [$true]
+jmp r391 .L89
+.L92
+mov r392 [b]
+dmov [__temp__108] r392
+tyof r392
+mov r393 [ct@decimal_type]
+equ r392 r393
+bneg r392
+jmp r392 .L93
+scope
+mov r394 [a@int]
+mov r395 [b]
+sube [a@int] r395
+mov r396 [a]
+ret r396
+escope
+mov r397 [$true]
+jmp r397 .L89
+.L93
+.L89
+escope
+mov r398 [$true]
+jmp r398 .L87
+.L88
+mov r399 [a]
+dmov [__temp__109] r399
+tyof r399
+mov r400 [ct@integer_type]
+equ r399 r400
+bneg r399
+jmp r399 .L94
+scope
+mov r401 [b]
+dmov [__temp__110] r401
+tyof r401
+mov r402 [wrapped_types@int]
+dmov [__temp__111] r402
+tyof r402
+equ r401 r402
+bneg r401
+jmp r401 .L96
+scope
+mov r403 [a]
+mov r404 [b@int]
+sube [a] r404
+mov r405 [a]
+ret r405
+escope
+mov r406 [$true]
+jmp r406 .L95
+.L96
+mov r407 [b]
+dmov [__temp__112] r407
+tyof r407
+mov r408 [wrapped_types@decimal]
+dmov [__temp__113] r408
+tyof r408
+equ r407 r408
+bneg r407
+jmp r407 .L97
+scope
+mov r409 [a]
+mov r410 [b@decimal]
+sube [a] r410
+mov r411 [a]
+ret r411
+escope
+mov r412 [$true]
+jmp r412 .L95
+.L97
+.L95
+escope
+mov r413 [$true]
+jmp r413 .L87
+.L94
+mov r414 [a]
+dmov [__temp__114] r414
+tyof r414
+mov r415 [wrapped_types@decimal]
+dmov [__temp__115] r415
+tyof r415
+equ r414 r415
+bneg r414
+jmp r414 .L98
+scope
+mov r416 [b]
+dmov [__temp__116] r416
+tyof r416
+mov r417 [wrapped_types@int]
+dmov [__temp__117] r417
+tyof r417
+equ r416 r417
+bneg r416
+jmp r416 .L100
+scope
+mov r418 [a@decimal]
+mov r419 [b@int]
+sube [a@decimal] r419
+mov r420 [a]
+ret r420
+escope
+mov r421 [$true]
+jmp r421 .L99
+.L100
+mov r422 [b]
+dmov [__temp__118] r422
+tyof r422
+mov r423 [wrapped_types@decimal]
+dmov [__temp__119] r423
+tyof r423
+equ r422 r423
+bneg r422
+jmp r422 .L101
+scope
+mov r424 [a@decimal]
+mov r425 [b@decimal]
+sube [a@decimal] r425
+mov r426 [a]
+ret r426
+escope
+mov r427 [$true]
+jmp r427 .L99
+.L101
+mov r428 [b]
+dmov [__temp__120] r428
+tyof r428
+mov r429 [ct@integer_type]
+equ r428 r429
+bneg r428
+jmp r428 .L102
+scope
+mov r430 [a@decimal]
+mov r431 [b]
+sube [a@decimal] r431
+mov r432 [a]
+ret r432
+escope
+mov r433 [$true]
+jmp r433 .L99
+.L102
+mov r434 [b]
+dmov [__temp__121] r434
+tyof r434
+mov r435 [ct@decimal_type]
+equ r434 r435
+bneg r434
+jmp r434 .L103
+scope
+mov r436 [a@decimal]
+mov r437 [b]
+sube [a@decimal] r437
+mov r438 [a]
+ret r438
+escope
+mov r439 [$true]
+jmp r439 .L99
+.L103
+.L99
+escope
+mov r440 [$true]
+jmp r440 .L87
+.L98
+mov r441 [a]
+dmov [__temp__122] r441
+tyof r441
+mov r442 [ct@decimal_type]
+equ r441 r442
+bneg r441
+jmp r441 .L104
+scope
+mov r443 [b]
+dmov [__temp__123] r443
+tyof r443
+mov r444 [wrapped_types@decimal]
+dmov [__temp__124] r444
+tyof r444
+equ r443 r444
+bneg r443
+jmp r443 .L106
+scope
+mov r445 [a]
+mov r446 [b@decimal]
+sube [a] r446
+ret r445
+mov r447 [a]
+ret r447
+escope
+mov r448 [$true]
+jmp r448 .L105
+.L106
+mov r449 [b]
+dmov [__temp__125] r449
+tyof r449
+mov r450 [wrapped_types@int]
+dmov [__temp__126] r450
+tyof r450
+equ r449 r450
+bneg r449
+jmp r449 .L107
+scope
+mov r451 [a]
+mov r452 [b@int]
+sube [a] r452
+ret r451
+mov r453 [a]
+ret r453
+escope
+mov r454 [$true]
+jmp r454 .L105
+.L107
+.L105
+escope
+mov r455 [$true]
+jmp r455 .L87
+.L104
+.L87
+mov r456 [$nil]
+ret r456
+efunc
+ifunc __multiply__ a b 
+mov r458 [a]
+mov r457 [is_pure:r458]
+mov r460 [b]
+mov r459 [is_pure:r460]
+lor r457 r459
+bneg r457
+jmp r457 .L109
+scope
+mov r461 [$nil]
+ret r461
+escope
+mov r462 [$true]
+jmp r462 .L108
+.L109
+.L108
+mov r463 [a]
+dmov [__temp__127] r463
+tyof r463
+mov r464 [wrapped_types@int]
+dmov [__temp__128] r464
+tyof r464
+equ r463 r464
+bneg r463
+jmp r463 .L111
+scope
+mov r465 [b]
+dmov [__temp__129] r465
+tyof r465
+mov r466 [wrapped_types@int]
+dmov [__temp__130] r466
+tyof r466
+equ r465 r466
+bneg r465
+jmp r465 .L113
+scope
+mov r468 [a@int]
+mov r469 [b@int]
+mul r468 r469
+mov r467 [int:r468]
+ret r467
+escope
+mov r470 [$true]
+jmp r470 .L112
+.L113
+mov r471 [b]
+dmov [__temp__131] r471
+tyof r471
+mov r472 [wrapped_types@decimal]
+dmov [__temp__132] r472
+tyof r472
+equ r471 r472
+bneg r471
+jmp r471 .L114
+scope
+mov r474 [b@decimal]
+mov r475 [a@int]
+mul r474 r475
+mov r473 [decimal:r474]
+ret r473
+escope
+mov r476 [$true]
+jmp r476 .L112
+.L114
+mov r477 [b]
+dmov [__temp__133] r477
+tyof r477
+mov r478 [ct@integer_type]
+equ r477 r478
+bneg r477
+jmp r477 .L115
+scope
+mov r480 [a@int]
+mov r481 [b]
+mul r480 r481
+mov r479 [int:r480]
+ret r479
+escope
+mov r482 [$true]
+jmp r482 .L112
+.L115
+mov r483 [b]
+dmov [__temp__134] r483
+tyof r483
+mov r484 [ct@decimal_type]
+equ r483 r484
+bneg r483
+jmp r483 .L116
+scope
+mov r486 [b]
+mov r487 [a@int]
+mul r486 r487
+mov r485 [decimal:r486]
+ret r485
+escope
+mov r488 [$true]
+jmp r488 .L112
+.L116
+.L112
+escope
+mov r489 [$true]
+jmp r489 .L110
+.L111
+mov r490 [a]
+dmov [__temp__135] r490
+tyof r490
+mov r491 [ct@integer_type]
+equ r490 r491
+bneg r490
+jmp r490 .L117
+scope
+mov r492 [b]
+dmov [__temp__136] r492
+tyof r492
+mov r493 [wrapped_types@int]
+dmov [__temp__137] r493
+tyof r493
+equ r492 r493
+bneg r492
+jmp r492 .L119
+scope
+mov r495 [b@int]
+mov r496 [a]
+mul r495 r496
+mov r494 [int:r495]
+ret r494
+escope
+mov r497 [$true]
+jmp r497 .L118
+.L119
+mov r498 [b]
+dmov [__temp__138] r498
+tyof r498
+mov r499 [wrapped_types@decimal]
+dmov [__temp__139] r499
+tyof r499
+equ r498 r499
+bneg r498
+jmp r498 .L120
+scope
+mov r501 [b@decimal]
+mov r502 [a]
+mul r501 r502
+mov r500 [decimal:r501]
+ret r500
+escope
+mov r503 [$true]
+jmp r503 .L118
+.L120
+.L118
+escope
+mov r504 [$true]
+jmp r504 .L110
+.L117
+mov r505 [a]
+dmov [__temp__140] r505
+tyof r505
+mov r506 [wrapped_types@decimal]
+dmov [__temp__141] r506
+tyof r506
+equ r505 r506
+bneg r505
+jmp r505 .L121
+scope
+mov r507 [b]
+dmov [__temp__142] r507
+tyof r507
+mov r508 [wrapped_types@int]
+dmov [__temp__143] r508
+tyof r508
+equ r507 r508
+bneg r507
+jmp r507 .L123
+scope
+mov r510 [a@decimal]
+mov r511 [b@int]
+mul r510 r511
+mov r509 [decimal:r510]
+ret r509
+escope
+mov r512 [$true]
+jmp r512 .L122
+.L123
+mov r513 [b]
+dmov [__temp__144] r513
+tyof r513
+mov r514 [wrapped_types@decimal]
+dmov [__temp__145] r514
+tyof r514
+equ r513 r514
+bneg r513
+jmp r513 .L124
+scope
+mov r516 [a@decimal]
+mov r517 [b@decimal]
+mul r516 r517
+mov r515 [decimal:r516]
+ret r515
+escope
+mov r518 [$true]
+jmp r518 .L122
+.L124
+mov r519 [b]
+dmov [__temp__146] r519
+tyof r519
+mov r520 [ct@integer_type]
+equ r519 r520
+bneg r519
+jmp r519 .L125
+scope
+mov r522 [a@decimal]
+mov r523 [b]
+mul r522 r523
+mov r521 [decimal:r522]
+ret r521
+escope
+mov r524 [$true]
+jmp r524 .L122
+.L125
+mov r525 [b]
+dmov [__temp__147] r525
+tyof r525
+mov r526 [ct@decimal_type]
+equ r525 r526
+bneg r525
+jmp r525 .L126
+scope
+mov r528 [a@decimal]
+mov r529 [b]
+mul r528 r529
+mov r527 [decimal:r528]
+ret r527
+escope
+mov r530 [$true]
+jmp r530 .L122
+.L126
+.L122
+escope
+mov r531 [$true]
+jmp r531 .L110
+.L121
+mov r532 [a]
+dmov [__temp__148] r532
+tyof r532
+mov r533 [ct@decimal_type]
+equ r532 r533
+bneg r532
+jmp r532 .L127
+scope
+mov r534 [b]
+dmov [__temp__149] r534
+tyof r534
+mov r535 [wrapped_types@decimal]
+dmov [__temp__150] r535
+tyof r535
+equ r534 r535
+bneg r534
+jmp r534 .L129
+scope
+mov r537 [a]
+mov r538 [b@decimal]
+mul r537 r538
+mov r536 [decimal:r537]
+ret r536
+escope
+mov r539 [$true]
+jmp r539 .L128
+.L129
+mov r540 [b]
+dmov [__temp__151] r540
+tyof r540
+mov r541 [wrapped_types@int]
+dmov [__temp__152] r541
+tyof r541
+equ r540 r541
+bneg r540
+jmp r540 .L130
+scope
+mov r543 [a]
+mov r544 [b@int]
+mul r543 r544
+mov r542 [decimal:r543]
+ret r542
+escope
+mov r545 [$true]
+jmp r545 .L128
+.L130
+.L128
+escope
+mov r546 [$true]
+jmp r546 .L110
+.L127
+.L110
+mov r547 [$nil]
+ret r547
+efunc
+ifunc __multiply_equals__ a b 
+mov r549 [a]
+mov r548 [is_pure:r549]
+mov r551 [b]
+mov r550 [is_pure:r551]
+lor r548 r550
+bneg r548
+jmp r548 .L132
+scope
+mov r552 [$nil]
+ret r552
+escope
+mov r553 [$true]
+jmp r553 .L131
+.L132
+.L131
+mov r554 [a]
+dmov [__temp__153] r554
+tyof r554
+mov r555 [wrapped_types@int]
+dmov [__temp__154] r555
+tyof r555
+equ r554 r555
+bneg r554
+jmp r554 .L134
+scope
+mov r556 [b]
+dmov [__temp__155] r556
+tyof r556
+mov r557 [wrapped_types@int]
+dmov [__temp__156] r557
+tyof r557
+equ r556 r557
+bneg r556
+jmp r556 .L136
+scope
+mov r558 [a@int]
+mov r559 [b@int]
+mule [a@int] r559
+mov r560 [a]
+ret r560
+escope
+mov r561 [$true]
+jmp r561 .L135
+.L136
+mov r562 [b]
+dmov [__temp__157] r562
+tyof r562
+mov r563 [wrapped_types@decimal]
+dmov [__temp__158] r563
+tyof r563
+equ r562 r563
+bneg r562
+jmp r562 .L137
+scope
+mov r564 [a@int]
+mov r565 [b@decimal]
+mule [a@int] r565
+mov r566 [a]
+ret r566
+escope
+mov r567 [$true]
+jmp r567 .L135
+.L137
+mov r568 [b]
+dmov [__temp__159] r568
+tyof r568
+mov r569 [ct@integer_type]
+equ r568 r569
+bneg r568
+jmp r568 .L138
+scope
+mov r570 [a@int]
+mov r571 [b]
+mule [a@int] r571
+mov r572 [a]
+ret r572
+escope
+mov r573 [$true]
+jmp r573 .L135
+.L138
+mov r574 [b]
+dmov [__temp__160] r574
+tyof r574
+mov r575 [ct@decimal_type]
+equ r574 r575
+bneg r574
+jmp r574 .L139
+scope
+mov r576 [a@int]
+mov r577 [b]
+mule [a@int] r577
+mov r578 [a]
+ret r578
+escope
+mov r579 [$true]
+jmp r579 .L135
+.L139
+.L135
+escope
+mov r580 [$true]
+jmp r580 .L133
+.L134
+mov r581 [a]
+dmov [__temp__161] r581
+tyof r581
+mov r582 [ct@integer_type]
+equ r581 r582
+bneg r581
+jmp r581 .L140
+scope
+mov r583 [b]
+dmov [__temp__162] r583
+tyof r583
+mov r584 [wrapped_types@int]
+dmov [__temp__163] r584
+tyof r584
+equ r583 r584
+bneg r583
+jmp r583 .L142
+scope
+mov r585 [a]
+mov r586 [b@int]
+mule [a] r586
+mov r587 [a]
+ret r587
+escope
+mov r588 [$true]
+jmp r588 .L141
+.L142
+mov r589 [b]
+dmov [__temp__164] r589
+tyof r589
+mov r590 [wrapped_types@decimal]
+dmov [__temp__165] r590
+tyof r590
+equ r589 r590
+bneg r589
+jmp r589 .L143
+scope
+mov r591 [a]
+mov r592 [b@decimal]
+mule [a] r592
+mov r593 [a]
+ret r593
+escope
+mov r594 [$true]
+jmp r594 .L141
+.L143
+.L141
+escope
+mov r595 [$true]
+jmp r595 .L133
+.L140
+mov r596 [a]
+dmov [__temp__166] r596
+tyof r596
+mov r597 [wrapped_types@decimal]
+dmov [__temp__167] r597
+tyof r597
+equ r596 r597
+bneg r596
+jmp r596 .L144
+scope
+mov r598 [b]
+dmov [__temp__168] r598
+tyof r598
+mov r599 [wrapped_types@int]
+dmov [__temp__169] r599
+tyof r599
+equ r598 r599
+bneg r598
+jmp r598 .L146
+scope
+mov r600 [a@decimal]
+mov r601 [b@int]
+mule [a@decimal] r601
+mov r602 [a]
+ret r602
+escope
+mov r603 [$true]
+jmp r603 .L145
+.L146
+mov r604 [b]
+dmov [__temp__170] r604
+tyof r604
+mov r605 [wrapped_types@decimal]
+dmov [__temp__171] r605
+tyof r605
+equ r604 r605
+bneg r604
+jmp r604 .L147
+scope
+mov r606 [a@decimal]
+mov r607 [b@decimal]
+mule [a@decimal] r607
+mov r608 [a]
+ret r608
+escope
+mov r609 [$true]
+jmp r609 .L145
+.L147
+mov r610 [b]
+dmov [__temp__172] r610
+tyof r610
+mov r611 [ct@integer_type]
+equ r610 r611
+bneg r610
+jmp r610 .L148
+scope
+mov r612 [a@decimal]
+mov r613 [b]
+mule [a@decimal] r613
+mov r614 [a]
+ret r614
+escope
+mov r615 [$true]
+jmp r615 .L145
+.L148
+mov r616 [b]
+dmov [__temp__173] r616
+tyof r616
+mov r617 [ct@decimal_type]
+equ r616 r617
+bneg r616
+jmp r616 .L149
+scope
+mov r618 [a@decimal]
+mov r619 [b]
+mule [a@decimal] r619
+mov r620 [a]
+ret r620
+escope
+mov r621 [$true]
+jmp r621 .L145
+.L149
+.L145
+escope
+mov r622 [$true]
+jmp r622 .L133
+.L144
+mov r623 [a]
+dmov [__temp__174] r623
+tyof r623
+mov r624 [ct@decimal_type]
+equ r623 r624
+bneg r623
+jmp r623 .L150
+scope
+mov r625 [b]
+dmov [__temp__175] r625
+tyof r625
+mov r626 [wrapped_types@decimal]
+dmov [__temp__176] r626
+tyof r626
+equ r625 r626
+bneg r625
+jmp r625 .L152
+scope
+mov r627 [a]
+mov r628 [b@decimal]
+mule [a] r628
+ret r627
+mov r629 [a]
+ret r629
+escope
+mov r630 [$true]
+jmp r630 .L151
+.L152
+mov r631 [b]
+dmov [__temp__177] r631
+tyof r631
+mov r632 [wrapped_types@int]
+dmov [__temp__178] r632
+tyof r632
+equ r631 r632
+bneg r631
+jmp r631 .L153
+scope
+mov r633 [a]
+mov r634 [b@int]
+mule [a] r634
+ret r633
+mov r635 [a]
+ret r635
+escope
+mov r636 [$true]
+jmp r636 .L151
+.L153
+.L151
+escope
+mov r637 [$true]
+jmp r637 .L133
+.L150
+.L133
+mov r638 [$nil]
+ret r638
+efunc
+ifunc __divide__ a b 
+mov r640 [a]
+mov r639 [is_pure:r640]
+mov r642 [b]
+mov r641 [is_pure:r642]
+lor r639 r641
+bneg r639
+jmp r639 .L155
+scope
+mov r643 [$nil]
+ret r643
+escope
+mov r644 [$true]
+jmp r644 .L154
+.L155
+.L154
+mov r645 [a]
+dmov [__temp__179] r645
+tyof r645
+mov r646 [wrapped_types@int]
+dmov [__temp__180] r646
+tyof r646
+equ r645 r646
+bneg r645
+jmp r645 .L157
+scope
+mov r647 [b]
+dmov [__temp__181] r647
+tyof r647
+mov r648 [wrapped_types@int]
+dmov [__temp__182] r648
+tyof r648
+equ r647 r648
+bneg r647
+jmp r647 .L159
+scope
+mov r650 [a@int]
+mov r651 [b@int]
+div r650 r651
+mov r649 [int:r650]
+ret r649
+escope
+mov r652 [$true]
+jmp r652 .L158
+.L159
+mov r653 [b]
+dmov [__temp__183] r653
+tyof r653
+mov r654 [wrapped_types@decimal]
+dmov [__temp__184] r654
+tyof r654
+equ r653 r654
+bneg r653
+jmp r653 .L160
+scope
+mov r656 [b@decimal]
+mov r657 [a@int]
+div r656 r657
+mov r655 [decimal:r656]
+ret r655
+escope
+mov r658 [$true]
+jmp r658 .L158
+.L160
+mov r659 [b]
+dmov [__temp__185] r659
+tyof r659
+mov r660 [ct@integer_type]
+equ r659 r660
+bneg r659
+jmp r659 .L161
+scope
+mov r662 [a@int]
+mov r663 [b]
+div r662 r663
+mov r661 [int:r662]
+ret r661
+escope
+mov r664 [$true]
+jmp r664 .L158
+.L161
+mov r665 [b]
+dmov [__temp__186] r665
+tyof r665
+mov r666 [ct@decimal_type]
+equ r665 r666
+bneg r665
+jmp r665 .L162
+scope
+mov r668 [b]
+mov r669 [a@int]
+div r668 r669
+mov r667 [decimal:r668]
+ret r667
+escope
+mov r670 [$true]
+jmp r670 .L158
+.L162
+.L158
+escope
+mov r671 [$true]
+jmp r671 .L156
+.L157
+mov r672 [a]
+dmov [__temp__187] r672
+tyof r672
+mov r673 [ct@integer_type]
+equ r672 r673
+bneg r672
+jmp r672 .L163
+scope
+mov r674 [b]
+dmov [__temp__188] r674
+tyof r674
+mov r675 [wrapped_types@int]
+dmov [__temp__189] r675
+tyof r675
+equ r674 r675
+bneg r674
+jmp r674 .L165
+scope
+mov r677 [b@int]
+mov r678 [a]
+div r677 r678
+mov r676 [int:r677]
+ret r676
+escope
+mov r679 [$true]
+jmp r679 .L164
+.L165
+mov r680 [b]
+dmov [__temp__190] r680
+tyof r680
+mov r681 [wrapped_types@decimal]
+dmov [__temp__191] r681
+tyof r681
+equ r680 r681
+bneg r680
+jmp r680 .L166
+scope
+mov r683 [b@decimal]
+mov r684 [a]
+div r683 r684
+mov r682 [decimal:r683]
+ret r682
+escope
+mov r685 [$true]
+jmp r685 .L164
+.L166
+.L164
+escope
+mov r686 [$true]
+jmp r686 .L156
+.L163
+mov r687 [a]
+dmov [__temp__192] r687
+tyof r687
+mov r688 [wrapped_types@decimal]
+dmov [__temp__193] r688
+tyof r688
+equ r687 r688
+bneg r687
+jmp r687 .L167
+scope
+mov r689 [b]
+dmov [__temp__194] r689
+tyof r689
+mov r690 [wrapped_types@int]
+dmov [__temp__195] r690
+tyof r690
+equ r689 r690
+bneg r689
+jmp r689 .L169
+scope
+mov r692 [a@decimal]
+mov r693 [b@int]
+div r692 r693
+mov r691 [decimal:r692]
+ret r691
+escope
+mov r694 [$true]
+jmp r694 .L168
+.L169
+mov r695 [b]
+dmov [__temp__196] r695
+tyof r695
+mov r696 [wrapped_types@decimal]
+dmov [__temp__197] r696
+tyof r696
+equ r695 r696
+bneg r695
+jmp r695 .L170
+scope
+mov r698 [a@decimal]
+mov r699 [b@decimal]
+div r698 r699
+mov r697 [decimal:r698]
+ret r697
+escope
+mov r700 [$true]
+jmp r700 .L168
+.L170
+mov r701 [b]
+dmov [__temp__198] r701
+tyof r701
+mov r702 [ct@integer_type]
+equ r701 r702
+bneg r701
+jmp r701 .L171
+scope
+mov r704 [a@decimal]
+mov r705 [b]
+div r704 r705
+mov r703 [decimal:r704]
+ret r703
+escope
+mov r706 [$true]
+jmp r706 .L168
+.L171
+mov r707 [b]
+dmov [__temp__199] r707
+tyof r707
+mov r708 [ct@decimal_type]
+equ r707 r708
+bneg r707
+jmp r707 .L172
+scope
+mov r710 [a@decimal]
+mov r711 [b]
+div r710 r711
+mov r709 [decimal:r710]
+ret r709
+escope
+mov r712 [$true]
+jmp r712 .L168
+.L172
+.L168
+escope
+mov r713 [$true]
+jmp r713 .L156
+.L167
+mov r714 [a]
+dmov [__temp__200] r714
+tyof r714
+mov r715 [ct@decimal_type]
+equ r714 r715
+bneg r714
+jmp r714 .L173
+scope
+mov r716 [b]
+dmov [__temp__201] r716
+tyof r716
+mov r717 [wrapped_types@decimal]
+dmov [__temp__202] r717
+tyof r717
+equ r716 r717
+bneg r716
+jmp r716 .L175
+scope
+mov r719 [a]
+mov r720 [b@decimal]
+div r719 r720
+mov r718 [decimal:r719]
+ret r718
+escope
+mov r721 [$true]
+jmp r721 .L174
+.L175
+mov r722 [b]
+dmov [__temp__203] r722
+tyof r722
+mov r723 [wrapped_types@int]
+dmov [__temp__204] r723
+tyof r723
+equ r722 r723
+bneg r722
+jmp r722 .L176
+scope
+mov r725 [a]
+mov r726 [b@int]
+div r725 r726
+mov r724 [decimal:r725]
+ret r724
+escope
+mov r727 [$true]
+jmp r727 .L174
+.L176
+.L174
+escope
+mov r728 [$true]
+jmp r728 .L156
+.L173
+.L156
+mov r729 [$nil]
+ret r729
+efunc
+ifunc __divide_equals__ a b 
+mov r731 [a]
+mov r730 [is_pure:r731]
+mov r733 [b]
+mov r732 [is_pure:r733]
+lor r730 r732
+bneg r730
+jmp r730 .L178
+scope
+mov r734 [$nil]
+ret r734
+escope
+mov r735 [$true]
+jmp r735 .L177
+.L178
+.L177
+mov r736 [a]
+dmov [__temp__205] r736
+tyof r736
+mov r737 [wrapped_types@int]
+dmov [__temp__206] r737
+tyof r737
+equ r736 r737
+bneg r736
+jmp r736 .L180
+scope
+mov r738 [b]
+dmov [__temp__207] r738
+tyof r738
+mov r739 [wrapped_types@int]
+dmov [__temp__208] r739
+tyof r739
+equ r738 r739
+bneg r738
+jmp r738 .L182
+scope
+mov r740 [a@int]
+mov r741 [b@int]
+dive [a@int] r741
+mov r742 [a]
+ret r742
+escope
+mov r743 [$true]
+jmp r743 .L181
+.L182
+mov r744 [b]
+dmov [__temp__209] r744
+tyof r744
+mov r745 [wrapped_types@decimal]
+dmov [__temp__210] r745
+tyof r745
+equ r744 r745
+bneg r744
+jmp r744 .L183
+scope
+mov r746 [a@int]
+mov r747 [b@decimal]
+dive [a@int] r747
+mov r748 [a]
+ret r748
+escope
+mov r749 [$true]
+jmp r749 .L181
+.L183
+mov r750 [b]
+dmov [__temp__211] r750
+tyof r750
+mov r751 [ct@integer_type]
+equ r750 r751
+bneg r750
+jmp r750 .L184
+scope
+mov r752 [a@int]
+mov r753 [b]
+dive [a@int] r753
+mov r754 [a]
+ret r754
+escope
+mov r755 [$true]
+jmp r755 .L181
+.L184
+mov r756 [b]
+dmov [__temp__212] r756
+tyof r756
+mov r757 [ct@decimal_type]
+equ r756 r757
+bneg r756
+jmp r756 .L185
+scope
+mov r758 [a@int]
+mov r759 [b]
+dive [a@int] r759
+mov r760 [a]
+ret r760
+escope
+mov r761 [$true]
+jmp r761 .L181
+.L185
+.L181
+escope
+mov r762 [$true]
+jmp r762 .L179
+.L180
+mov r763 [a]
+dmov [__temp__213] r763
+tyof r763
+mov r764 [ct@integer_type]
+equ r763 r764
+bneg r763
+jmp r763 .L186
+scope
+mov r765 [b]
+dmov [__temp__214] r765
+tyof r765
+mov r766 [wrapped_types@int]
+dmov [__temp__215] r766
+tyof r766
+equ r765 r766
+bneg r765
+jmp r765 .L188
+scope
+mov r767 [a]
+mov r768 [b@int]
+dive [a] r768
+mov r769 [a]
+ret r769
+escope
+mov r770 [$true]
+jmp r770 .L187
+.L188
+mov r771 [b]
+dmov [__temp__216] r771
+tyof r771
+mov r772 [wrapped_types@decimal]
+dmov [__temp__217] r772
+tyof r772
+equ r771 r772
+bneg r771
+jmp r771 .L189
+scope
+mov r773 [a]
+mov r774 [b@decimal]
+dive [a] r774
+mov r775 [a]
+ret r775
+escope
+mov r776 [$true]
+jmp r776 .L187
+.L189
+.L187
+escope
+mov r777 [$true]
+jmp r777 .L179
+.L186
+mov r778 [a]
+dmov [__temp__218] r778
+tyof r778
+mov r779 [wrapped_types@decimal]
+dmov [__temp__219] r779
+tyof r779
+equ r778 r779
+bneg r778
+jmp r778 .L190
+scope
+mov r780 [b]
+dmov [__temp__220] r780
+tyof r780
+mov r781 [wrapped_types@int]
+dmov [__temp__221] r781
+tyof r781
+equ r780 r781
+bneg r780
+jmp r780 .L192
+scope
+mov r782 [a@decimal]
+mov r783 [b@int]
+dive [a@decimal] r783
+mov r784 [a]
+ret r784
+escope
+mov r785 [$true]
+jmp r785 .L191
+.L192
+mov r786 [b]
+dmov [__temp__222] r786
+tyof r786
+mov r787 [wrapped_types@decimal]
+dmov [__temp__223] r787
+tyof r787
+equ r786 r787
+bneg r786
+jmp r786 .L193
+scope
+mov r788 [a@decimal]
+mov r789 [b@decimal]
+dive [a@decimal] r789
+mov r790 [a]
+ret r790
+escope
+mov r791 [$true]
+jmp r791 .L191
+.L193
+mov r792 [b]
+dmov [__temp__224] r792
+tyof r792
+mov r793 [ct@integer_type]
+equ r792 r793
+bneg r792
+jmp r792 .L194
+scope
+mov r794 [a@decimal]
+mov r795 [b]
+dive [a@decimal] r795
+mov r796 [a]
+ret r796
+escope
+mov r797 [$true]
+jmp r797 .L191
+.L194
+mov r798 [b]
+dmov [__temp__225] r798
+tyof r798
+mov r799 [ct@decimal_type]
+equ r798 r799
+bneg r798
+jmp r798 .L195
+scope
+mov r800 [a@decimal]
+mov r801 [b]
+dive [a@decimal] r801
+mov r802 [a]
+ret r802
+escope
+mov r803 [$true]
+jmp r803 .L191
+.L195
+.L191
+escope
+mov r804 [$true]
+jmp r804 .L179
+.L190
+mov r805 [a]
+dmov [__temp__226] r805
+tyof r805
+mov r806 [ct@decimal_type]
+equ r805 r806
+bneg r805
+jmp r805 .L196
+scope
+mov r807 [b]
+dmov [__temp__227] r807
+tyof r807
+mov r808 [wrapped_types@decimal]
+dmov [__temp__228] r808
+tyof r808
+equ r807 r808
+bneg r807
+jmp r807 .L198
+scope
+mov r809 [a]
+mov r810 [b@decimal]
+dive [a] r810
+ret r809
+mov r811 [a]
+ret r811
+escope
+mov r812 [$true]
+jmp r812 .L197
+.L198
+mov r813 [b]
+dmov [__temp__229] r813
+tyof r813
+mov r814 [wrapped_types@int]
+dmov [__temp__230] r814
+tyof r814
+equ r813 r814
+bneg r813
+jmp r813 .L199
+scope
+mov r815 [a]
+mov r816 [b@int]
+dive [a] r816
+ret r815
+mov r817 [a]
+ret r817
+escope
+mov r818 [$true]
+jmp r818 .L197
+.L199
+.L197
+escope
+mov r819 [$true]
+jmp r819 .L179
+.L196
+.L179
+mov r820 [$nil]
+ret r820
+efunc
+ifunc __exponent__ a b 
+mov r822 [a]
+mov r821 [is_pure:r822]
+mov r824 [b]
+mov r823 [is_pure:r824]
+lor r821 r823
+bneg r821
+jmp r821 .L201
+scope
+mov r825 [$nil]
+ret r825
+escope
+mov r826 [$true]
+jmp r826 .L200
+.L201
+.L200
+mov r827 [a]
+dmov [__temp__231] r827
+tyof r827
+mov r828 [wrapped_types@int]
+dmov [__temp__232] r828
+tyof r828
+equ r827 r828
+bneg r827
+jmp r827 .L203
+scope
+mov r829 [b]
+dmov [__temp__233] r829
+tyof r829
+mov r830 [wrapped_types@int]
+dmov [__temp__234] r830
+tyof r830
+equ r829 r830
+bneg r829
+jmp r829 .L205
+scope
+mov r832 [a@int]
+mov r833 [b@int]
+exp r832 r833
+mov r831 [int:r832]
+ret r831
+escope
+mov r834 [$true]
+jmp r834 .L204
+.L205
+mov r835 [b]
+dmov [__temp__235] r835
+tyof r835
+mov r836 [wrapped_types@decimal]
+dmov [__temp__236] r836
+tyof r836
+equ r835 r836
+bneg r835
+jmp r835 .L206
+scope
+mov r838 [b@decimal]
+mov r839 [a@int]
+exp r838 r839
+mov r837 [decimal:r838]
+ret r837
+escope
+mov r840 [$true]
+jmp r840 .L204
+.L206
+mov r841 [b]
+dmov [__temp__237] r841
+tyof r841
+mov r842 [ct@integer_type]
+equ r841 r842
+bneg r841
+jmp r841 .L207
+scope
+mov r844 [a@int]
+mov r845 [b]
+exp r844 r845
+mov r843 [int:r844]
+ret r843
+escope
+mov r846 [$true]
+jmp r846 .L204
+.L207
+mov r847 [b]
+dmov [__temp__238] r847
+tyof r847
+mov r848 [ct@decimal_type]
+equ r847 r848
+bneg r847
+jmp r847 .L208
+scope
+mov r850 [b]
+mov r851 [a@int]
+exp r850 r851
+mov r849 [decimal:r850]
+ret r849
+escope
+mov r852 [$true]
+jmp r852 .L204
+.L208
+.L204
+escope
+mov r853 [$true]
+jmp r853 .L202
+.L203
+mov r854 [a]
+dmov [__temp__239] r854
+tyof r854
+mov r855 [ct@integer_type]
+equ r854 r855
+bneg r854
+jmp r854 .L209
+scope
+mov r856 [b]
+dmov [__temp__240] r856
+tyof r856
+mov r857 [wrapped_types@int]
+dmov [__temp__241] r857
+tyof r857
+equ r856 r857
+bneg r856
+jmp r856 .L211
+scope
+mov r859 [b@int]
+mov r860 [a]
+exp r859 r860
+mov r858 [int:r859]
+ret r858
+escope
+mov r861 [$true]
+jmp r861 .L210
+.L211
+mov r862 [b]
+dmov [__temp__242] r862
+tyof r862
+mov r863 [wrapped_types@decimal]
+dmov [__temp__243] r863
+tyof r863
+equ r862 r863
+bneg r862
+jmp r862 .L212
+scope
+mov r865 [b@decimal]
+mov r866 [a]
+exp r865 r866
+mov r864 [decimal:r865]
+ret r864
+escope
+mov r867 [$true]
+jmp r867 .L210
+.L212
+.L210
+escope
+mov r868 [$true]
+jmp r868 .L202
+.L209
+mov r869 [a]
+dmov [__temp__244] r869
+tyof r869
+mov r870 [wrapped_types@decimal]
+dmov [__temp__245] r870
+tyof r870
+equ r869 r870
+bneg r869
+jmp r869 .L213
+scope
+mov r871 [b]
+dmov [__temp__246] r871
+tyof r871
+mov r872 [wrapped_types@int]
+dmov [__temp__247] r872
+tyof r872
+equ r871 r872
+bneg r871
+jmp r871 .L215
+scope
+mov r874 [a@decimal]
+mov r875 [b@int]
+exp r874 r875
+mov r873 [decimal:r874]
+ret r873
+escope
+mov r876 [$true]
+jmp r876 .L214
+.L215
+mov r877 [b]
+dmov [__temp__248] r877
+tyof r877
+mov r878 [wrapped_types@decimal]
+dmov [__temp__249] r878
+tyof r878
+equ r877 r878
+bneg r877
+jmp r877 .L216
+scope
+mov r880 [a@decimal]
+mov r881 [b@decimal]
+exp r880 r881
+mov r879 [decimal:r880]
+ret r879
+escope
+mov r882 [$true]
+jmp r882 .L214
+.L216
+mov r883 [b]
+dmov [__temp__250] r883
+tyof r883
+mov r884 [ct@integer_type]
+equ r883 r884
+bneg r883
+jmp r883 .L217
+scope
+mov r886 [a@decimal]
+mov r887 [b]
+exp r886 r887
+mov r885 [decimal:r886]
+ret r885
+escope
+mov r888 [$true]
+jmp r888 .L214
+.L217
+mov r889 [b]
+dmov [__temp__251] r889
+tyof r889
+mov r890 [ct@decimal_type]
+equ r889 r890
+bneg r889
+jmp r889 .L218
+scope
+mov r892 [a@decimal]
+mov r893 [b]
+exp r892 r893
+mov r891 [decimal:r892]
+ret r891
+escope
+mov r894 [$true]
+jmp r894 .L214
+.L218
+.L214
+escope
+mov r895 [$true]
+jmp r895 .L202
+.L213
+mov r896 [a]
+dmov [__temp__252] r896
+tyof r896
+mov r897 [ct@decimal_type]
+equ r896 r897
+bneg r896
+jmp r896 .L219
+scope
+mov r898 [b]
+dmov [__temp__253] r898
+tyof r898
+mov r899 [wrapped_types@decimal]
+dmov [__temp__254] r899
+tyof r899
+equ r898 r899
+bneg r898
+jmp r898 .L221
+scope
+mov r901 [a]
+mov r902 [b@decimal]
+exp r901 r902
+mov r900 [decimal:r901]
+ret r900
+escope
+mov r903 [$true]
+jmp r903 .L220
+.L221
+mov r904 [b]
+dmov [__temp__255] r904
+tyof r904
+mov r905 [wrapped_types@int]
+dmov [__temp__256] r905
+tyof r905
+equ r904 r905
+bneg r904
+jmp r904 .L222
+scope
+mov r907 [a]
+mov r908 [b@int]
+exp r907 r908
+mov r906 [decimal:r907]
+ret r906
+escope
+mov r909 [$true]
+jmp r909 .L220
+.L222
+.L220
+escope
+mov r910 [$true]
+jmp r910 .L202
+.L219
+.L202
+mov r911 [$nil]
+ret r911
+efunc
+ifunc __exponent_equals__ a b 
+mov r913 [a]
+mov r912 [is_pure:r913]
+mov r915 [b]
+mov r914 [is_pure:r915]
+lor r912 r914
+bneg r912
+jmp r912 .L224
+scope
+mov r916 [$nil]
+ret r916
+escope
+mov r917 [$true]
+jmp r917 .L223
+.L224
+.L223
+mov r918 [a]
+dmov [__temp__257] r918
+tyof r918
+mov r919 [wrapped_types@int]
+dmov [__temp__258] r919
+tyof r919
+equ r918 r919
+bneg r918
+jmp r918 .L226
+scope
+mov r920 [b]
+dmov [__temp__259] r920
+tyof r920
+mov r921 [wrapped_types@int]
+dmov [__temp__260] r921
+tyof r921
+equ r920 r921
+bneg r920
+jmp r920 .L228
+scope
+mov r922 [a@int]
+mov r923 [b@int]
+expe [a@int] r923
+mov r924 [a]
+ret r924
+escope
+mov r925 [$true]
+jmp r925 .L227
+.L228
+mov r926 [b]
+dmov [__temp__261] r926
+tyof r926
+mov r927 [wrapped_types@decimal]
+dmov [__temp__262] r927
+tyof r927
+equ r926 r927
+bneg r926
+jmp r926 .L229
+scope
+mov r928 [a@int]
+mov r929 [b@decimal]
+expe [a@int] r929
+mov r930 [a]
+ret r930
+escope
+mov r931 [$true]
+jmp r931 .L227
+.L229
+mov r932 [b]
+dmov [__temp__263] r932
+tyof r932
+mov r933 [ct@integer_type]
+equ r932 r933
+bneg r932
+jmp r932 .L230
+scope
+mov r934 [a@int]
+mov r935 [b]
+expe [a@int] r935
+mov r936 [a]
+ret r936
+escope
+mov r937 [$true]
+jmp r937 .L227
+.L230
+mov r938 [b]
+dmov [__temp__264] r938
+tyof r938
+mov r939 [ct@decimal_type]
+equ r938 r939
+bneg r938
+jmp r938 .L231
+scope
+mov r940 [a@int]
+mov r941 [b]
+expe [a@int] r941
+mov r942 [a]
+ret r942
+escope
+mov r943 [$true]
+jmp r943 .L227
+.L231
+.L227
+escope
+mov r944 [$true]
+jmp r944 .L225
+.L226
+mov r945 [a]
+dmov [__temp__265] r945
+tyof r945
+mov r946 [ct@integer_type]
+equ r945 r946
+bneg r945
+jmp r945 .L232
+scope
+mov r947 [b]
+dmov [__temp__266] r947
+tyof r947
+mov r948 [wrapped_types@int]
+dmov [__temp__267] r948
+tyof r948
+equ r947 r948
+bneg r947
+jmp r947 .L234
+scope
+mov r949 [a]
+mov r950 [b@int]
+expe [a] r950
+mov r951 [a]
+ret r951
+escope
+mov r952 [$true]
+jmp r952 .L233
+.L234
+mov r953 [b]
+dmov [__temp__268] r953
+tyof r953
+mov r954 [wrapped_types@decimal]
+dmov [__temp__269] r954
+tyof r954
+equ r953 r954
+bneg r953
+jmp r953 .L235
+scope
+mov r955 [a]
+mov r956 [b@decimal]
+expe [a] r956
+mov r957 [a]
+ret r957
+escope
+mov r958 [$true]
+jmp r958 .L233
+.L235
+.L233
+escope
+mov r959 [$true]
+jmp r959 .L225
+.L232
+mov r960 [a]
+dmov [__temp__270] r960
+tyof r960
+mov r961 [wrapped_types@decimal]
+dmov [__temp__271] r961
+tyof r961
+equ r960 r961
+bneg r960
+jmp r960 .L236
+scope
+mov r962 [b]
+dmov [__temp__272] r962
+tyof r962
+mov r963 [wrapped_types@int]
+dmov [__temp__273] r963
+tyof r963
+equ r962 r963
+bneg r962
+jmp r962 .L238
+scope
+mov r964 [a@decimal]
+mov r965 [b@int]
+expe [a@decimal] r965
+mov r966 [a]
+ret r966
+escope
+mov r967 [$true]
+jmp r967 .L237
+.L238
+mov r968 [b]
+dmov [__temp__274] r968
+tyof r968
+mov r969 [wrapped_types@decimal]
+dmov [__temp__275] r969
+tyof r969
+equ r968 r969
+bneg r968
+jmp r968 .L239
+scope
+mov r970 [a@decimal]
+mov r971 [b@decimal]
+expe [a@decimal] r971
+mov r972 [a]
+ret r972
+escope
+mov r973 [$true]
+jmp r973 .L237
+.L239
+mov r974 [b]
+dmov [__temp__276] r974
+tyof r974
+mov r975 [ct@integer_type]
+equ r974 r975
+bneg r974
+jmp r974 .L240
+scope
+mov r976 [a@decimal]
+mov r977 [b]
+expe [a@decimal] r977
+mov r978 [a]
+ret r978
+escope
+mov r979 [$true]
+jmp r979 .L237
+.L240
+mov r980 [b]
+dmov [__temp__277] r980
+tyof r980
+mov r981 [ct@decimal_type]
+equ r980 r981
+bneg r980
+jmp r980 .L241
+scope
+mov r982 [a@decimal]
+mov r983 [b]
+expe [a@decimal] r983
+mov r984 [a]
+ret r984
+escope
+mov r985 [$true]
+jmp r985 .L237
+.L241
+.L237
+escope
+mov r986 [$true]
+jmp r986 .L225
+.L236
+mov r987 [a]
+dmov [__temp__278] r987
+tyof r987
+mov r988 [ct@decimal_type]
+equ r987 r988
+bneg r987
+jmp r987 .L242
+scope
+mov r989 [b]
+dmov [__temp__279] r989
+tyof r989
+mov r990 [wrapped_types@decimal]
+dmov [__temp__280] r990
+tyof r990
+equ r989 r990
+bneg r989
+jmp r989 .L244
+scope
+mov r991 [a]
+mov r992 [b@decimal]
+expe [a] r992
+ret r991
+mov r993 [a]
+ret r993
+escope
+mov r994 [$true]
+jmp r994 .L243
+.L244
+mov r995 [b]
+dmov [__temp__281] r995
+tyof r995
+mov r996 [wrapped_types@int]
+dmov [__temp__282] r996
+tyof r996
+equ r995 r996
+bneg r995
+jmp r995 .L245
+scope
+mov r997 [a]
+mov r998 [b@int]
+expe [a] r998
+ret r997
+mov r999 [a]
+ret r999
+escope
+mov r1000 [$true]
+jmp r1000 .L243
+.L245
+.L243
+escope
+mov r1001 [$true]
+jmp r1001 .L225
+.L242
+.L225
+mov r1002 [$nil]
+ret r1002
+efunc
+ifunc __modulus__ a b 
+mov r1004 [a]
+mov r1003 [is_pure:r1004]
+mov r1006 [b]
+mov r1005 [is_pure:r1006]
+lor r1003 r1005
+bneg r1003
+jmp r1003 .L247
+scope
+mov r1007 [$nil]
+ret r1007
+escope
+mov r1008 [$true]
+jmp r1008 .L246
+.L247
+.L246
+mov r1009 [a]
+dmov [__temp__283] r1009
+tyof r1009
+mov r1010 [wrapped_types@int]
+dmov [__temp__284] r1010
+tyof r1010
+equ r1009 r1010
+bneg r1009
+jmp r1009 .L249
+scope
+mov r1011 [b]
+dmov [__temp__285] r1011
+tyof r1011
+mov r1012 [ct@integer_type]
+equ r1011 r1012
+bneg r1011
+jmp r1011 .L251
+scope
+mov r1014 [a@int]
+mov r1015 [b]
+mod r1014 r1015
+mov r1013 [int:r1014]
+ret r1013
+escope
+mov r1016 [$true]
+jmp r1016 .L250
+.L251
+mov r1017 [b]
+dmov [__temp__286] r1017
+tyof r1017
+mov r1018 [wrapped_types@int]
+dmov [__temp__287] r1018
+tyof r1018
+equ r1017 r1018
+bneg r1017
+jmp r1017 .L252
+scope
+mov r1020 [a@int]
+mov r1021 [b@int]
+mod r1020 r1021
+mov r1019 [int:r1020]
+ret r1019
+escope
+mov r1022 [$true]
+jmp r1022 .L250
+.L252
+.L250
+escope
+mov r1023 [$true]
+jmp r1023 .L248
+.L249
+mov r1024 [a]
+dmov [__temp__288] r1024
+tyof r1024
+mov r1025 [ct@integer_type]
+equ r1024 r1025
+bneg r1024
+jmp r1024 .L253
+scope
+mov r1026 [b]
+dmov [__temp__289] r1026
+tyof r1026
+mov r1027 [wrapped_types@int]
+dmov [__temp__290] r1027
+tyof r1027
+equ r1026 r1027
+bneg r1026
+jmp r1026 .L255
+scope
+mov r1029 [a]
+mov r1030 [b@int]
+mod r1029 r1030
+mov r1028 [int:r1029]
+ret r1028
+escope
+mov r1031 [$true]
+jmp r1031 .L254
+.L255
+.L254
+escope
+mov r1032 [$true]
+jmp r1032 .L248
+.L253
+.L248
+mov r1033 [$nil]
+ret r1033
+efunc
+ifunc __modulus_equals__ a b 
+mov r1035 [a]
+mov r1034 [is_pure:r1035]
+mov r1037 [b]
+mov r1036 [is_pure:r1037]
+lor r1034 r1036
+bneg r1034
+jmp r1034 .L257
+scope
+mov r1038 [$nil]
+ret r1038
+escope
+mov r1039 [$true]
+jmp r1039 .L256
+.L257
+.L256
+mov r1040 [a]
+dmov [__temp__291] r1040
+tyof r1040
+mov r1041 [wrapped_types@int]
+dmov [__temp__292] r1041
+tyof r1041
+equ r1040 r1041
+bneg r1040
+jmp r1040 .L259
+scope
+mov r1042 [b]
+dmov [__temp__293] r1042
+tyof r1042
+mov r1043 [ct@integer_type]
+equ r1042 r1043
+bneg r1042
+jmp r1042 .L261
+scope
+mov r1044 [a@int]
+mov r1045 [b]
+mode [a@int] r1045
+mov r1046 [a]
+ret r1046
+escope
+mov r1047 [$true]
+jmp r1047 .L260
+.L261
+mov r1048 [b]
+dmov [__temp__294] r1048
+tyof r1048
+mov r1049 [wrapped_types@int]
+dmov [__temp__295] r1049
+tyof r1049
+equ r1048 r1049
+bneg r1048
+jmp r1048 .L262
+scope
+mov r1050 [a@int]
+mov r1051 [b@int]
+mode [a@int] r1051
+mov r1052 [a]
+ret r1052
+escope
+mov r1053 [$true]
+jmp r1053 .L260
+.L262
+.L260
+escope
+mov r1054 [$true]
+jmp r1054 .L258
+.L259
+mov r1055 [a]
+dmov [__temp__296] r1055
+tyof r1055
+mov r1056 [ct@integer_type]
+equ r1055 r1056
+bneg r1055
+jmp r1055 .L263
+scope
+mov r1057 [b]
+dmov [__temp__297] r1057
+tyof r1057
+mov r1058 [wrapped_types@int]
+dmov [__temp__298] r1058
+tyof r1058
+equ r1057 r1058
+bneg r1057
+jmp r1057 .L265
+scope
+mov r1059 [a]
+mov r1060 [b@int]
+mode [a] r1060
+mov r1061 [a]
+ret r1061
+escope
+mov r1062 [$true]
+jmp r1062 .L264
+.L265
+.L264
+escope
+mov r1063 [$true]
+jmp r1063 .L258
+.L263
+.L258
+mov r1064 [$nil]
+ret r1064
+efunc
+ifunc __exclusive_or__ a b 
+mov r1066 [a]
+mov r1065 [is_pure:r1066]
+mov r1068 [b]
+mov r1067 [is_pure:r1068]
+lor r1065 r1067
+bneg r1065
+jmp r1065 .L267
+scope
+mov r1069 [$nil]
+ret r1069
+escope
+mov r1070 [$true]
+jmp r1070 .L266
+.L267
+.L266
+mov r1071 [a]
+dmov [__temp__299] r1071
+tyof r1071
+mov r1072 [wrapped_types@int]
+dmov [__temp__300] r1072
+tyof r1072
+equ r1071 r1072
+bneg r1071
+jmp r1071 .L269
+scope
+mov r1073 [b]
+dmov [__temp__301] r1073
+tyof r1073
+mov r1074 [ct@integer_type]
+equ r1073 r1074
+bneg r1073
+jmp r1073 .L271
+scope
+mov r1076 [a@int]
+mov r1077 [b]
+exor r1076 r1077
+mov r1075 [int:r1076]
+ret r1075
+escope
+mov r1078 [$true]
+jmp r1078 .L270
+.L271
+mov r1079 [b]
+dmov [__temp__302] r1079
+tyof r1079
+mov r1080 [wrapped_types@int]
+dmov [__temp__303] r1080
+tyof r1080
+equ r1079 r1080
+bneg r1079
+jmp r1079 .L272
+scope
+mov r1082 [a@int]
+mov r1083 [b@int]
+exor r1082 r1083
+mov r1081 [int:r1082]
+ret r1081
+escope
+mov r1084 [$true]
+jmp r1084 .L270
+.L272
+.L270
+escope
+mov r1085 [$true]
+jmp r1085 .L268
+.L269
+mov r1086 [a]
+dmov [__temp__304] r1086
+tyof r1086
+mov r1087 [ct@integer_type]
+equ r1086 r1087
+bneg r1086
+jmp r1086 .L273
+scope
+mov r1088 [b]
+dmov [__temp__305] r1088
+tyof r1088
+mov r1089 [wrapped_types@int]
+dmov [__temp__306] r1089
+tyof r1089
+equ r1088 r1089
+bneg r1088
+jmp r1088 .L275
+scope
+mov r1091 [a]
+mov r1092 [b@int]
+exor r1091 r1092
+mov r1090 [int:r1091]
+ret r1090
+escope
+mov r1093 [$true]
+jmp r1093 .L274
+.L275
+.L274
+escope
+mov r1094 [$true]
+jmp r1094 .L268
+.L273
+.L268
+mov r1095 [$nil]
+ret r1095
+efunc
+ifunc __exclusive_or_equals__ a b 
+mov r1097 [a]
+mov r1096 [is_pure:r1097]
+mov r1099 [b]
+mov r1098 [is_pure:r1099]
+lor r1096 r1098
+bneg r1096
+jmp r1096 .L277
+scope
+mov r1100 [$nil]
+ret r1100
+escope
+mov r1101 [$true]
+jmp r1101 .L276
+.L277
+.L276
+mov r1102 [a]
+dmov [__temp__307] r1102
+tyof r1102
+mov r1103 [wrapped_types@int]
+dmov [__temp__308] r1103
+tyof r1103
+equ r1102 r1103
+bneg r1102
+jmp r1102 .L279
+scope
+mov r1104 [b]
+dmov [__temp__309] r1104
+tyof r1104
+mov r1105 [ct@integer_type]
+equ r1104 r1105
+bneg r1104
+jmp r1104 .L281
+scope
+mov r1106 [a@int]
+mov r1107 [b]
+exore [a@int] r1107
+mov r1108 [a]
+ret r1108
+escope
+mov r1109 [$true]
+jmp r1109 .L280
+.L281
+mov r1110 [b]
+dmov [__temp__310] r1110
+tyof r1110
+mov r1111 [wrapped_types@int]
+dmov [__temp__311] r1111
+tyof r1111
+equ r1110 r1111
+bneg r1110
+jmp r1110 .L282
+scope
+mov r1112 [a@int]
+mov r1113 [b@int]
+exore [a@int] r1113
+mov r1114 [a]
+ret r1114
+escope
+mov r1115 [$true]
+jmp r1115 .L280
+.L282
+.L280
+escope
+mov r1116 [$true]
+jmp r1116 .L278
+.L279
+mov r1117 [a]
+dmov [__temp__312] r1117
+tyof r1117
+mov r1118 [ct@integer_type]
+equ r1117 r1118
+bneg r1117
+jmp r1117 .L283
+scope
+mov r1119 [b]
+dmov [__temp__313] r1119
+tyof r1119
+mov r1120 [wrapped_types@int]
+dmov [__temp__314] r1120
+tyof r1120
+equ r1119 r1120
+bneg r1119
+jmp r1119 .L285
+scope
+mov r1121 [a]
+mov r1122 [b@int]
+exore [a] r1122
+mov r1123 [a]
+ret r1123
+escope
+mov r1124 [$true]
+jmp r1124 .L284
+.L285
+.L284
+escope
+mov r1125 [$true]
+jmp r1125 .L278
+.L283
+.L278
+mov r1126 [$nil]
+ret r1126
+efunc
+ifunc __binary_or__ a b 
+mov r1128 [a]
+mov r1127 [is_pure:r1128]
+mov r1130 [b]
+mov r1129 [is_pure:r1130]
+lor r1127 r1129
+bneg r1127
+jmp r1127 .L287
+scope
+mov r1131 [$nil]
+ret r1131
+escope
+mov r1132 [$true]
+jmp r1132 .L286
+.L287
+.L286
+mov r1133 [a]
+dmov [__temp__315] r1133
+tyof r1133
+mov r1134 [wrapped_types@int]
+dmov [__temp__316] r1134
+tyof r1134
+equ r1133 r1134
+bneg r1133
+jmp r1133 .L289
+scope
+mov r1135 [b]
+dmov [__temp__317] r1135
+tyof r1135
+mov r1136 [ct@integer_type]
+equ r1135 r1136
+bneg r1135
+jmp r1135 .L291
+scope
+mov r1138 [a@int]
+mov r1139 [b]
+bor r1138 r1139
+mov r1137 [int:r1138]
+ret r1137
+escope
+mov r1140 [$true]
+jmp r1140 .L290
+.L291
+mov r1141 [b]
+dmov [__temp__318] r1141
+tyof r1141
+mov r1142 [wrapped_types@int]
+dmov [__temp__319] r1142
+tyof r1142
+equ r1141 r1142
+bneg r1141
+jmp r1141 .L292
+scope
+mov r1144 [a@int]
+mov r1145 [b@int]
+bor r1144 r1145
+mov r1143 [int:r1144]
+ret r1143
+escope
+mov r1146 [$true]
+jmp r1146 .L290
+.L292
+.L290
+escope
+mov r1147 [$true]
+jmp r1147 .L288
+.L289
+mov r1148 [a]
+dmov [__temp__320] r1148
+tyof r1148
+mov r1149 [ct@integer_type]
+equ r1148 r1149
+bneg r1148
+jmp r1148 .L293
+scope
+mov r1150 [b]
+dmov [__temp__321] r1150
+tyof r1150
+mov r1151 [wrapped_types@int]
+dmov [__temp__322] r1151
+tyof r1151
+equ r1150 r1151
+bneg r1150
+jmp r1150 .L295
+scope
+mov r1153 [a]
+mov r1154 [b@int]
+bor r1153 r1154
+mov r1152 [int:r1153]
+ret r1152
+escope
+mov r1155 [$true]
+jmp r1155 .L294
+.L295
+.L294
+escope
+mov r1156 [$true]
+jmp r1156 .L288
+.L293
+.L288
+mov r1157 [$nil]
+ret r1157
+efunc
+ifunc __binary_or_equals__ a b 
+mov r1159 [a]
+mov r1158 [is_pure:r1159]
+mov r1161 [b]
+mov r1160 [is_pure:r1161]
+lor r1158 r1160
+bneg r1158
+jmp r1158 .L297
+scope
+mov r1162 [$nil]
+ret r1162
+escope
+mov r1163 [$true]
+jmp r1163 .L296
+.L297
+.L296
+mov r1164 [a]
+dmov [__temp__323] r1164
+tyof r1164
+mov r1165 [wrapped_types@int]
+dmov [__temp__324] r1165
+tyof r1165
+equ r1164 r1165
+bneg r1164
+jmp r1164 .L299
+scope
+mov r1166 [b]
+dmov [__temp__325] r1166
+tyof r1166
+mov r1167 [ct@integer_type]
+equ r1166 r1167
+bneg r1166
+jmp r1166 .L301
+scope
+mov r1168 [a@int]
+mov r1169 [b]
+bore [a@int] r1169
+mov r1170 [a]
+ret r1170
+escope
+mov r1171 [$true]
+jmp r1171 .L300
+.L301
+mov r1172 [b]
+dmov [__temp__326] r1172
+tyof r1172
+mov r1173 [wrapped_types@int]
+dmov [__temp__327] r1173
+tyof r1173
+equ r1172 r1173
+bneg r1172
+jmp r1172 .L302
+scope
+mov r1174 [a@int]
+mov r1175 [b@int]
+bore [a@int] r1175
+mov r1176 [a]
+ret r1176
+escope
+mov r1177 [$true]
+jmp r1177 .L300
+.L302
+.L300
+escope
+mov r1178 [$true]
+jmp r1178 .L298
+.L299
+mov r1179 [a]
+dmov [__temp__328] r1179
+tyof r1179
+mov r1180 [ct@integer_type]
+equ r1179 r1180
+bneg r1179
+jmp r1179 .L303
+scope
+mov r1181 [b]
+dmov [__temp__329] r1181
+tyof r1181
+mov r1182 [wrapped_types@int]
+dmov [__temp__330] r1182
+tyof r1182
+equ r1181 r1182
+bneg r1181
+jmp r1181 .L305
+scope
+mov r1183 [a]
+mov r1184 [b@int]
+bore [a] r1184
+mov r1185 [a]
+ret r1185
+escope
+mov r1186 [$true]
+jmp r1186 .L304
+.L305
+.L304
+escope
+mov r1187 [$true]
+jmp r1187 .L298
+.L303
+.L298
+mov r1188 [$nil]
+ret r1188
+efunc
+ifunc __binary_and__ a b 
+mov r1190 [a]
+mov r1189 [is_pure:r1190]
+mov r1192 [b]
+mov r1191 [is_pure:r1192]
+lor r1189 r1191
+bneg r1189
+jmp r1189 .L307
+scope
+mov r1193 [$nil]
+ret r1193
+escope
+mov r1194 [$true]
+jmp r1194 .L306
+.L307
+.L306
+mov r1195 [a]
+dmov [__temp__331] r1195
+tyof r1195
+mov r1196 [wrapped_types@int]
+dmov [__temp__332] r1196
+tyof r1196
+equ r1195 r1196
+bneg r1195
+jmp r1195 .L309
+scope
+mov r1197 [b]
+dmov [__temp__333] r1197
+tyof r1197
+mov r1198 [ct@integer_type]
+equ r1197 r1198
+bneg r1197
+jmp r1197 .L311
+scope
+mov r1200 [a@int]
+mov r1201 [b]
+band r1200 r1201
+mov r1199 [int:r1200]
+ret r1199
+escope
+mov r1202 [$true]
+jmp r1202 .L310
+.L311
+mov r1203 [b]
+dmov [__temp__334] r1203
+tyof r1203
+mov r1204 [wrapped_types@int]
+dmov [__temp__335] r1204
+tyof r1204
+equ r1203 r1204
+bneg r1203
+jmp r1203 .L312
+scope
+mov r1206 [a@int]
+mov r1207 [b@int]
+band r1206 r1207
+mov r1205 [int:r1206]
+ret r1205
+escope
+mov r1208 [$true]
+jmp r1208 .L310
+.L312
+.L310
+escope
+mov r1209 [$true]
+jmp r1209 .L308
+.L309
+mov r1210 [a]
+dmov [__temp__336] r1210
+tyof r1210
+mov r1211 [ct@integer_type]
+equ r1210 r1211
+bneg r1210
+jmp r1210 .L313
+scope
+mov r1212 [b]
+dmov [__temp__337] r1212
+tyof r1212
+mov r1213 [wrapped_types@int]
+dmov [__temp__338] r1213
+tyof r1213
+equ r1212 r1213
+bneg r1212
+jmp r1212 .L315
+scope
+mov r1215 [a]
+mov r1216 [b@int]
+band r1215 r1216
+mov r1214 [int:r1215]
+ret r1214
+escope
+mov r1217 [$true]
+jmp r1217 .L314
+.L315
+.L314
+escope
+mov r1218 [$true]
+jmp r1218 .L308
+.L313
+.L308
+mov r1219 [$nil]
+ret r1219
+efunc
+ifunc __binary_and_equals__ a b 
+mov r1221 [a]
+mov r1220 [is_pure:r1221]
+mov r1223 [b]
+mov r1222 [is_pure:r1223]
+lor r1220 r1222
+bneg r1220
+jmp r1220 .L317
+scope
+mov r1224 [$nil]
+ret r1224
+escope
+mov r1225 [$true]
+jmp r1225 .L316
+.L317
+.L316
+mov r1226 [a]
+dmov [__temp__339] r1226
+tyof r1226
+mov r1227 [wrapped_types@int]
+dmov [__temp__340] r1227
+tyof r1227
+equ r1226 r1227
+bneg r1226
+jmp r1226 .L319
+scope
+mov r1228 [b]
+dmov [__temp__341] r1228
+tyof r1228
+mov r1229 [ct@integer_type]
+equ r1228 r1229
+bneg r1228
+jmp r1228 .L321
+scope
+mov r1230 [a@int]
+mov r1231 [b]
+bande [a@int] r1231
+mov r1232 [a]
+ret r1232
+escope
+mov r1233 [$true]
+jmp r1233 .L320
+.L321
+mov r1234 [b]
+dmov [__temp__342] r1234
+tyof r1234
+mov r1235 [wrapped_types@int]
+dmov [__temp__343] r1235
+tyof r1235
+equ r1234 r1235
+bneg r1234
+jmp r1234 .L322
+scope
+mov r1236 [a@int]
+mov r1237 [b@int]
+bande [a@int] r1237
+mov r1238 [a]
+ret r1238
+escope
+mov r1239 [$true]
+jmp r1239 .L320
+.L322
+.L320
+escope
+mov r1240 [$true]
+jmp r1240 .L318
+.L319
+mov r1241 [a]
+dmov [__temp__344] r1241
+tyof r1241
+mov r1242 [ct@integer_type]
+equ r1241 r1242
+bneg r1241
+jmp r1241 .L323
+scope
+mov r1243 [b]
+dmov [__temp__345] r1243
+tyof r1243
+mov r1244 [wrapped_types@int]
+dmov [__temp__346] r1244
+tyof r1244
+equ r1243 r1244
+bneg r1243
+jmp r1243 .L325
+scope
+mov r1245 [a]
+mov r1246 [b@int]
+bande [a] r1246
+mov r1247 [a]
+ret r1247
+escope
+mov r1248 [$true]
+jmp r1248 .L324
+.L325
+.L324
+escope
+mov r1249 [$true]
+jmp r1249 .L318
+.L323
+.L318
+mov r1250 [$nil]
+ret r1250
+efunc
+ifunc __shift_left__ a b 
+mov r1252 [a]
+mov r1251 [is_pure:r1252]
+mov r1254 [b]
+mov r1253 [is_pure:r1254]
+lor r1251 r1253
+bneg r1251
+jmp r1251 .L327
+scope
+mov r1255 [$nil]
+ret r1255
+escope
+mov r1256 [$true]
+jmp r1256 .L326
+.L327
+.L326
+mov r1257 [a]
+dmov [__temp__347] r1257
+tyof r1257
+mov r1258 [wrapped_types@int]
+dmov [__temp__348] r1258
+tyof r1258
+equ r1257 r1258
+bneg r1257
+jmp r1257 .L329
+scope
+mov r1259 [b]
+dmov [__temp__349] r1259
+tyof r1259
+mov r1260 [ct@integer_type]
+equ r1259 r1260
+bneg r1259
+jmp r1259 .L331
+scope
+mov r1262 [a@int]
+mov r1263 [b]
+shl r1262 r1263
+mov r1261 [int:r1262]
+ret r1261
+escope
+mov r1264 [$true]
+jmp r1264 .L330
+.L331
+mov r1265 [b]
+dmov [__temp__350] r1265
+tyof r1265
+mov r1266 [wrapped_types@int]
+dmov [__temp__351] r1266
+tyof r1266
+equ r1265 r1266
+bneg r1265
+jmp r1265 .L332
+scope
+mov r1268 [a@int]
+mov r1269 [b@int]
+shl r1268 r1269
+mov r1267 [int:r1268]
+ret r1267
+escope
+mov r1270 [$true]
+jmp r1270 .L330
+.L332
+.L330
+escope
+mov r1271 [$true]
+jmp r1271 .L328
+.L329
+mov r1272 [a]
+dmov [__temp__352] r1272
+tyof r1272
+mov r1273 [ct@integer_type]
+equ r1272 r1273
+bneg r1272
+jmp r1272 .L333
+scope
+mov r1274 [b]
+dmov [__temp__353] r1274
+tyof r1274
+mov r1275 [wrapped_types@int]
+dmov [__temp__354] r1275
+tyof r1275
+equ r1274 r1275
+bneg r1274
+jmp r1274 .L335
+scope
+mov r1277 [a]
+mov r1278 [b@int]
+shl r1277 r1278
+mov r1276 [int:r1277]
+ret r1276
+escope
+mov r1279 [$true]
+jmp r1279 .L334
+.L335
+.L334
+escope
+mov r1280 [$true]
+jmp r1280 .L328
+.L333
+.L328
+mov r1281 [$nil]
+ret r1281
+efunc
+ifunc __shift_left_equals__ a b 
+mov r1283 [a]
+mov r1282 [is_pure:r1283]
+mov r1285 [b]
+mov r1284 [is_pure:r1285]
+lor r1282 r1284
+bneg r1282
+jmp r1282 .L337
+scope
+mov r1286 [$nil]
+ret r1286
+escope
+mov r1287 [$true]
+jmp r1287 .L336
+.L337
+.L336
+mov r1288 [a]
+dmov [__temp__355] r1288
+tyof r1288
+mov r1289 [wrapped_types@int]
+dmov [__temp__356] r1289
+tyof r1289
+equ r1288 r1289
+bneg r1288
+jmp r1288 .L339
+scope
+mov r1290 [b]
+dmov [__temp__357] r1290
+tyof r1290
+mov r1291 [ct@integer_type]
+equ r1290 r1291
+bneg r1290
+jmp r1290 .L341
+scope
+mov r1292 [a@int]
+mov r1293 [b]
+shle [a@int] r1293
+mov r1294 [a]
+ret r1294
+escope
+mov r1295 [$true]
+jmp r1295 .L340
+.L341
+mov r1296 [b]
+dmov [__temp__358] r1296
+tyof r1296
+mov r1297 [wrapped_types@int]
+dmov [__temp__359] r1297
+tyof r1297
+equ r1296 r1297
+bneg r1296
+jmp r1296 .L342
+scope
+mov r1298 [a@int]
+mov r1299 [b@int]
+shle [a@int] r1299
+mov r1300 [a]
+ret r1300
+escope
+mov r1301 [$true]
+jmp r1301 .L340
+.L342
+.L340
+escope
+mov r1302 [$true]
+jmp r1302 .L338
+.L339
+mov r1303 [a]
+dmov [__temp__360] r1303
+tyof r1303
+mov r1304 [ct@integer_type]
+equ r1303 r1304
+bneg r1303
+jmp r1303 .L343
+scope
+mov r1305 [b]
+dmov [__temp__361] r1305
+tyof r1305
+mov r1306 [wrapped_types@int]
+dmov [__temp__362] r1306
+tyof r1306
+equ r1305 r1306
+bneg r1305
+jmp r1305 .L345
+scope
+mov r1307 [a]
+mov r1308 [b@int]
+shle [a] r1308
+mov r1309 [a]
+ret r1309
+escope
+mov r1310 [$true]
+jmp r1310 .L344
+.L345
+.L344
+escope
+mov r1311 [$true]
+jmp r1311 .L338
+.L343
+.L338
+mov r1312 [$nil]
+ret r1312
+efunc
+ifunc __shift_right__ a b 
+mov r1314 [a]
+mov r1313 [is_pure:r1314]
+mov r1316 [b]
+mov r1315 [is_pure:r1316]
+lor r1313 r1315
+bneg r1313
+jmp r1313 .L347
+scope
+mov r1317 [$nil]
+ret r1317
+escope
+mov r1318 [$true]
+jmp r1318 .L346
+.L347
+.L346
+mov r1319 [a]
+dmov [__temp__363] r1319
+tyof r1319
+mov r1320 [wrapped_types@int]
+dmov [__temp__364] r1320
+tyof r1320
+equ r1319 r1320
+bneg r1319
+jmp r1319 .L349
+scope
+mov r1321 [b]
+dmov [__temp__365] r1321
+tyof r1321
+mov r1322 [ct@integer_type]
+equ r1321 r1322
+bneg r1321
+jmp r1321 .L351
+scope
+mov r1324 [a@int]
+mov r1325 [b]
+shr r1324 r1325
+mov r1323 [int:r1324]
+ret r1323
+escope
+mov r1326 [$true]
+jmp r1326 .L350
+.L351
+mov r1327 [b]
+dmov [__temp__366] r1327
+tyof r1327
+mov r1328 [wrapped_types@int]
+dmov [__temp__367] r1328
+tyof r1328
+equ r1327 r1328
+bneg r1327
+jmp r1327 .L352
+scope
+mov r1330 [a@int]
+mov r1331 [b@int]
+shr r1330 r1331
+mov r1329 [int:r1330]
+ret r1329
+escope
+mov r1332 [$true]
+jmp r1332 .L350
+.L352
+.L350
+escope
+mov r1333 [$true]
+jmp r1333 .L348
+.L349
+mov r1334 [a]
+dmov [__temp__368] r1334
+tyof r1334
+mov r1335 [ct@integer_type]
+equ r1334 r1335
+bneg r1334
+jmp r1334 .L353
+scope
+mov r1336 [b]
+dmov [__temp__369] r1336
+tyof r1336
+mov r1337 [wrapped_types@int]
+dmov [__temp__370] r1337
+tyof r1337
+equ r1336 r1337
+bneg r1336
+jmp r1336 .L355
+scope
+mov r1339 [a]
+mov r1340 [b@int]
+shr r1339 r1340
+mov r1338 [int:r1339]
+ret r1338
+escope
+mov r1341 [$true]
+jmp r1341 .L354
+.L355
+.L354
+escope
+mov r1342 [$true]
+jmp r1342 .L348
+.L353
+.L348
+mov r1343 [$nil]
+ret r1343
+efunc
+ifunc __shift_right_equals__ a b 
+mov r1345 [a]
+mov r1344 [is_pure:r1345]
+mov r1347 [b]
+mov r1346 [is_pure:r1347]
+lor r1344 r1346
+bneg r1344
+jmp r1344 .L357
+scope
+mov r1348 [$nil]
+ret r1348
+escope
+mov r1349 [$true]
+jmp r1349 .L356
+.L357
+.L356
+mov r1350 [a]
+dmov [__temp__371] r1350
+tyof r1350
+mov r1351 [wrapped_types@int]
+dmov [__temp__372] r1351
+tyof r1351
+equ r1350 r1351
+bneg r1350
+jmp r1350 .L359
+scope
+mov r1352 [b]
+dmov [__temp__373] r1352
+tyof r1352
+mov r1353 [ct@integer_type]
+equ r1352 r1353
+bneg r1352
+jmp r1352 .L361
+scope
+mov r1354 [a@int]
+mov r1355 [b]
+shre [a@int] r1355
+mov r1356 [a]
+ret r1356
+escope
+mov r1357 [$true]
+jmp r1357 .L360
+.L361
+mov r1358 [b]
+dmov [__temp__374] r1358
+tyof r1358
+mov r1359 [wrapped_types@int]
+dmov [__temp__375] r1359
+tyof r1359
+equ r1358 r1359
+bneg r1358
+jmp r1358 .L362
+scope
+mov r1360 [a@int]
+mov r1361 [b@int]
+shre [a@int] r1361
+mov r1362 [a]
+ret r1362
+escope
+mov r1363 [$true]
+jmp r1363 .L360
+.L362
+.L360
+escope
+mov r1364 [$true]
+jmp r1364 .L358
+.L359
+mov r1365 [a]
+dmov [__temp__376] r1365
+tyof r1365
+mov r1366 [ct@integer_type]
+equ r1365 r1366
+bneg r1365
+jmp r1365 .L363
+scope
+mov r1367 [b]
+dmov [__temp__377] r1367
+tyof r1367
+mov r1368 [wrapped_types@int]
+dmov [__temp__378] r1368
+tyof r1368
+equ r1367 r1368
+bneg r1367
+jmp r1367 .L365
+scope
+mov r1369 [a]
+mov r1370 [b@int]
+shre [a] r1370
+mov r1371 [a]
+ret r1371
+escope
+mov r1372 [$true]
+jmp r1372 .L364
+.L365
+.L364
+escope
+mov r1373 [$true]
+jmp r1373 .L358
+.L363
+.L358
+mov r1374 [$nil]
+ret r1374
+efunc
+ifunc __equals_equals__ a b 
+mov r1376 [a]
+mov r1375 [is_pure:r1376]
+mov r1378 [b]
+mov r1377 [is_pure:r1378]
+lor r1375 r1377
+bneg r1375
+jmp r1375 .L367
+scope
+mov r1379 [$nil]
+ret r1379
+escope
+mov r1380 [$true]
+jmp r1380 .L366
+.L367
+.L366
+mov r1381 [a]
+dmov [__temp__379] r1381
+tyof r1381
+mov r1382 [wrapped_types@int]
+dmov [__temp__380] r1382
+tyof r1382
+equ r1381 r1382
+bneg r1381
+jmp r1381 .L369
+scope
+mov r1383 [b]
+dmov [__temp__381] r1383
+tyof r1383
+mov r1384 [wrapped_types@int]
+dmov [__temp__382] r1384
+tyof r1384
+equ r1383 r1384
+bneg r1383
+jmp r1383 .L371
+scope
+mov r1386 [a@int]
+mov r1387 [b@int]
+equ r1386 r1387
+mov r1385 [boolean:r1386]
+ret r1385
+escope
+mov r1388 [$true]
+jmp r1388 .L370
+.L371
+mov r1389 [b]
+dmov [__temp__383] r1389
+tyof r1389
+mov r1390 [wrapped_types@decimal]
+dmov [__temp__384] r1390
+tyof r1390
+equ r1389 r1390
+bneg r1389
+jmp r1389 .L372
+scope
+mov r1392 [a@int]
+mov r1393 [b@decimal]
+equ r1392 r1393
+mov r1391 [boolean:r1392]
+ret r1391
+escope
+mov r1394 [$true]
+jmp r1394 .L370
+.L372
+mov r1395 [b]
+dmov [__temp__385] r1395
+tyof r1395
+mov r1396 [ct@integer_type]
+equ r1395 r1396
+bneg r1395
+jmp r1395 .L373
+scope
+mov r1398 [a@int]
+mov r1399 [b]
+equ r1398 r1399
+mov r1397 [boolean:r1398]
+ret r1397
+escope
+mov r1400 [$true]
+jmp r1400 .L370
+.L373
+mov r1401 [b]
+dmov [__temp__386] r1401
+tyof r1401
+mov r1402 [ct@integer_decimal]
+dmov [__temp__387] r1402
+tyof r1402
+equ r1401 r1402
+bneg r1401
+jmp r1401 .L374
+scope
+mov r1404 [a@int]
+mov r1405 [b]
+equ r1404 r1405
+mov r1403 [boolean:r1404]
+ret r1403
+escope
+mov r1406 [$true]
+jmp r1406 .L370
+.L374
+.L370
+escope
+mov r1407 [$true]
+jmp r1407 .L368
+.L369
+mov r1408 [a]
+dmov [__temp__388] r1408
+tyof r1408
+mov r1409 [ct@integer_type]
+equ r1408 r1409
+bneg r1408
+jmp r1408 .L375
+scope
+mov r1410 [b]
+dmov [__temp__389] r1410
+tyof r1410
+mov r1411 [wrapped_types@int]
+dmov [__temp__390] r1411
+tyof r1411
+equ r1410 r1411
+bneg r1410
+jmp r1410 .L377
+scope
+mov r1413 [a]
+mov r1414 [b@int]
+equ r1413 r1414
+mov r1412 [boolean:r1413]
+ret r1412
+escope
+mov r1415 [$true]
+jmp r1415 .L376
+.L377
+mov r1416 [b]
+dmov [__temp__391] r1416
+tyof r1416
+mov r1417 [wrapped_types@decimal]
+dmov [__temp__392] r1417
+tyof r1417
+equ r1416 r1417
+bneg r1416
+jmp r1416 .L378
+scope
+mov r1419 [a]
+mov r1420 [b@decimal]
+equ r1419 r1420
+mov r1418 [boolean:r1419]
+ret r1418
+escope
+mov r1421 [$true]
+jmp r1421 .L376
+.L378
+.L376
+escope
+mov r1422 [$true]
+jmp r1422 .L368
+.L375
+mov r1423 [a]
+dmov [__temp__393] r1423
+tyof r1423
+mov r1424 [wrapped_types@decimal]
+dmov [__temp__394] r1424
+tyof r1424
+equ r1423 r1424
+bneg r1423
+jmp r1423 .L379
+scope
+mov r1425 [b]
+dmov [__temp__395] r1425
+tyof r1425
+mov r1426 [wrapped_types@int]
+dmov [__temp__396] r1426
+tyof r1426
+equ r1425 r1426
+bneg r1425
+jmp r1425 .L381
+scope
+mov r1428 [a@decimal]
+mov r1429 [b@int]
+equ r1428 r1429
+mov r1427 [boolean:r1428]
+ret r1427
+escope
+mov r1430 [$true]
+jmp r1430 .L380
+.L381
+mov r1431 [b]
+dmov [__temp__397] r1431
+tyof r1431
+mov r1432 [wrapped_types@decimal]
+dmov [__temp__398] r1432
+tyof r1432
+equ r1431 r1432
+bneg r1431
+jmp r1431 .L382
+scope
+mov r1434 [a@decimal]
+mov r1435 [b@decimal]
+equ r1434 r1435
+mov r1433 [boolean:r1434]
+ret r1433
+escope
+mov r1436 [$true]
+jmp r1436 .L380
+.L382
+mov r1437 [b]
+dmov [__temp__399] r1437
+tyof r1437
+mov r1438 [ct@integer_type]
+equ r1437 r1438
+bneg r1437
+jmp r1437 .L383
+scope
+mov r1440 [a@decimal]
+mov r1441 [b]
+equ r1440 r1441
+mov r1439 [boolean:r1440]
+ret r1439
+escope
+mov r1442 [$true]
+jmp r1442 .L380
+.L383
+mov r1443 [b]
+dmov [__temp__400] r1443
+tyof r1443
+mov r1444 [ct@decimal_type]
+equ r1443 r1444
+bneg r1443
+jmp r1443 .L384
+scope
+mov r1446 [a@decimal]
+mov r1447 [b]
+equ r1446 r1447
+mov r1445 [boolean:r1446]
+ret r1445
+escope
+mov r1448 [$true]
+jmp r1448 .L380
+.L384
+.L380
+escope
+mov r1449 [$true]
+jmp r1449 .L368
+.L379
+mov r1450 [a]
+dmov [__temp__401] r1450
+tyof r1450
+mov r1451 [ct@decimal_type]
+equ r1450 r1451
+bneg r1450
+jmp r1450 .L385
+scope
+mov r1452 [b]
+dmov [__temp__402] r1452
+tyof r1452
+mov r1453 [wrapped_types@int]
+dmov [__temp__403] r1453
+tyof r1453
+equ r1452 r1453
+bneg r1452
+jmp r1452 .L387
+scope
+mov r1455 [a]
+mov r1456 [b@int]
+equ r1455 r1456
+mov r1454 [boolean:r1455]
+ret r1454
+escope
+mov r1457 [$true]
+jmp r1457 .L386
+.L387
+mov r1458 [b]
+dmov [__temp__404] r1458
+tyof r1458
+mov r1459 [wrapped_types@decimal]
+dmov [__temp__405] r1459
+tyof r1459
+equ r1458 r1459
+bneg r1458
+jmp r1458 .L388
+scope
+mov r1461 [a]
+mov r1462 [b@decimal]
+equ r1461 r1462
+mov r1460 [boolean:r1461]
+ret r1460
+escope
+mov r1463 [$true]
+jmp r1463 .L386
+.L388
+.L386
+escope
+mov r1464 [$true]
+jmp r1464 .L368
+.L385
+mov r1465 [a]
+dmov [__temp__406] r1465
+tyof r1465
+mov r1466 [wrapped_types@boolean]
+dmov [__temp__407] r1466
+tyof r1466
+equ r1465 r1466
+bneg r1465
+jmp r1465 .L389
+scope
+mov r1467 [b]
+dmov [__temp__408] r1467
+tyof r1467
+mov r1468 [wrapped_types@boolean]
+dmov [__temp__409] r1468
+tyof r1468
+equ r1467 r1468
+bneg r1467
+jmp r1467 .L391
+scope
+mov r1470 [a@boolean]
+mov r1471 [b@boolean]
+equ r1470 r1471
+mov r1469 [boolean:r1470]
+ret r1469
+escope
+mov r1472 [$true]
+jmp r1472 .L390
+.L391
+mov r1473 [b]
+dmov [__temp__410] r1473
+tyof r1473
+mov r1474 [ct@boolean_type]
+equ r1473 r1474
+bneg r1473
+jmp r1473 .L392
+scope
+mov r1476 [a@boolean]
+mov r1477 [b]
+equ r1476 r1477
+mov r1475 [boolean:r1476]
+ret r1475
+escope
+mov r1478 [$true]
+jmp r1478 .L390
+.L392
+.L390
+escope
+mov r1479 [$true]
+jmp r1479 .L368
+.L389
+mov r1480 [a]
+dmov [__temp__411] r1480
+tyof r1480
+mov r1481 [ct@boolean_type]
+equ r1480 r1481
+bneg r1480
+jmp r1480 .L393
+scope
+mov r1482 [b]
+dmov [__temp__412] r1482
+tyof r1482
+mov r1483 [wrapped_types@boolean]
+dmov [__temp__413] r1483
+tyof r1483
+equ r1482 r1483
+bneg r1482
+jmp r1482 .L395
+scope
+mov r1485 [a]
+mov r1486 [b@boolean]
+equ r1485 r1486
+mov r1484 [boolean:r1485]
+ret r1484
+escope
+mov r1487 [$true]
+jmp r1487 .L394
+.L395
+.L394
+escope
+mov r1488 [$true]
+jmp r1488 .L368
+.L393
+mov r1489 [a]
+dmov [__temp__414] r1489
+tyof r1489
+mov r1490 [wrapped_types@string]
+dmov [__temp__415] r1490
+tyof r1490
+equ r1489 r1490
+bneg r1489
+jmp r1489 .L396
+scope
+mov r1491 [b]
+dmov [__temp__416] r1491
+tyof r1491
+mov r1492 [wrapped_types@string]
+dmov [__temp__417] r1492
+tyof r1492
+equ r1491 r1492
+bneg r1491
+jmp r1491 .L398
+scope
+mov r1494 [a@string]
+mov r1495 [b@string]
+equ r1494 r1495
+mov r1493 [boolean:r1494]
+ret r1493
+escope
+mov r1496 [$true]
+jmp r1496 .L397
+.L398
+mov r1497 [b]
+dmov [__temp__418] r1497
+tyof r1497
+mov r1498 [ct@string_type]
+equ r1497 r1498
+bneg r1497
+jmp r1497 .L399
+scope
+mov r1500 [a@string]
+mov r1501 [b]
+equ r1500 r1501
+mov r1499 [boolean:r1500]
+ret r1499
+escope
+mov r1502 [$true]
+jmp r1502 .L397
+.L399
+.L397
+escope
+mov r1503 [$true]
+jmp r1503 .L368
+.L396
+mov r1504 [a]
+dmov [__temp__419] r1504
+tyof r1504
+mov r1505 [ct@string_type]
+equ r1504 r1505
+bneg r1504
+jmp r1504 .L400
+scope
+mov r1506 [b]
+dmov [__temp__420] r1506
+tyof r1506
+mov r1507 [wrapped_types@string]
+dmov [__temp__421] r1507
+tyof r1507
+equ r1506 r1507
+bneg r1506
+jmp r1506 .L402
+scope
+mov r1509 [a]
+mov r1510 [b@string]
+equ r1509 r1510
+mov r1508 [boolean:r1509]
+ret r1508
+escope
+mov r1511 [$true]
+jmp r1511 .L401
+.L402
+.L401
+escope
+mov r1512 [$true]
+jmp r1512 .L368
+.L400
+.L368
+mov r1513 [$nil]
+ret r1513
+efunc
+ifunc __not_equals__ a b 
+mov r1515 [a]
+mov r1514 [is_pure:r1515]
+mov r1517 [b]
+mov r1516 [is_pure:r1517]
+lor r1514 r1516
+bneg r1514
+jmp r1514 .L404
+scope
+mov r1518 [$nil]
+ret r1518
+escope
+mov r1519 [$true]
+jmp r1519 .L403
+.L404
+.L403
+mov r1520 [a]
+dmov [__temp__422] r1520
+tyof r1520
+mov r1521 [wrapped_types@int]
+dmov [__temp__423] r1521
+tyof r1521
+equ r1520 r1521
+bneg r1520
+jmp r1520 .L406
+scope
+mov r1522 [b]
+dmov [__temp__424] r1522
+tyof r1522
+mov r1523 [wrapped_types@int]
+dmov [__temp__425] r1523
+tyof r1523
+equ r1522 r1523
+bneg r1522
+jmp r1522 .L408
+scope
+mov r1525 [a@int]
+mov r1526 [b@int]
+nequ r1525 r1526
+mov r1524 [boolean:r1525]
+ret r1524
+escope
+mov r1527 [$true]
+jmp r1527 .L407
+.L408
+mov r1528 [b]
+dmov [__temp__426] r1528
+tyof r1528
+mov r1529 [wrapped_types@decimal]
+dmov [__temp__427] r1529
+tyof r1529
+equ r1528 r1529
+bneg r1528
+jmp r1528 .L409
+scope
+mov r1531 [a@int]
+mov r1532 [b@decimal]
+nequ r1531 r1532
+mov r1530 [boolean:r1531]
+ret r1530
+escope
+mov r1533 [$true]
+jmp r1533 .L407
+.L409
+mov r1534 [b]
+dmov [__temp__428] r1534
+tyof r1534
+mov r1535 [ct@integer_type]
+equ r1534 r1535
+bneg r1534
+jmp r1534 .L410
+scope
+mov r1537 [a@int]
+mov r1538 [b]
+nequ r1537 r1538
+mov r1536 [boolean:r1537]
+ret r1536
+escope
+mov r1539 [$true]
+jmp r1539 .L407
+.L410
+mov r1540 [b]
+dmov [__temp__429] r1540
+tyof r1540
+mov r1541 [ct@integer_decimal]
+dmov [__temp__430] r1541
+tyof r1541
+equ r1540 r1541
+bneg r1540
+jmp r1540 .L411
+scope
+mov r1543 [a@int]
+mov r1544 [b]
+nequ r1543 r1544
+mov r1542 [boolean:r1543]
+ret r1542
+escope
+mov r1545 [$true]
+jmp r1545 .L407
+.L411
+.L407
+escope
+mov r1546 [$true]
+jmp r1546 .L405
+.L406
+mov r1547 [a]
+dmov [__temp__431] r1547
+tyof r1547
+mov r1548 [ct@integer_type]
+equ r1547 r1548
+bneg r1547
+jmp r1547 .L412
+scope
+mov r1549 [b]
+dmov [__temp__432] r1549
+tyof r1549
+mov r1550 [wrapped_types@int]
+dmov [__temp__433] r1550
+tyof r1550
+equ r1549 r1550
+bneg r1549
+jmp r1549 .L414
+scope
+mov r1552 [a]
+mov r1553 [b@int]
+nequ r1552 r1553
+mov r1551 [boolean:r1552]
+ret r1551
+escope
+mov r1554 [$true]
+jmp r1554 .L413
+.L414
+mov r1555 [b]
+dmov [__temp__434] r1555
+tyof r1555
+mov r1556 [wrapped_types@decimal]
+dmov [__temp__435] r1556
+tyof r1556
+equ r1555 r1556
+bneg r1555
+jmp r1555 .L415
+scope
+mov r1558 [a]
+mov r1559 [b@decimal]
+nequ r1558 r1559
+mov r1557 [boolean:r1558]
+ret r1557
+escope
+mov r1560 [$true]
+jmp r1560 .L413
+.L415
+.L413
+escope
+mov r1561 [$true]
+jmp r1561 .L405
+.L412
+mov r1562 [a]
+dmov [__temp__436] r1562
+tyof r1562
+mov r1563 [wrapped_types@decimal]
+dmov [__temp__437] r1563
+tyof r1563
+equ r1562 r1563
+bneg r1562
+jmp r1562 .L416
+scope
+mov r1564 [b]
+dmov [__temp__438] r1564
+tyof r1564
+mov r1565 [wrapped_types@int]
+dmov [__temp__439] r1565
+tyof r1565
+equ r1564 r1565
+bneg r1564
+jmp r1564 .L418
+scope
+mov r1567 [a@decimal]
+mov r1568 [b@int]
+nequ r1567 r1568
+mov r1566 [boolean:r1567]
+ret r1566
+escope
+mov r1569 [$true]
+jmp r1569 .L417
+.L418
+mov r1570 [b]
+dmov [__temp__440] r1570
+tyof r1570
+mov r1571 [wrapped_types@decimal]
+dmov [__temp__441] r1571
+tyof r1571
+equ r1570 r1571
+bneg r1570
+jmp r1570 .L419
+scope
+mov r1573 [a@decimal]
+mov r1574 [b@decimal]
+nequ r1573 r1574
+mov r1572 [boolean:r1573]
+ret r1572
+escope
+mov r1575 [$true]
+jmp r1575 .L417
+.L419
+mov r1576 [b]
+dmov [__temp__442] r1576
+tyof r1576
+mov r1577 [ct@integer_type]
+equ r1576 r1577
+bneg r1576
+jmp r1576 .L420
+scope
+mov r1579 [a@decimal]
+mov r1580 [b]
+nequ r1579 r1580
+mov r1578 [boolean:r1579]
+ret r1578
+escope
+mov r1581 [$true]
+jmp r1581 .L417
+.L420
+mov r1582 [b]
+dmov [__temp__443] r1582
+tyof r1582
+mov r1583 [ct@decimal_type]
+equ r1582 r1583
+bneg r1582
+jmp r1582 .L421
+scope
+mov r1585 [a@decimal]
+mov r1586 [b]
+nequ r1585 r1586
+mov r1584 [boolean:r1585]
+ret r1584
+escope
+mov r1587 [$true]
+jmp r1587 .L417
+.L421
+.L417
+escope
+mov r1588 [$true]
+jmp r1588 .L405
+.L416
+mov r1589 [a]
+dmov [__temp__444] r1589
+tyof r1589
+mov r1590 [ct@decimal_type]
+equ r1589 r1590
+bneg r1589
+jmp r1589 .L422
+scope
+mov r1591 [b]
+dmov [__temp__445] r1591
+tyof r1591
+mov r1592 [wrapped_types@int]
+dmov [__temp__446] r1592
+tyof r1592
+equ r1591 r1592
+bneg r1591
+jmp r1591 .L424
+scope
+mov r1594 [a]
+mov r1595 [b@int]
+nequ r1594 r1595
+mov r1593 [boolean:r1594]
+ret r1593
+escope
+mov r1596 [$true]
+jmp r1596 .L423
+.L424
+mov r1597 [b]
+dmov [__temp__447] r1597
+tyof r1597
+mov r1598 [wrapped_types@decimal]
+dmov [__temp__448] r1598
+tyof r1598
+equ r1597 r1598
+bneg r1597
+jmp r1597 .L425
+scope
+mov r1600 [a]
+mov r1601 [b@decimal]
+nequ r1600 r1601
+mov r1599 [boolean:r1600]
+ret r1599
+escope
+mov r1602 [$true]
+jmp r1602 .L423
+.L425
+.L423
+escope
+mov r1603 [$true]
+jmp r1603 .L405
+.L422
+mov r1604 [a]
+dmov [__temp__449] r1604
+tyof r1604
+mov r1605 [wrapped_types@boolean]
+dmov [__temp__450] r1605
+tyof r1605
+equ r1604 r1605
+bneg r1604
+jmp r1604 .L426
+scope
+mov r1606 [b]
+dmov [__temp__451] r1606
+tyof r1606
+mov r1607 [wrapped_types@boolean]
+dmov [__temp__452] r1607
+tyof r1607
+equ r1606 r1607
+bneg r1606
+jmp r1606 .L428
+scope
+mov r1609 [a@boolean]
+mov r1610 [b@boolean]
+nequ r1609 r1610
+mov r1608 [boolean:r1609]
+ret r1608
+escope
+mov r1611 [$true]
+jmp r1611 .L427
+.L428
+mov r1612 [b]
+dmov [__temp__453] r1612
+tyof r1612
+mov r1613 [ct@boolean_type]
+equ r1612 r1613
+bneg r1612
+jmp r1612 .L429
+scope
+mov r1615 [a@boolean]
+mov r1616 [b]
+nequ r1615 r1616
+mov r1614 [boolean:r1615]
+ret r1614
+escope
+mov r1617 [$true]
+jmp r1617 .L427
+.L429
+.L427
+escope
+mov r1618 [$true]
+jmp r1618 .L405
+.L426
+mov r1619 [a]
+dmov [__temp__454] r1619
+tyof r1619
+mov r1620 [ct@boolean_type]
+equ r1619 r1620
+bneg r1619
+jmp r1619 .L430
+scope
+mov r1621 [b]
+dmov [__temp__455] r1621
+tyof r1621
+mov r1622 [wrapped_types@boolean]
+dmov [__temp__456] r1622
+tyof r1622
+equ r1621 r1622
+bneg r1621
+jmp r1621 .L432
+scope
+mov r1624 [a]
+mov r1625 [b@boolean]
+nequ r1624 r1625
+mov r1623 [boolean:r1624]
+ret r1623
+escope
+mov r1626 [$true]
+jmp r1626 .L431
+.L432
+.L431
+escope
+mov r1627 [$true]
+jmp r1627 .L405
+.L430
+mov r1628 [a]
+dmov [__temp__457] r1628
+tyof r1628
+mov r1629 [wrapped_types@string]
+dmov [__temp__458] r1629
+tyof r1629
+equ r1628 r1629
+bneg r1628
+jmp r1628 .L433
+scope
+mov r1630 [b]
+dmov [__temp__459] r1630
+tyof r1630
+mov r1631 [wrapped_types@string]
+dmov [__temp__460] r1631
+tyof r1631
+equ r1630 r1631
+bneg r1630
+jmp r1630 .L435
+scope
+mov r1633 [a@string]
+mov r1634 [b@string]
+nequ r1633 r1634
+mov r1632 [boolean:r1633]
+ret r1632
+escope
+mov r1635 [$true]
+jmp r1635 .L434
+.L435
+mov r1636 [b]
+dmov [__temp__461] r1636
+tyof r1636
+mov r1637 [ct@string_type]
+equ r1636 r1637
+bneg r1636
+jmp r1636 .L436
+scope
+mov r1639 [a@string]
+mov r1640 [b]
+nequ r1639 r1640
+mov r1638 [boolean:r1639]
+ret r1638
+escope
+mov r1641 [$true]
+jmp r1641 .L434
+.L436
+.L434
+escope
+mov r1642 [$true]
+jmp r1642 .L405
+.L433
+mov r1643 [a]
+dmov [__temp__462] r1643
+tyof r1643
+mov r1644 [ct@string_type]
+equ r1643 r1644
+bneg r1643
+jmp r1643 .L437
+scope
+mov r1645 [b]
+dmov [__temp__463] r1645
+tyof r1645
+mov r1646 [wrapped_types@string]
+dmov [__temp__464] r1646
+tyof r1646
+equ r1645 r1646
+bneg r1645
+jmp r1645 .L439
+scope
+mov r1648 [a]
+mov r1649 [b@string]
+nequ r1648 r1649
+mov r1647 [boolean:r1648]
+ret r1647
+escope
+mov r1650 [$true]
+jmp r1650 .L438
+.L439
+.L438
+escope
+mov r1651 [$true]
+jmp r1651 .L405
+.L437
+.L405
+mov r1652 [$nil]
+ret r1652
+efunc
+ifunc __less_than__ a b 
+mov r1654 [a]
+mov r1653 [is_pure:r1654]
+mov r1656 [b]
+mov r1655 [is_pure:r1656]
+lor r1653 r1655
+bneg r1653
+jmp r1653 .L441
+scope
+mov r1657 [$nil]
+ret r1657
+escope
+mov r1658 [$true]
+jmp r1658 .L440
+.L441
+.L440
+mov r1659 [a]
+dmov [__temp__465] r1659
+tyof r1659
+mov r1660 [wrapped_types@int]
+dmov [__temp__466] r1660
+tyof r1660
+equ r1659 r1660
+bneg r1659
+jmp r1659 .L443
+scope
+mov r1661 [b]
+dmov [__temp__467] r1661
+tyof r1661
+mov r1662 [wrapped_types@int]
+dmov [__temp__468] r1662
+tyof r1662
+equ r1661 r1662
+bneg r1661
+jmp r1661 .L445
+scope
+mov r1664 [a@int]
+mov r1665 [b@int]
+lt r1664 r1665
+mov r1663 [boolean:r1664]
+ret r1663
+escope
+mov r1666 [$true]
+jmp r1666 .L444
+.L445
+mov r1667 [b]
+dmov [__temp__469] r1667
+tyof r1667
+mov r1668 [wrapped_types@decimal]
+dmov [__temp__470] r1668
+tyof r1668
+equ r1667 r1668
+bneg r1667
+jmp r1667 .L446
+scope
+mov r1670 [a@int]
+mov r1671 [b@decimal]
+lt r1670 r1671
+mov r1669 [boolean:r1670]
+ret r1669
+escope
+mov r1672 [$true]
+jmp r1672 .L444
+.L446
+mov r1673 [b]
+dmov [__temp__471] r1673
+tyof r1673
+mov r1674 [ct@integer_type]
+equ r1673 r1674
+bneg r1673
+jmp r1673 .L447
+scope
+mov r1676 [a@int]
+mov r1677 [b]
+lt r1676 r1677
+mov r1675 [boolean:r1676]
+ret r1675
+escope
+mov r1678 [$true]
+jmp r1678 .L444
+.L447
+mov r1679 [b]
+dmov [__temp__472] r1679
+tyof r1679
+mov r1680 [ct@integer_decimal]
+dmov [__temp__473] r1680
+tyof r1680
+equ r1679 r1680
+bneg r1679
+jmp r1679 .L448
+scope
+mov r1682 [a@int]
+mov r1683 [b]
+lt r1682 r1683
+mov r1681 [boolean:r1682]
+ret r1681
+escope
+mov r1684 [$true]
+jmp r1684 .L444
+.L448
+.L444
+escope
+mov r1685 [$true]
+jmp r1685 .L442
+.L443
+mov r1686 [a]
+dmov [__temp__474] r1686
+tyof r1686
+mov r1687 [ct@integer_type]
+equ r1686 r1687
+bneg r1686
+jmp r1686 .L449
+scope
+mov r1688 [b]
+dmov [__temp__475] r1688
+tyof r1688
+mov r1689 [wrapped_types@int]
+dmov [__temp__476] r1689
+tyof r1689
+equ r1688 r1689
+bneg r1688
+jmp r1688 .L451
+scope
+mov r1691 [a]
+mov r1692 [b@int]
+lt r1691 r1692
+mov r1690 [boolean:r1691]
+ret r1690
+escope
+mov r1693 [$true]
+jmp r1693 .L450
+.L451
+mov r1694 [b]
+dmov [__temp__477] r1694
+tyof r1694
+mov r1695 [wrapped_types@decimal]
+dmov [__temp__478] r1695
+tyof r1695
+equ r1694 r1695
+bneg r1694
+jmp r1694 .L452
+scope
+mov r1697 [a]
+mov r1698 [b@decimal]
+lt r1697 r1698
+mov r1696 [boolean:r1697]
+ret r1696
+escope
+mov r1699 [$true]
+jmp r1699 .L450
+.L452
+.L450
+escope
+mov r1700 [$true]
+jmp r1700 .L442
+.L449
+mov r1701 [a]
+dmov [__temp__479] r1701
+tyof r1701
+mov r1702 [wrapped_types@decimal]
+dmov [__temp__480] r1702
+tyof r1702
+equ r1701 r1702
+bneg r1701
+jmp r1701 .L453
+scope
+mov r1703 [b]
+dmov [__temp__481] r1703
+tyof r1703
+mov r1704 [wrapped_types@int]
+dmov [__temp__482] r1704
+tyof r1704
+equ r1703 r1704
+bneg r1703
+jmp r1703 .L455
+scope
+mov r1706 [a@decimal]
+mov r1707 [b@int]
+lt r1706 r1707
+mov r1705 [boolean:r1706]
+ret r1705
+escope
+mov r1708 [$true]
+jmp r1708 .L454
+.L455
+mov r1709 [b]
+dmov [__temp__483] r1709
+tyof r1709
+mov r1710 [wrapped_types@decimal]
+dmov [__temp__484] r1710
+tyof r1710
+equ r1709 r1710
+bneg r1709
+jmp r1709 .L456
+scope
+mov r1712 [a@decimal]
+mov r1713 [b@decimal]
+lt r1712 r1713
+mov r1711 [boolean:r1712]
+ret r1711
+escope
+mov r1714 [$true]
+jmp r1714 .L454
+.L456
+mov r1715 [b]
+dmov [__temp__485] r1715
+tyof r1715
+mov r1716 [ct@integer_type]
+equ r1715 r1716
+bneg r1715
+jmp r1715 .L457
+scope
+mov r1718 [a@decimal]
+mov r1719 [b]
+lt r1718 r1719
+mov r1717 [boolean:r1718]
+ret r1717
+escope
+mov r1720 [$true]
+jmp r1720 .L454
+.L457
+mov r1721 [b]
+dmov [__temp__486] r1721
+tyof r1721
+mov r1722 [ct@decimal_type]
+equ r1721 r1722
+bneg r1721
+jmp r1721 .L458
+scope
+mov r1724 [a@decimal]
+mov r1725 [b]
+lt r1724 r1725
+mov r1723 [boolean:r1724]
+ret r1723
+escope
+mov r1726 [$true]
+jmp r1726 .L454
+.L458
+.L454
+escope
+mov r1727 [$true]
+jmp r1727 .L442
+.L453
+mov r1728 [a]
+dmov [__temp__487] r1728
+tyof r1728
+mov r1729 [ct@decimal_type]
+equ r1728 r1729
+bneg r1728
+jmp r1728 .L459
+scope
+mov r1730 [b]
+dmov [__temp__488] r1730
+tyof r1730
+mov r1731 [wrapped_types@int]
+dmov [__temp__489] r1731
+tyof r1731
+equ r1730 r1731
+bneg r1730
+jmp r1730 .L461
+scope
+mov r1733 [a]
+mov r1734 [b@int]
+lt r1733 r1734
+mov r1732 [boolean:r1733]
+ret r1732
+escope
+mov r1735 [$true]
+jmp r1735 .L460
+.L461
+mov r1736 [b]
+dmov [__temp__490] r1736
+tyof r1736
+mov r1737 [wrapped_types@decimal]
+dmov [__temp__491] r1737
+tyof r1737
+equ r1736 r1737
+bneg r1736
+jmp r1736 .L462
+scope
+mov r1739 [a]
+mov r1740 [b@decimal]
+lt r1739 r1740
+mov r1738 [boolean:r1739]
+ret r1738
+escope
+mov r1741 [$true]
+jmp r1741 .L460
+.L462
+.L460
+escope
+mov r1742 [$true]
+jmp r1742 .L442
+.L459
+.L442
+mov r1743 [$nil]
+ret r1743
+efunc
+ifunc __greater_than__ a b 
+mov r1745 [a]
+mov r1744 [is_pure:r1745]
+mov r1747 [b]
+mov r1746 [is_pure:r1747]
+lor r1744 r1746
+bneg r1744
+jmp r1744 .L464
+scope
+mov r1748 [$nil]
+ret r1748
+escope
+mov r1749 [$true]
+jmp r1749 .L463
+.L464
+.L463
+mov r1750 [a]
+dmov [__temp__492] r1750
+tyof r1750
+mov r1751 [wrapped_types@int]
+dmov [__temp__493] r1751
+tyof r1751
+equ r1750 r1751
+bneg r1750
+jmp r1750 .L466
+scope
+mov r1752 [b]
+dmov [__temp__494] r1752
+tyof r1752
+mov r1753 [wrapped_types@int]
+dmov [__temp__495] r1753
+tyof r1753
+equ r1752 r1753
+bneg r1752
+jmp r1752 .L468
+scope
+mov r1755 [a@int]
+mov r1756 [b@int]
+gt r1755 r1756
+mov r1754 [boolean:r1755]
+ret r1754
+escope
+mov r1757 [$true]
+jmp r1757 .L467
+.L468
+mov r1758 [b]
+dmov [__temp__496] r1758
+tyof r1758
+mov r1759 [wrapped_types@decimal]
+dmov [__temp__497] r1759
+tyof r1759
+equ r1758 r1759
+bneg r1758
+jmp r1758 .L469
+scope
+mov r1761 [a@int]
+mov r1762 [b@decimal]
+gt r1761 r1762
+mov r1760 [boolean:r1761]
+ret r1760
+escope
+mov r1763 [$true]
+jmp r1763 .L467
+.L469
+mov r1764 [b]
+dmov [__temp__498] r1764
+tyof r1764
+mov r1765 [ct@integer_type]
+equ r1764 r1765
+bneg r1764
+jmp r1764 .L470
+scope
+mov r1767 [a@int]
+mov r1768 [b]
+gt r1767 r1768
+mov r1766 [boolean:r1767]
+ret r1766
+escope
+mov r1769 [$true]
+jmp r1769 .L467
+.L470
+mov r1770 [b]
+dmov [__temp__499] r1770
+tyof r1770
+mov r1771 [ct@integer_decimal]
+dmov [__temp__500] r1771
+tyof r1771
+equ r1770 r1771
+bneg r1770
+jmp r1770 .L471
+scope
+mov r1773 [a@int]
+mov r1774 [b]
+gt r1773 r1774
+mov r1772 [boolean:r1773]
+ret r1772
+escope
+mov r1775 [$true]
+jmp r1775 .L467
+.L471
+.L467
+escope
+mov r1776 [$true]
+jmp r1776 .L465
+.L466
+mov r1777 [a]
+dmov [__temp__501] r1777
+tyof r1777
+mov r1778 [ct@integer_type]
+equ r1777 r1778
+bneg r1777
+jmp r1777 .L472
+scope
+mov r1779 [b]
+dmov [__temp__502] r1779
+tyof r1779
+mov r1780 [wrapped_types@int]
+dmov [__temp__503] r1780
+tyof r1780
+equ r1779 r1780
+bneg r1779
+jmp r1779 .L474
+scope
+mov r1782 [a]
+mov r1783 [b@int]
+gt r1782 r1783
+mov r1781 [boolean:r1782]
+ret r1781
+escope
+mov r1784 [$true]
+jmp r1784 .L473
+.L474
+mov r1785 [b]
+dmov [__temp__504] r1785
+tyof r1785
+mov r1786 [wrapped_types@decimal]
+dmov [__temp__505] r1786
+tyof r1786
+equ r1785 r1786
+bneg r1785
+jmp r1785 .L475
+scope
+mov r1788 [a]
+mov r1789 [b@decimal]
+gt r1788 r1789
+mov r1787 [boolean:r1788]
+ret r1787
+escope
+mov r1790 [$true]
+jmp r1790 .L473
+.L475
+.L473
+escope
+mov r1791 [$true]
+jmp r1791 .L465
+.L472
+mov r1792 [a]
+dmov [__temp__506] r1792
+tyof r1792
+mov r1793 [wrapped_types@decimal]
+dmov [__temp__507] r1793
+tyof r1793
+equ r1792 r1793
+bneg r1792
+jmp r1792 .L476
+scope
+mov r1794 [b]
+dmov [__temp__508] r1794
+tyof r1794
+mov r1795 [wrapped_types@int]
+dmov [__temp__509] r1795
+tyof r1795
+equ r1794 r1795
+bneg r1794
+jmp r1794 .L478
+scope
+mov r1797 [a@decimal]
+mov r1798 [b@int]
+gt r1797 r1798
+mov r1796 [boolean:r1797]
+ret r1796
+escope
+mov r1799 [$true]
+jmp r1799 .L477
+.L478
+mov r1800 [b]
+dmov [__temp__510] r1800
+tyof r1800
+mov r1801 [wrapped_types@decimal]
+dmov [__temp__511] r1801
+tyof r1801
+equ r1800 r1801
+bneg r1800
+jmp r1800 .L479
+scope
+mov r1803 [a@decimal]
+mov r1804 [b@decimal]
+gt r1803 r1804
+mov r1802 [boolean:r1803]
+ret r1802
+escope
+mov r1805 [$true]
+jmp r1805 .L477
+.L479
+mov r1806 [b]
+dmov [__temp__512] r1806
+tyof r1806
+mov r1807 [ct@integer_type]
+equ r1806 r1807
+bneg r1806
+jmp r1806 .L480
+scope
+mov r1809 [a@decimal]
+mov r1810 [b]
+gt r1809 r1810
+mov r1808 [boolean:r1809]
+ret r1808
+escope
+mov r1811 [$true]
+jmp r1811 .L477
+.L480
+mov r1812 [b]
+dmov [__temp__513] r1812
+tyof r1812
+mov r1813 [ct@decimal_type]
+equ r1812 r1813
+bneg r1812
+jmp r1812 .L481
+scope
+mov r1815 [a@decimal]
+mov r1816 [b]
+gt r1815 r1816
+mov r1814 [boolean:r1815]
+ret r1814
+escope
+mov r1817 [$true]
+jmp r1817 .L477
+.L481
+.L477
+escope
+mov r1818 [$true]
+jmp r1818 .L465
+.L476
+mov r1819 [a]
+dmov [__temp__514] r1819
+tyof r1819
+mov r1820 [ct@decimal_type]
+equ r1819 r1820
+bneg r1819
+jmp r1819 .L482
+scope
+mov r1821 [b]
+dmov [__temp__515] r1821
+tyof r1821
+mov r1822 [wrapped_types@int]
+dmov [__temp__516] r1822
+tyof r1822
+equ r1821 r1822
+bneg r1821
+jmp r1821 .L484
+scope
+mov r1824 [a]
+mov r1825 [b@int]
+gt r1824 r1825
+mov r1823 [boolean:r1824]
+ret r1823
+escope
+mov r1826 [$true]
+jmp r1826 .L483
+.L484
+mov r1827 [b]
+dmov [__temp__517] r1827
+tyof r1827
+mov r1828 [wrapped_types@decimal]
+dmov [__temp__518] r1828
+tyof r1828
+equ r1827 r1828
+bneg r1827
+jmp r1827 .L485
+scope
+mov r1830 [a]
+mov r1831 [b@decimal]
+gt r1830 r1831
+mov r1829 [boolean:r1830]
+ret r1829
+escope
+mov r1832 [$true]
+jmp r1832 .L483
+.L485
+.L483
+escope
+mov r1833 [$true]
+jmp r1833 .L465
+.L482
+.L465
+mov r1834 [$nil]
+ret r1834
+efunc
+ifunc __greater_than_or_equal_to__ a b 
+mov r1836 [a]
+mov r1835 [is_pure:r1836]
+mov r1838 [b]
+mov r1837 [is_pure:r1838]
+lor r1835 r1837
+bneg r1835
+jmp r1835 .L487
+scope
+mov r1839 [$nil]
+ret r1839
+escope
+mov r1840 [$true]
+jmp r1840 .L486
+.L487
+.L486
+mov r1841 [a]
+dmov [__temp__519] r1841
+tyof r1841
+mov r1842 [wrapped_types@int]
+dmov [__temp__520] r1842
+tyof r1842
+equ r1841 r1842
+bneg r1841
+jmp r1841 .L489
+scope
+mov r1843 [b]
+dmov [__temp__521] r1843
+tyof r1843
+mov r1844 [wrapped_types@int]
+dmov [__temp__522] r1844
+tyof r1844
+equ r1843 r1844
+bneg r1843
+jmp r1843 .L491
+scope
+mov r1846 [a@int]
+mov r1847 [b@int]
+gte r1846 r1847
+mov r1845 [boolean:r1846]
+ret r1845
+escope
+mov r1848 [$true]
+jmp r1848 .L490
+.L491
+mov r1849 [b]
+dmov [__temp__523] r1849
+tyof r1849
+mov r1850 [wrapped_types@decimal]
+dmov [__temp__524] r1850
+tyof r1850
+equ r1849 r1850
+bneg r1849
+jmp r1849 .L492
+scope
+mov r1852 [a@int]
+mov r1853 [b@decimal]
+gte r1852 r1853
+mov r1851 [boolean:r1852]
+ret r1851
+escope
+mov r1854 [$true]
+jmp r1854 .L490
+.L492
+mov r1855 [b]
+dmov [__temp__525] r1855
+tyof r1855
+mov r1856 [ct@integer_type]
+equ r1855 r1856
+bneg r1855
+jmp r1855 .L493
+scope
+mov r1858 [a@int]
+mov r1859 [b]
+gte r1858 r1859
+mov r1857 [boolean:r1858]
+ret r1857
+escope
+mov r1860 [$true]
+jmp r1860 .L490
+.L493
+mov r1861 [b]
+dmov [__temp__526] r1861
+tyof r1861
+mov r1862 [ct@integer_decimal]
+dmov [__temp__527] r1862
+tyof r1862
+equ r1861 r1862
+bneg r1861
+jmp r1861 .L494
+scope
+mov r1864 [a@int]
+mov r1865 [b]
+gte r1864 r1865
+mov r1863 [boolean:r1864]
+ret r1863
+escope
+mov r1866 [$true]
+jmp r1866 .L490
+.L494
+.L490
+escope
+mov r1867 [$true]
+jmp r1867 .L488
+.L489
+mov r1868 [a]
+dmov [__temp__528] r1868
+tyof r1868
+mov r1869 [ct@integer_type]
+equ r1868 r1869
+bneg r1868
+jmp r1868 .L495
+scope
+mov r1870 [b]
+dmov [__temp__529] r1870
+tyof r1870
+mov r1871 [wrapped_types@int]
+dmov [__temp__530] r1871
+tyof r1871
+equ r1870 r1871
+bneg r1870
+jmp r1870 .L497
+scope
+mov r1873 [a]
+mov r1874 [b@int]
+gte r1873 r1874
+mov r1872 [boolean:r1873]
+ret r1872
+escope
+mov r1875 [$true]
+jmp r1875 .L496
+.L497
+mov r1876 [b]
+dmov [__temp__531] r1876
+tyof r1876
+mov r1877 [wrapped_types@decimal]
+dmov [__temp__532] r1877
+tyof r1877
+equ r1876 r1877
+bneg r1876
+jmp r1876 .L498
+scope
+mov r1879 [a]
+mov r1880 [b@decimal]
+gte r1879 r1880
+mov r1878 [boolean:r1879]
+ret r1878
+escope
+mov r1881 [$true]
+jmp r1881 .L496
+.L498
+.L496
+escope
+mov r1882 [$true]
+jmp r1882 .L488
+.L495
+mov r1883 [a]
+dmov [__temp__533] r1883
+tyof r1883
+mov r1884 [wrapped_types@decimal]
+dmov [__temp__534] r1884
+tyof r1884
+equ r1883 r1884
+bneg r1883
+jmp r1883 .L499
+scope
+mov r1885 [b]
+dmov [__temp__535] r1885
+tyof r1885
+mov r1886 [wrapped_types@int]
+dmov [__temp__536] r1886
+tyof r1886
+equ r1885 r1886
+bneg r1885
+jmp r1885 .L501
+scope
+mov r1888 [a@decimal]
+mov r1889 [b@int]
+gte r1888 r1889
+mov r1887 [boolean:r1888]
+ret r1887
+escope
+mov r1890 [$true]
+jmp r1890 .L500
+.L501
+mov r1891 [b]
+dmov [__temp__537] r1891
+tyof r1891
+mov r1892 [wrapped_types@decimal]
+dmov [__temp__538] r1892
+tyof r1892
+equ r1891 r1892
+bneg r1891
+jmp r1891 .L502
+scope
+mov r1894 [a@decimal]
+mov r1895 [b@decimal]
+gte r1894 r1895
+mov r1893 [boolean:r1894]
+ret r1893
+escope
+mov r1896 [$true]
+jmp r1896 .L500
+.L502
+mov r1897 [b]
+dmov [__temp__539] r1897
+tyof r1897
+mov r1898 [ct@integer_type]
+equ r1897 r1898
+bneg r1897
+jmp r1897 .L503
+scope
+mov r1900 [a@decimal]
+mov r1901 [b]
+gte r1900 r1901
+mov r1899 [boolean:r1900]
+ret r1899
+escope
+mov r1902 [$true]
+jmp r1902 .L500
+.L503
+mov r1903 [b]
+dmov [__temp__540] r1903
+tyof r1903
+mov r1904 [ct@decimal_type]
+equ r1903 r1904
+bneg r1903
+jmp r1903 .L504
+scope
+mov r1906 [a@decimal]
+mov r1907 [b]
+gte r1906 r1907
+mov r1905 [boolean:r1906]
+ret r1905
+escope
+mov r1908 [$true]
+jmp r1908 .L500
+.L504
+.L500
+escope
+mov r1909 [$true]
+jmp r1909 .L488
+.L499
+mov r1910 [a]
+dmov [__temp__541] r1910
+tyof r1910
+mov r1911 [ct@decimal_type]
+equ r1910 r1911
+bneg r1910
+jmp r1910 .L505
+scope
+mov r1912 [b]
+dmov [__temp__542] r1912
+tyof r1912
+mov r1913 [wrapped_types@int]
+dmov [__temp__543] r1913
+tyof r1913
+equ r1912 r1913
+bneg r1912
+jmp r1912 .L507
+scope
+mov r1915 [a]
+mov r1916 [b@int]
+gte r1915 r1916
+mov r1914 [boolean:r1915]
+ret r1914
+escope
+mov r1917 [$true]
+jmp r1917 .L506
+.L507
+mov r1918 [b]
+dmov [__temp__544] r1918
+tyof r1918
+mov r1919 [wrapped_types@decimal]
+dmov [__temp__545] r1919
+tyof r1919
+equ r1918 r1919
+bneg r1918
+jmp r1918 .L508
+scope
+mov r1921 [a]
+mov r1922 [b@decimal]
+gte r1921 r1922
+mov r1920 [boolean:r1921]
+ret r1920
+escope
+mov r1923 [$true]
+jmp r1923 .L506
+.L508
+.L506
+escope
+mov r1924 [$true]
+jmp r1924 .L488
+.L505
+.L488
+mov r1925 [$nil]
+ret r1925
+efunc
+ifunc __less_than_or_equal_to__ a b 
+mov r1927 [a]
+mov r1926 [is_pure:r1927]
+mov r1929 [b]
+mov r1928 [is_pure:r1929]
+lor r1926 r1928
+bneg r1926
+jmp r1926 .L510
+scope
+mov r1930 [$nil]
+ret r1930
+escope
+mov r1931 [$true]
+jmp r1931 .L509
+.L510
+.L509
+mov r1932 [a]
+dmov [__temp__546] r1932
+tyof r1932
+mov r1933 [wrapped_types@int]
+dmov [__temp__547] r1933
+tyof r1933
+equ r1932 r1933
+bneg r1932
+jmp r1932 .L512
+scope
+mov r1934 [b]
+dmov [__temp__548] r1934
+tyof r1934
+mov r1935 [wrapped_types@int]
+dmov [__temp__549] r1935
+tyof r1935
+equ r1934 r1935
+bneg r1934
+jmp r1934 .L514
+scope
+mov r1937 [a@int]
+mov r1938 [b@int]
+lte r1937 r1938
+mov r1936 [boolean:r1937]
+ret r1936
+escope
+mov r1939 [$true]
+jmp r1939 .L513
+.L514
+mov r1940 [b]
+dmov [__temp__550] r1940
+tyof r1940
+mov r1941 [wrapped_types@decimal]
+dmov [__temp__551] r1941
+tyof r1941
+equ r1940 r1941
+bneg r1940
+jmp r1940 .L515
+scope
+mov r1943 [a@int]
+mov r1944 [b@decimal]
+lte r1943 r1944
+mov r1942 [boolean:r1943]
+ret r1942
+escope
+mov r1945 [$true]
+jmp r1945 .L513
+.L515
+mov r1946 [b]
+dmov [__temp__552] r1946
+tyof r1946
+mov r1947 [ct@integer_type]
+equ r1946 r1947
+bneg r1946
+jmp r1946 .L516
+scope
+mov r1949 [a@int]
+mov r1950 [b]
+lte r1949 r1950
+mov r1948 [boolean:r1949]
+ret r1948
+escope
+mov r1951 [$true]
+jmp r1951 .L513
+.L516
+mov r1952 [b]
+dmov [__temp__553] r1952
+tyof r1952
+mov r1953 [ct@integer_decimal]
+dmov [__temp__554] r1953
+tyof r1953
+equ r1952 r1953
+bneg r1952
+jmp r1952 .L517
+scope
+mov r1955 [a@int]
+mov r1956 [b]
+lte r1955 r1956
+mov r1954 [boolean:r1955]
+ret r1954
+escope
+mov r1957 [$true]
+jmp r1957 .L513
+.L517
+.L513
+escope
+mov r1958 [$true]
+jmp r1958 .L511
+.L512
+mov r1959 [a]
+dmov [__temp__555] r1959
+tyof r1959
+mov r1960 [ct@integer_type]
+equ r1959 r1960
+bneg r1959
+jmp r1959 .L518
+scope
+mov r1961 [b]
+dmov [__temp__556] r1961
+tyof r1961
+mov r1962 [wrapped_types@int]
+dmov [__temp__557] r1962
+tyof r1962
+equ r1961 r1962
+bneg r1961
+jmp r1961 .L520
+scope
+mov r1964 [a]
+mov r1965 [b@int]
+lte r1964 r1965
+mov r1963 [boolean:r1964]
+ret r1963
+escope
+mov r1966 [$true]
+jmp r1966 .L519
+.L520
+mov r1967 [b]
+dmov [__temp__558] r1967
+tyof r1967
+mov r1968 [wrapped_types@decimal]
+dmov [__temp__559] r1968
+tyof r1968
+equ r1967 r1968
+bneg r1967
+jmp r1967 .L521
+scope
+mov r1970 [a]
+mov r1971 [b@decimal]
+lte r1970 r1971
+mov r1969 [boolean:r1970]
+ret r1969
+escope
+mov r1972 [$true]
+jmp r1972 .L519
+.L521
+.L519
+escope
+mov r1973 [$true]
+jmp r1973 .L511
+.L518
+mov r1974 [a]
+dmov [__temp__560] r1974
+tyof r1974
+mov r1975 [wrapped_types@decimal]
+dmov [__temp__561] r1975
+tyof r1975
+equ r1974 r1975
+bneg r1974
+jmp r1974 .L522
+scope
+mov r1976 [b]
+dmov [__temp__562] r1976
+tyof r1976
+mov r1977 [wrapped_types@int]
+dmov [__temp__563] r1977
+tyof r1977
+equ r1976 r1977
+bneg r1976
+jmp r1976 .L524
+scope
+mov r1979 [a@decimal]
+mov r1980 [b@int]
+lte r1979 r1980
+mov r1978 [boolean:r1979]
+ret r1978
+escope
+mov r1981 [$true]
+jmp r1981 .L523
+.L524
+mov r1982 [b]
+dmov [__temp__564] r1982
+tyof r1982
+mov r1983 [wrapped_types@decimal]
+dmov [__temp__565] r1983
+tyof r1983
+equ r1982 r1983
+bneg r1982
+jmp r1982 .L525
+scope
+mov r1985 [a@decimal]
+mov r1986 [b@decimal]
+lte r1985 r1986
+mov r1984 [boolean:r1985]
+ret r1984
+escope
+mov r1987 [$true]
+jmp r1987 .L523
+.L525
+mov r1988 [b]
+dmov [__temp__566] r1988
+tyof r1988
+mov r1989 [ct@integer_type]
+equ r1988 r1989
+bneg r1988
+jmp r1988 .L526
+scope
+mov r1991 [a@decimal]
+mov r1992 [b]
+lte r1991 r1992
+mov r1990 [boolean:r1991]
+ret r1990
+escope
+mov r1993 [$true]
+jmp r1993 .L523
+.L526
+mov r1994 [b]
+dmov [__temp__567] r1994
+tyof r1994
+mov r1995 [ct@decimal_type]
+equ r1994 r1995
+bneg r1994
+jmp r1994 .L527
+scope
+mov r1997 [a@decimal]
+mov r1998 [b]
+lte r1997 r1998
+mov r1996 [boolean:r1997]
+ret r1996
+escope
+mov r1999 [$true]
+jmp r1999 .L523
+.L527
+.L523
+escope
+mov r2000 [$true]
+jmp r2000 .L511
+.L522
+mov r2001 [a]
+dmov [__temp__568] r2001
+tyof r2001
+mov r2002 [ct@decimal_type]
+equ r2001 r2002
+bneg r2001
+jmp r2001 .L528
+scope
+mov r2003 [b]
+dmov [__temp__569] r2003
+tyof r2003
+mov r2004 [wrapped_types@int]
+dmov [__temp__570] r2004
+tyof r2004
+equ r2003 r2004
+bneg r2003
+jmp r2003 .L530
+scope
+mov r2006 [a]
+mov r2007 [b@int]
+lte r2006 r2007
+mov r2005 [boolean:r2006]
+ret r2005
+escope
+mov r2008 [$true]
+jmp r2008 .L529
+.L530
+mov r2009 [b]
+dmov [__temp__571] r2009
+tyof r2009
+mov r2010 [wrapped_types@decimal]
+dmov [__temp__572] r2010
+tyof r2010
+equ r2009 r2010
+bneg r2009
+jmp r2009 .L531
+scope
+mov r2012 [a]
+mov r2013 [b@decimal]
+lte r2012 r2013
+mov r2011 [boolean:r2012]
+ret r2011
+escope
+mov r2014 [$true]
+jmp r2014 .L529
+.L531
+.L529
+escope
+mov r2015 [$true]
+jmp r2015 .L511
+.L528
+.L511
+mov r2016 [$nil]
+ret r2016
+efunc
+ifunc __cast__ a b 
+mov r2018 [b]
+mov r2017 [is_pure:r2018]
+bneg r2017
+bneg r2017
+jmp r2017 .L533
+scope
+mov r2019 [$nil]
+ret r2019
+escope
+mov r2020 [$true]
+jmp r2020 .L532
+.L533
+.L532
+mov r2021 [a]
+dmov [__temp__573] r2021
+tyof r2021
+mov r2022 [ct@integer_type]
+equ r2021 r2022
+bneg r2021
+jmp r2021 .L535
+scope
+mov r2023 [b]
+dmov [__temp__574] r2023
+tyof r2023
+mov r2024 [wrapped_types@int]
+dmov [__temp__575] r2024
+tyof r2024
+equ r2023 r2024
+bneg r2023
+jmp r2023 .L537
+scope
+mov r2026 [a]
+mov r2025 [int:r2026]
+ret r2025
+escope
+mov r2027 [$true]
+jmp r2027 .L536
+.L537
+mov r2028 [b]
+dmov [__temp__576] r2028
+tyof r2028
+mov r2029 [wrapped_types@decimal]
+dmov [__temp__577] r2029
+tyof r2029
+equ r2028 r2029
+bneg r2028
+jmp r2028 .L538
+scope
+mov r2031 [a]
+mov r2030 [decimal:r2031]
+ret r2030
+escope
+mov r2032 [$true]
+jmp r2032 .L536
+.L538
+.L536
+escope
+mov r2033 [$true]
+jmp r2033 .L534
+.L535
+mov r2034 [a]
+dmov [__temp__578] r2034
+tyof r2034
+mov r2035 [ct@decimal_type]
+equ r2034 r2035
+bneg r2034
+jmp r2034 .L539
+scope
+mov r2036 [b]
+dmov [__temp__579] r2036
+tyof r2036
+mov r2037 [wrapped_types@int]
+dmov [__temp__580] r2037
+tyof r2037
+equ r2036 r2037
+bneg r2036
+jmp r2036 .L541
+scope
+mov r2039 [a]
+mov r2038 [int:r2039]
+ret r2038
+escope
+mov r2040 [$true]
+jmp r2040 .L540
+.L541
+mov r2041 [b]
+dmov [__temp__581] r2041
+tyof r2041
+mov r2042 [wrapped_types@decimal]
+dmov [__temp__582] r2042
+tyof r2042
+equ r2041 r2042
+bneg r2041
+jmp r2041 .L542
+scope
+mov r2044 [a]
+mov r2043 [decimal:r2044]
+ret r2043
+escope
+mov r2045 [$true]
+jmp r2045 .L540
+.L542
+.L540
+escope
+mov r2046 [$true]
+jmp r2046 .L534
+.L539
+mov r2047 [a]
+dmov [__temp__583] r2047
+tyof r2047
+mov r2048 [wrapped_types@int]
+dmov [__temp__584] r2048
+tyof r2048
+equ r2047 r2048
+bneg r2047
+jmp r2047 .L543
+scope
+mov r2049 [b]
+dmov [__temp__585] r2049
+tyof r2049
+mov r2050 [ct@integer_type]
+equ r2049 r2050
+bneg r2049
+jmp r2049 .L545
+scope
+mov r2051 [a]
+ret r2051
+escope
+mov r2052 [$true]
+jmp r2052 .L544
+.L545
+mov r2053 [b]
+dmov [__temp__586] r2053
+tyof r2053
+mov r2054 [ct@decimal_type]
+equ r2053 r2054
+bneg r2053
+jmp r2053 .L546
+scope
+mov r2056 [a@int]
+mov r2055 [decimal:r2056]
+ret r2055
+escope
+mov r2057 [$true]
+jmp r2057 .L544
+.L546
+mov r2058 [b]
+dmov [__temp__587] r2058
+tyof r2058
+mov r2059 [wrapped_types@int]
+dmov [__temp__588] r2059
+tyof r2059
+equ r2058 r2059
+bneg r2058
+jmp r2058 .L547
+scope
+mov r2060 [a]
+ret r2060
+escope
+mov r2061 [$true]
+jmp r2061 .L544
+.L547
+mov r2062 [b]
+dmov [__temp__589] r2062
+tyof r2062
+mov r2063 [wrapped_types@decimal]
+dmov [__temp__590] r2063
+tyof r2063
+equ r2062 r2063
+bneg r2062
+jmp r2062 .L548
+scope
+mov r2065 [a@int]
+mov r2064 [decimal:r2065]
+ret r2064
+escope
+mov r2066 [$true]
+jmp r2066 .L544
+.L548
+.L544
+escope
+mov r2067 [$true]
+jmp r2067 .L534
+.L543
+mov r2068 [a]
+dmov [__temp__591] r2068
+tyof r2068
+mov r2069 [wrapped_types@decimal]
+dmov [__temp__592] r2069
+tyof r2069
+equ r2068 r2069
+bneg r2068
+jmp r2068 .L549
+scope
+mov r2070 [b]
+dmov [__temp__593] r2070
+tyof r2070
+mov r2071 [ct@integer_type]
+equ r2070 r2071
+bneg r2070
+jmp r2070 .L551
+scope
+mov r2073 [a]
+mov r2072 [int:r2073]
+ret r2072
+escope
+mov r2074 [$true]
+jmp r2074 .L550
+.L551
+mov r2075 [b]
+dmov [__temp__594] r2075
+tyof r2075
+mov r2076 [ct@decimal_type]
+equ r2075 r2076
+bneg r2075
+jmp r2075 .L552
+scope
+mov r2077 [a]
+ret r2077
+escope
+mov r2078 [$true]
+jmp r2078 .L550
+.L552
+mov r2079 [b]
+dmov [__temp__595] r2079
+tyof r2079
+mov r2080 [wrapped_types@int]
+dmov [__temp__596] r2080
+tyof r2080
+equ r2079 r2080
+bneg r2079
+jmp r2079 .L553
+scope
+mov r2082 [a]
+mov r2081 [int:r2082]
+ret r2081
+escope
+mov r2083 [$true]
+jmp r2083 .L550
+.L553
+mov r2084 [b]
+dmov [__temp__597] r2084
+tyof r2084
+mov r2085 [wrapped_types@decimal]
+dmov [__temp__598] r2085
+tyof r2085
+equ r2084 r2085
+bneg r2084
+jmp r2084 .L554
+scope
+mov r2086 [a]
+ret r2086
+escope
+mov r2087 [$true]
+jmp r2087 .L550
+.L554
+.L550
+escope
+mov r2088 [$true]
+jmp r2088 .L534
+.L549
+.L534
+mov r2089 [$nil]
+ret r2089
+efunc
+ifunc __binary_not__ a 
+mov r2091 [a]
+mov r2090 [is_pure:r2091]
+bneg r2090
+jmp r2090 .L556
+scope
+mov r2092 [$nil]
+ret r2092
+escope
+mov r2093 [$true]
+jmp r2093 .L555
+.L556
+.L555
+mov r2094 [a]
+dmov [__temp__599] r2094
+tyof r2094
+mov r2095 [wrapped_types@boolean]
+dmov [__temp__600] r2095
+tyof r2095
+equ r2094 r2095
+bneg r2094
+jmp r2094 .L558
+scope
+mov r2097 [a@boolean]
+bneg r2097
+mov r2096 [boolean:r2097]
+ret r2096
+escope
+mov r2098 [$true]
+jmp r2098 .L557
+.L558
+.L557
+mov r2099 [$nil]
+ret r2099
+efunc
+ifunc __logical_and__ a b 
+mov r2101 [a]
+mov r2100 [is_pure:r2101]
+mov r2103 [b]
+mov r2102 [is_pure:r2103]
+lor r2100 r2102
+bneg r2100
+jmp r2100 .L560
+scope
+mov r2104 [$nil]
+ret r2104
+escope
+mov r2105 [$true]
+jmp r2105 .L559
+.L560
+.L559
+mov r2106 [a]
+dmov [__temp__601] r2106
+tyof r2106
+mov r2107 [wrapped_types@boolean]
+dmov [__temp__602] r2107
+tyof r2107
+equ r2106 r2107
+bneg r2106
+jmp r2106 .L562
+scope
+mov r2108 [b]
+dmov [__temp__603] r2108
+tyof r2108
+mov r2109 [wrapped_types@boolean]
+dmov [__temp__604] r2109
+tyof r2109
+equ r2108 r2109
+bneg r2108
+jmp r2108 .L564
+scope
+mov r2111 [a@boolean]
+mov r2112 [b@boolean]
+land r2111 r2112
+mov r2110 [boolean:r2111]
+ret r2110
+escope
+mov r2113 [$true]
+jmp r2113 .L563
+.L564
+mov r2114 [b]
+dmov [__temp__605] r2114
+tyof r2114
+mov r2115 [ct@boolean_type]
+equ r2114 r2115
+bneg r2114
+jmp r2114 .L565
+scope
+mov r2117 [a@boolean]
+mov r2118 [b]
+land r2117 r2118
+mov r2116 [boolean:r2117]
+ret r2116
+escope
+mov r2119 [$true]
+jmp r2119 .L563
+.L565
+.L563
+escope
+mov r2120 [$true]
+jmp r2120 .L561
+.L562
+mov r2121 [a]
+dmov [__temp__606] r2121
+tyof r2121
+mov r2122 [ct@boolean_type]
+equ r2121 r2122
+bneg r2121
+jmp r2121 .L566
+scope
+mov r2123 [b]
+dmov [__temp__607] r2123
+tyof r2123
+mov r2124 [wrapped_types@boolean]
+dmov [__temp__608] r2124
+tyof r2124
+equ r2123 r2124
+bneg r2123
+jmp r2123 .L568
+scope
+mov r2126 [a]
+mov r2127 [b@boolean]
+land r2126 r2127
+mov r2125 [boolean:r2126]
+ret r2125
+escope
+mov r2128 [$true]
+jmp r2128 .L567
+.L568
+.L567
+escope
+mov r2129 [$true]
+jmp r2129 .L561
+.L566
+.L561
+mov r2130 [$nil]
+ret r2130
+efunc
+ifunc __logical_or__ a b 
+mov r2132 [a]
+mov r2131 [is_pure:r2132]
+mov r2134 [b]
+mov r2133 [is_pure:r2134]
+lor r2131 r2133
+bneg r2131
+jmp r2131 .L570
+scope
+mov r2135 [$nil]
+ret r2135
+escope
+mov r2136 [$true]
+jmp r2136 .L569
+.L570
+.L569
+mov r2137 [a]
+dmov [__temp__609] r2137
+tyof r2137
+mov r2138 [wrapped_types@boolean]
+dmov [__temp__610] r2138
+tyof r2138
+equ r2137 r2138
+bneg r2137
+jmp r2137 .L572
+scope
+mov r2139 [b]
+dmov [__temp__611] r2139
+tyof r2139
+mov r2140 [wrapped_types@boolean]
+dmov [__temp__612] r2140
+tyof r2140
+equ r2139 r2140
+bneg r2139
+jmp r2139 .L574
+scope
+mov r2142 [a@boolean]
+mov r2143 [b@boolean]
+lor r2142 r2143
+mov r2141 [boolean:r2142]
+ret r2141
+escope
+mov r2144 [$true]
+jmp r2144 .L573
+.L574
+mov r2145 [b]
+dmov [__temp__613] r2145
+tyof r2145
+mov r2146 [ct@boolean_type]
+equ r2145 r2146
+bneg r2145
+jmp r2145 .L575
+scope
+mov r2148 [a@boolean]
+mov r2149 [b]
+lor r2148 r2149
+mov r2147 [boolean:r2148]
+ret r2147
+escope
+mov r2150 [$true]
+jmp r2150 .L573
+.L575
+.L573
+escope
+mov r2151 [$true]
+jmp r2151 .L571
+.L572
+mov r2152 [a]
+dmov [__temp__614] r2152
+tyof r2152
+mov r2153 [ct@boolean_type]
+equ r2152 r2153
+bneg r2152
+jmp r2152 .L576
+scope
+mov r2154 [b]
+dmov [__temp__615] r2154
+tyof r2154
+mov r2155 [wrapped_types@boolean]
+dmov [__temp__616] r2155
+tyof r2155
+equ r2154 r2155
+bneg r2154
+jmp r2154 .L578
+scope
+mov r2157 [a]
+mov r2158 [b@boolean]
+lor r2157 r2158
+mov r2156 [boolean:r2157]
+ret r2156
+escope
+mov r2159 [$true]
+jmp r2159 .L577
+.L578
+.L577
+escope
+mov r2160 [$true]
+jmp r2160 .L571
+.L576
+.L571
+mov r2161 [$nil]
+ret r2161
+efunc
+ifunc __numeric_positive__ a 
+mov r2163 [a]
+mov r2162 [is_pure:r2163]
+bneg r2162
+jmp r2162 .L580
+scope
+mov r2164 [$nil]
+ret r2164
+escope
+mov r2165 [$true]
+jmp r2165 .L579
+.L580
+.L579
+mov r2166 [a]
+dmov [__temp__617] r2166
+tyof r2166
+mov r2167 [wrapped_types@int]
+dmov [__temp__618] r2167
+tyof r2167
+equ r2166 r2167
+bneg r2166
+jmp r2166 .L582
+scope
+mov r2169 [a@int]
+pos r2169
+mov r2168 [int:r2169]
+ret r2168
+escope
+mov r2170 [$true]
+jmp r2170 .L581
+.L582
+mov r2171 [a]
+dmov [__temp__619] r2171
+tyof r2171
+mov r2172 [wrapped_types@decimal]
+dmov [__temp__620] r2172
+tyof r2172
+equ r2171 r2172
+bneg r2171
+jmp r2171 .L583
+scope
+mov r2174 [a@decimal]
+pos r2174
+mov r2173 [decimal:r2174]
+ret r2173
+escope
+mov r2175 [$true]
+jmp r2175 .L581
+.L583
+mov r2176 [a]
+dmov [__temp__621] r2176
+tyof r2176
+mov r2177 [wrapped_types@boolean]
+dmov [__temp__622] r2177
+tyof r2177
+equ r2176 r2177
+bneg r2176
+jmp r2176 .L584
+scope
+mov r2178 [a@boolean]
+ret r2178
+escope
+mov r2179 [$true]
+jmp r2179 .L581
+.L584
+mov r2180 [a]
+dmov [__temp__623] r2180
+tyof r2180
+mov r2181 [ct@boolean_type]
+equ r2180 r2181
+bneg r2180
+jmp r2180 .L585
+scope
+mov r2182 [a]
+ret r2182
+escope
+mov r2183 [$true]
+jmp r2183 .L581
+.L585
+.L581
+mov r2184 [$nil]
+ret r2184
+efunc
+ifunc __numeric_negate__ a 
+mov r2186 [a]
+mov r2185 [is_pure:r2186]
+bneg r2185
+jmp r2185 .L587
+scope
+mov r2187 [$nil]
+ret r2187
+escope
+mov r2188 [$true]
+jmp r2188 .L586
+.L587
+.L586
+mov r2189 [a]
+dmov [__temp__624] r2189
+tyof r2189
+mov r2190 [wrapped_types@int]
+dmov [__temp__625] r2190
+tyof r2190
+equ r2189 r2190
+bneg r2189
+jmp r2189 .L589
+scope
+mov r2192 [a@int]
+neg r2192
+mov r2191 [int:r2192]
+ret r2191
+escope
+mov r2193 [$true]
+jmp r2193 .L588
+.L589
+mov r2194 [a]
+dmov [__temp__626] r2194
+tyof r2194
+mov r2195 [wrapped_types@decimal]
+dmov [__temp__627] r2195
+tyof r2195
+equ r2194 r2195
+bneg r2194
+jmp r2194 .L590
+scope
+mov r2197 [a@decimal]
+neg r2197
+mov r2196 [decimal:r2197]
+ret r2196
+escope
+mov r2198 [$true]
+jmp r2198 .L588
+.L590
+mov r2199 [a]
+dmov [__temp__628] r2199
+tyof r2199
+mov r2200 [wrapped_types@boolean]
+dmov [__temp__629] r2200
+tyof r2200
+equ r2199 r2200
+bneg r2199
+jmp r2199 .L591
+scope
+mov r2201 [a@boolean]
+bneg r2201
+ret r2201
+escope
+mov r2202 [$true]
+jmp r2202 .L588
+.L591
+mov r2203 [a]
+dmov [__temp__630] r2203
+tyof r2203
+mov r2204 [ct@boolean_type]
+equ r2203 r2204
+bneg r2203
+jmp r2203 .L592
+scope
+mov r2205 [a]
+bneg r2205
+ret r2205
+escope
+mov r2206 [$true]
+jmp r2206 .L588
+.L592
+.L588
+mov r2207 [$nil]
+ret r2207
+efunc
+ifunc __complement__ a 
+mov r2209 [a]
+mov r2208 [is_pure:r2209]
+bneg r2208
+jmp r2208 .L594
+scope
+mov r2210 [$nil]
+ret r2210
+escope
+mov r2211 [$true]
+jmp r2211 .L593
+.L594
+.L593
+mov r2212 [a]
+dmov [__temp__631] r2212
+tyof r2212
+mov r2213 [wrapped_types@int]
+dmov [__temp__632] r2213
+tyof r2213
+equ r2212 r2213
+bneg r2212
+jmp r2212 .L596
+scope
+mov r2215 [a@int]
+cmpl r2215
+mov r2214 [int:r2215]
+ret r2214
+escope
+mov r2216 [$true]
+jmp r2216 .L595
+.L596
+.L595
+mov r2217 [$nil]
+ret r2217
+efunc
+ifunc __boolean_negate__ a 
+mov r2219 [a]
+mov r2218 [is_pure:r2219]
+bneg r2218
+jmp r2218 .L598
+scope
+mov r2220 [$nil]
+ret r2220
+escope
+mov r2221 [$true]
+jmp r2221 .L597
+.L598
+.L597
+mov r2222 [a]
+dmov [__temp__633] r2222
+tyof r2222
+mov r2223 [wrapped_types@boolean]
+dmov [__temp__634] r2223
+tyof r2223
+equ r2222 r2223
+bneg r2222
+jmp r2222 .L600
+scope
+mov r2225 [a@boolean]
+bneg r2225
+mov r2224 [boolean:r2225]
+ret r2224
+escope
+mov r2226 [$true]
+jmp r2226 .L599
+.L600
+.L599
+mov r2227 [$nil]
+ret r2227
+efunc
+ifunc __pre_increment__ a 
+mov r2229 [a]
+mov r2228 [is_pure:r2229]
+bneg r2228
+jmp r2228 .L602
+scope
+mov r2230 [$nil]
+ret r2230
+escope
+mov r2231 [$true]
+jmp r2231 .L601
+.L602
+.L601
+mov r2232 [a]
+dmov [__temp__635] r2232
+tyof r2232
+mov r2233 [wrapped_types@int]
+dmov [__temp__636] r2233
+tyof r2233
+equ r2232 r2233
+bneg r2232
+jmp r2232 .L604
+scope
+mov r2234 [a]
+mov r2235 [$1]
+adde [a] r2235
+mov r2236 [a]
+ret r2236
+escope
+mov r2237 [$true]
+jmp r2237 .L603
+.L604
+.L603
+mov r2238 [$nil]
+ret r2238
+efunc
+ifunc __pre_decrement__ a 
+mov r2240 [a]
+mov r2239 [is_pure:r2240]
+bneg r2239
+jmp r2239 .L606
+scope
+mov r2241 [$nil]
+ret r2241
+escope
+mov r2242 [$true]
+jmp r2242 .L605
+.L606
+.L605
+mov r2243 [a]
+dmov [__temp__637] r2243
+tyof r2243
+mov r2244 [wrapped_types@int]
+dmov [__temp__638] r2244
+tyof r2244
+equ r2243 r2244
+bneg r2243
+jmp r2243 .L608
+scope
+mov r2245 [a]
+mov r2246 [$1]
+sube [a] r2246
+mov r2247 [a]
+ret r2247
+escope
+mov r2248 [$true]
+jmp r2248 .L607
+.L608
+.L607
+mov r2249 [$nil]
+ret r2249
+efunc
+ifunc __post_increment__ a 
+mov r2251 [a]
+mov r2250 [is_pure:r2251]
+bneg r2250
+jmp r2250 .L610
+scope
+mov r2252 [$nil]
+ret r2252
+escope
+mov r2253 [$true]
+jmp r2253 .L609
+.L610
+.L609
+mov r2254 [a]
+dmov [__temp__639] r2254
+tyof r2254
+mov r2255 [wrapped_types@int]
+dmov [__temp__640] r2255
+tyof r2255
+equ r2254 r2255
+bneg r2254
+jmp r2254 .L612
+scope
+mov r2257 [a@int]
+mov r2258 [$1]
+add r2257 r2258
+mov r2256 [int:r2257]
+dmov [temp] r2256
+mov r2259 [a]
+princ [a]
+mov r2259 [a]
+mov r2260 [temp]
+ret r2260
+escope
+mov r2261 [$true]
+jmp r2261 .L611
+.L612
+.L611
+mov r2262 [$nil]
+ret r2262
+efunc
+ifunc __post_decrement__ a 
+mov r2264 [a]
+mov r2263 [is_pure:r2264]
+bneg r2263
+jmp r2263 .L614
+scope
+mov r2265 [$nil]
+ret r2265
+escope
+mov r2266 [$true]
+jmp r2266 .L613
+.L614
+.L613
+mov r2267 [a]
+dmov [__temp__641] r2267
+tyof r2267
+mov r2268 [wrapped_types@int]
+dmov [__temp__642] r2268
+tyof r2268
+equ r2267 r2268
+bneg r2267
+jmp r2267 .L616
+scope
+mov r2270 [a@int]
+mov r2271 [$1]
+sub r2270 r2271
+mov r2269 [int:r2270]
+dmov [temp] r2269
+mov r2272 [a]
+prdec [a]
+mov r2272 [a]
+mov r2273 [temp]
+ret r2273
+escope
+mov r2274 [$true]
+jmp r2274 .L615
+.L616
+.L615
+mov r2275 [$nil]
+ret r2275
+efunc
+ifunc b a 
+mov r2277 [a]
+mov r2276 [is_pure:r2277]
+bneg r2276
+jmp r2276 .L618
+scope
+mov r2278 [$nil]
+ret r2278
+escope
+mov r2279 [$true]
+jmp r2279 .L617
+.L618
+.L617
+mov r2280 [a]
+dmov [__temp__643] r2280
+tyof r2280
+mov r2281 [ct@integer_type]
+equ r2280 r2281
+mov r2282 [a]
+dmov [__temp__644] r2282
+tyof r2282
+mov r2283 [wrapped_types@int]
+dmov [__temp__645] r2283
+tyof r2283
+equ r2282 r2283
+lor r2280 r2282
+bneg r2280
+jmp r2280 .L620
+scope
+mov r2285 [a]
+mov r2286 [$0]
+gt r2285 r2286
+mov r2284 [boolean:r2285]
+ret r2284
+escope
+mov r2287 [$true]
+jmp r2287 .L619
+.L620
+mov r2288 [a]
+dmov [__temp__646] r2288
+tyof r2288
+mov r2289 [ct@decimal_type]
+equ r2288 r2289
+mov r2290 [a]
+dmov [__temp__647] r2290
+tyof r2290
+mov r2291 [wrapped_types@decimal]
+dmov [__temp__648] r2291
+tyof r2291
+equ r2290 r2291
+lor r2288 r2290
+bneg r2288
+jmp r2288 .L621
+scope
+mov r2293 [a]
+mov r2294 [$0]
+gt r2293 r2294
+mov r2292 [boolean:r2293]
+ret r2292
+escope
+mov r2295 [$true]
+jmp r2295 .L619
+.L621
+mov r2296 [a]
+dmov [__temp__649] r2296
+tyof r2296
+mov r2297 [ct@string_type]
+equ r2296 r2297
+mov r2298 [a]
+dmov [__temp__650] r2298
+tyof r2298
+mov r2299 [wrapped_types@string]
+dmov [__temp__651] r2299
+tyof r2299
+equ r2298 r2299
+lor r2296 r2298
+bneg r2296
+jmp r2296 .L622
+scope
+mov r2301 [a@size]
+mov r2302 [$0]
+gt r2301 r2302
+mov r2300 [boolean:r2301]
+ret r2300
+escope
+mov r2303 [$true]
+jmp r2303 .L619
+.L622
+mov r2304 [a]
+dmov [__temp__652] r2304
+tyof r2304
+mov r2305 [ct@boolean_type]
+equ r2304 r2305
+mov r2306 [a]
+dmov [__temp__653] r2306
+tyof r2306
+mov r2307 [wrapped_types@boolean]
+dmov [__temp__654] r2307
+tyof r2307
+equ r2306 r2307
+lor r2304 r2306
+bneg r2304
+jmp r2304 .L623
+scope
+mov r2309 [a]
+pos r2309
+mov r2308 [boolean:r2309]
+ret r2308
+escope
+mov r2310 [$true]
+jmp r2310 .L619
+.L623
+mov r2311 [a]
+dmov [__temp__655] r2311
+tyof r2311
+mov r2312 [$nil]
+dmov [__temp__656] r2312
+tyof r2312
+equ r2311 r2312
+bneg r2311
+jmp r2311 .L624
+scope
+mov r2314 [$false]
+mov r2313 [boolean:r2314]
+ret r2313
+escope
+mov r2315 [$true]
+jmp r2315 .L619
+.L624
+.L619
+mov r2316 [$nil]
+ret r2316
+efunc
+ifunc __print__ a 
+mov r2317 [a]
+dmov [__temp__657] r2317
+tyof r2317
+mov r2318 [wrapped_types@int]
+dmov [__temp__658] r2318
+tyof r2318
+equ r2317 r2318
+bneg r2317
+jmp r2317 .L626
+scope
+mov r2319 [a@int]
+ret r2319
+escope
+mov r2320 [$true]
+jmp r2320 .L625
+.L626
+mov r2321 [a]
+dmov [__temp__659] r2321
+tyof r2321
+mov r2322 [wrapped_types@decimal]
+dmov [__temp__660] r2322
+tyof r2322
+equ r2321 r2322
+bneg r2321
+jmp r2321 .L627
+scope
+mov r2323 [a@decimal]
+ret r2323
+escope
+mov r2324 [$true]
+jmp r2324 .L625
+.L627
+mov r2325 [a]
+dmov [__temp__661] r2325
+tyof r2325
+mov r2326 [wrapped_types@boolean]
+dmov [__temp__662] r2326
+tyof r2326
+equ r2325 r2326
+bneg r2325
+jmp r2325 .L628
+scope
+mov r2327 [a@boolean]
+ret r2327
+escope
+mov r2328 [$true]
+jmp r2328 .L625
+.L628
+mov r2329 [a]
+dmov [__temp__663] r2329
+tyof r2329
+mov r2330 [wrapped_types@string]
+dmov [__temp__664] r2330
+tyof r2330
+equ r2329 r2330
+bneg r2329
+jmp r2329 .L629
+scope
+mov r2331 [a@string]
+ret r2331
+escope
+mov r2332 [$true]
+jmp r2332 .L625
+.L629
+.L625
+mov r2333 [$nil]
+ret r2333
+efunc

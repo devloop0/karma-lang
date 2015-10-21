@@ -1,0 +1,20 @@
+func immut -> base_function()
+enum -> base_enum
+struct immut -> base_struct
+module immut -> base_module {}
+
+var -> integer_type = [0]
+var -> string_type = ['']
+var -> decimal_type = [0.0]
+var -> boolean_type = [false]
+var -> function_type = [base_function]
+var -> module_type = [base_module]
+var -> struct_type = [base_struct]
+var -> list_type = [ [[[]]] ]
+var -> tuple_type = [ <<<>>> ]
+var -> dict_type = [ {{{}}} ]
+var -> enum_type = [base_enum]
+
+enum -> base_enum {}
+struct immut -> base_struct {}
+func immut -> base_function() {}

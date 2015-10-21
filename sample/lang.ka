@@ -1,0 +1,1262 @@
+import -> core_types -> ct
+
+module -> wrapped_types {
+	struct -> int {
+		var -> int : [0]
+	}
+
+	struct -> decimal {
+		var -> decimal : [0]
+	}
+
+	struct -> string {
+		var -> string : ['']
+		var -> size : [0]
+	}
+
+	struct -> boolean {
+		var -> boolean : [true]
+	}
+}
+
+func -> int(var -> i) {
+	var -> ret = wrapped_types.int
+	ret.int = i
+	return ret
+}
+
+func -> decimal(var -> d) {
+	var -> ret = wrapped_types.decimal
+	ret.decimal = d
+	return ret
+}
+
+func -> string(var -> s) {
+	var -> ret = wrapped_types.string
+	ret.string = s
+	ret.size = s.size
+	return ret
+}
+
+func -> boolean(var -> b) {
+	var -> ret = wrapped_types.boolean
+	ret.boolean = b
+	return ret
+}
+
+func immut -> __add__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == [wrapped_types.int] {
+			return int(a.int + b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(b.decimal + a.int)
+		} -> [b] == ct.integer_type {
+			return int(a.int + b)
+		} -> [b] == ct.decimal_type {
+			return decimal(b + a.int)
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return int(b.int + a)
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(b.decimal + a)
+		}
+	} -> [a] == [wrapped_types.decimal] {
+		if [b] == [wrapped_types.int] {
+			return decimal(a.decimal + b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(a.decimal + b.decimal)
+		} -> [b] == ct.integer_type {
+			return decimal(a.decimal + b)
+		} -> [b] == ct.decimal_type {
+			return decimal(a.decimal + b)
+		}
+	} -> [a] == ct.decimal_type {
+		if [b] == [wrapped_types.decimal] {
+			return decimal(a + b.decimal)
+		} -> [b] == [wrapped_types.int] {
+			return decimal(a + b.int)
+		}
+	} -> [a] == [wrapped_types.string] {
+		if [b] == [wrapped_types.string] {
+			return string(add(a.string, b.string))
+		} -> [b] == ct.string_type {
+			return string(add(a.string, b))
+		}
+	} -> [a] == ct.string_type {
+		if [b] == [wrapped_types.string] {
+			return add(a, b.string)
+		} -> [b] == ct.string_type {
+			return add(a, b)
+		}
+	}
+	return nil
+}
+
+func immut -> __add_equals__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == [wrapped_types.int] {
+			a.int += b.int
+			return a
+		} -> [b] == [wrapped_types.decimal] {
+			a.int += b.decimal
+			return a
+		} -> [b] == ct.integer_type {
+			a.int += b
+			return a
+		} -> [b] == ct.decimal_type {
+			a.int += b
+			return a
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			a += b.int
+			return a
+		} -> [b] == [wrapped_types.decimal] {
+			a += b.decimal
+			return a
+		}
+	} -> [a] == [wrapped_types.decimal] {
+		if [b] == [wrapped_types.int] {
+			a.decimal += b.int
+			return a
+		} -> [b] == [wrapped_types.decimal] {
+			a.decimal += b.decimal
+			return a
+		} -> [b] == ct.integer_type {
+			a.decimal += b
+			return a
+		} -> [b] == ct.decimal_type {
+			a.decimal += b
+			return a
+		}
+	} -> [a] == ct.decimal_type {
+		if [b] == [wrapped_types.decimal] {
+			return a += b.decimal
+			return a
+		} -> [b] == [wrapped_types.int] {
+			return a += b.int
+			return a
+		}
+	} -> [a] == [wrapped_types.string] {
+		if [b] == [wrapped_types.string] {
+			a.string = add(a.string, b.string)
+			return a
+		} -> [b] == ct.string_type {
+			a.string = add(a.string, b)
+			return a
+		}
+	} -> [a] == ct.string_type {
+		if [b] == [wrapped_types.string] {
+			a = add(a, b.string)
+			return a
+		} -> [b] == ct.string_type {
+			a = add(a, b)
+			return a
+		}
+	}
+	return nil
+}
+
+func immut -> __subtract__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == [wrapped_types.int] {
+			return int(a.int - b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(b.decimal - a.int)
+		} -> [b] == ct.integer_type {
+			return int(a.int - b)
+		} -> [b] == ct.decimal_type {
+			return decimal(b - a.int)
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return int(b.int - a)
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(b.decimal - a)
+		}
+	} -> [a] == [wrapped_types.decimal] {
+		if [b] == [wrapped_types.int] {
+			return decimal(a.decimal - b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(a.decimal - b.decimal)
+		} -> [b] == ct.integer_type {
+			return decimal(a.decimal - b)
+		} -> [b] == ct.decimal_type {
+			return decimal(a.decimal - b)
+		}
+	} -> [a] == ct.decimal_type {
+		if [b] == [wrapped_types.decimal] {
+			return decimal(a - b.decimal)
+		} -> [b] == [wrapped_types.int] {
+			return decimal(a - b.int)
+		}
+	}
+	return nil
+}
+
+func immut -> __subtract_equals__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == [wrapped_types.int] {
+			a.int -= b.int
+			return a
+		} -> [b] == [wrapped_types.decimal] {
+			a.int -= b.decimal
+			return a
+		} -> [b] == ct.integer_type {
+			a.int -= b
+			return a
+		} -> [b] == ct.decimal_type {
+			a.int -= b
+			return a
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			a -= b.int
+			return a
+		} -> [b] == [wrapped_types.decimal] {
+			a -= b.decimal
+			return a
+		}
+	} -> [a] == [wrapped_types.decimal] {
+		if [b] == [wrapped_types.int] {
+			a.decimal -= b.int
+			return a
+		} -> [b] == [wrapped_types.decimal] {
+			a.decimal -= b.decimal
+			return a
+		} -> [b] == ct.integer_type {
+			a.decimal -= b
+			return a
+		} -> [b] == ct.decimal_type {
+			a.decimal -= b
+			return a
+		}
+	} -> [a] == ct.decimal_type {
+		if [b] == [wrapped_types.decimal] {
+			return a -= b.decimal
+			return a
+		} -> [b] == [wrapped_types.int] {
+			return a -= b.int
+			return a
+		}
+	}
+	return nil
+}
+
+func immut -> __multiply__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == [wrapped_types.int] {
+			return int(a.int * b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(b.decimal * a.int)
+		} -> [b] == ct.integer_type {
+			return int(a.int * b)
+		} -> [b] == ct.decimal_type {
+			return decimal(b * a.int)
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return int(b.int * a)
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(b.decimal * a)
+		}
+	} -> [a] == [wrapped_types.decimal] {
+		if [b] == [wrapped_types.int] {
+			return decimal(a.decimal * b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(a.decimal * b.decimal)
+		} -> [b] == ct.integer_type {
+			return decimal(a.decimal * b)
+		} -> [b] == ct.decimal_type {
+			return decimal(a.decimal * b)
+		}
+	} -> [a] == ct.decimal_type {
+		if [b] == [wrapped_types.decimal] {
+			return decimal(a * b.decimal)
+		} -> [b] == [wrapped_types.int] {
+			return decimal(a * b.int)
+		}
+	}
+	return nil
+}
+
+func immut -> __multiply_equals__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == [wrapped_types.int] {
+			a.int *= b.int
+			return a
+		} -> [b] == [wrapped_types.decimal] {
+			a.int *= b.decimal
+			return a
+		} -> [b] == ct.integer_type {
+			a.int *= b
+			return a
+		} -> [b] == ct.decimal_type {
+			a.int *= b
+			return a
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			a *= b.int
+			return a
+		} -> [b] == [wrapped_types.decimal] {
+			a *= b.decimal
+			return a
+		}
+	} -> [a] == [wrapped_types.decimal] {
+		if [b] == [wrapped_types.int] {
+			a.decimal *= b.int
+			return a
+		} -> [b] == [wrapped_types.decimal] {
+			a.decimal *= b.decimal
+			return a
+		} -> [b] == ct.integer_type {
+			a.decimal *= b
+			return a
+		} -> [b] == ct.decimal_type {
+			a.decimal *= b
+			return a
+		}
+	} -> [a] == ct.decimal_type {
+		if [b] == [wrapped_types.decimal] {
+			return a *= b.decimal
+			return a
+		} -> [b] == [wrapped_types.int] {
+			return a *= b.int
+			return a
+		}
+	}
+	return nil
+}
+
+func immut -> __divide__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == [wrapped_types.int] {
+			return int(a.int / b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(b.decimal / a.int)
+		} -> [b] == ct.integer_type {
+			return int(a.int / b)
+		} -> [b] == ct.decimal_type {
+			return decimal(b / a.int)
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return int(b.int / a)
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(b.decimal / a)
+		}
+	} -> [a] == [wrapped_types.decimal] {
+		if [b] == [wrapped_types.int] {
+			return decimal(a.decimal / b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(a.decimal / b.decimal)
+		} -> [b] == ct.integer_type {
+			return decimal(a.decimal / b)
+		} -> [b] == ct.decimal_type {
+			return decimal(a.decimal / b)
+		}
+	} -> [a] == ct.decimal_type {
+		if [b] == [wrapped_types.decimal] {
+			return decimal(a / b.decimal)
+		} -> [b] == [wrapped_types.int] {
+			return decimal(a / b.int)
+		}
+	}
+	return nil
+}
+
+func immut -> __divide_equals__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == [wrapped_types.int] {
+			a.int /= b.int
+			return a
+		} -> [b] == [wrapped_types.decimal] {
+			a.int /= b.decimal
+			return a
+		} -> [b] == ct.integer_type {
+			a.int /= b
+			return a
+		} -> [b] == ct.decimal_type {
+			a.int /= b
+			return a
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			a /= b.int
+			return a
+		} -> [b] == [wrapped_types.decimal] {
+			a /= b.decimal
+			return a
+		}
+	} -> [a] == [wrapped_types.decimal] {
+		if [b] == [wrapped_types.int] {
+			a.decimal /= b.int
+			return a
+		} -> [b] == [wrapped_types.decimal] {
+			a.decimal /= b.decimal
+			return a
+		} -> [b] == ct.integer_type {
+			a.decimal /= b
+			return a
+		} -> [b] == ct.decimal_type {
+			a.decimal /= b
+			return a
+		}
+	} -> [a] == ct.decimal_type {
+		if [b] == [wrapped_types.decimal] {
+			return a /= b.decimal
+			return a
+		} -> [b] == [wrapped_types.int] {
+			return a /= b.int
+			return a
+		}
+	}
+	return nil
+}
+
+func immut -> __exponent__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == [wrapped_types.int] {
+			return int(a.int ** b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(b.decimal ** a.int)
+		} -> [b] == ct.integer_type {
+			return int(a.int ** b)
+		} -> [b] == ct.decimal_type {
+			return decimal(b ** a.int)
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return int(b.int ** a)
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(b.decimal ** a)
+		}
+	} -> [a] == [wrapped_types.decimal] {
+		if [b] == [wrapped_types.int] {
+			return decimal(a.decimal ** b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(a.decimal ** b.decimal)
+		} -> [b] == ct.integer_type {
+			return decimal(a.decimal ** b)
+		} -> [b] == ct.decimal_type {
+			return decimal(a.decimal ** b)
+		}
+	} -> [a] == ct.decimal_type {
+		if [b] == [wrapped_types.decimal] {
+			return decimal(a ** b.decimal)
+		} -> [b] == [wrapped_types.int] {
+			return decimal(a ** b.int)
+		}
+	}
+	return nil
+}
+
+func immut -> __exponent_equals__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == [wrapped_types.int] {
+			a.int **= b.int
+			return a
+		} -> [b] == [wrapped_types.decimal] {
+			a.int **= b.decimal
+			return a
+		} -> [b] == ct.integer_type {
+			a.int **= b
+			return a
+		} -> [b] == ct.decimal_type {
+			a.int **= b
+			return a
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			a **= b.int
+			return a
+		} -> [b] == [wrapped_types.decimal] {
+			a **= b.decimal
+			return a
+		}
+	} -> [a] == [wrapped_types.decimal] {
+		if [b] == [wrapped_types.int] {
+			a.decimal **= b.int
+			return a
+		} -> [b] == [wrapped_types.decimal] {
+			a.decimal **= b.decimal
+			return a
+		} -> [b] == ct.integer_type {
+			a.decimal **= b
+			return a
+		} -> [b] == ct.decimal_type {
+			a.decimal **= b
+			return a
+		}
+	} -> [a] == ct.decimal_type {
+		if [b] == [wrapped_types.decimal] {
+			return a **= b.decimal
+			return a
+		} -> [b] == [wrapped_types.int] {
+			return a **= b.int
+			return a
+		}
+	}
+	return nil
+}
+
+func immut -> __modulus__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == ct.integer_type {
+			return int(a.int % b)
+		} -> [b] == [wrapped_types.int] {
+			return int(a.int % b.int)
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return int(a % b.int)
+		}
+	}
+	return nil
+}
+
+func immut -> __modulus_equals__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == ct.integer_type {
+			a.int %= b
+			return a
+		} -> [b] == [wrapped_types.int] {
+			a.int %= b.int
+			return a
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			a %= b.int
+			return a
+		}
+	}
+	return nil
+}
+
+func immut -> __exclusive_or__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == ct.integer_type {
+			return int(a.int ^ b)
+		} -> [b] == [wrapped_types.int] {
+			return int(a.int ^ b.int)
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return int(a ^ b.int)
+		}
+	}
+	return nil
+}
+
+func immut -> __exclusive_or_equals__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == ct.integer_type {
+			a.int ^= b
+			return a
+		} -> [b] == [wrapped_types.int] {
+			a.int ^= b.int
+			return a
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			a ^= b.int
+			return a
+		}
+	}
+	return nil
+}
+
+func immut -> __binary_or__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == ct.integer_type {
+			return int(a.int | b)
+		} -> [b] == [wrapped_types.int] {
+			return int(a.int | b.int)
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return int(a | b.int)
+		}
+	}
+	return nil
+}
+
+func immut -> __binary_or_equals__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == ct.integer_type {
+			a.int |= b
+			return a
+		} -> [b] == [wrapped_types.int] {
+			a.int |= b.int
+			return a
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			a |= b.int
+			return a
+		}
+	}
+	return nil
+}
+
+func immut -> __binary_and__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == ct.integer_type {
+			return int(a.int & b)
+		} -> [b] == [wrapped_types.int] {
+			return int(a.int & b.int)
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return int(a & b.int)
+		}
+	}
+	return nil
+}
+
+func immut -> __binary_and_equals__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == ct.integer_type {
+			a.int &= b
+			return a
+		} -> [b] == [wrapped_types.int] {
+			a.int &= b.int
+			return a
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			a &= b.int
+			return a
+		}
+	}
+	return nil
+}
+
+func immut -> __shift_left__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == ct.integer_type {
+			return int(a.int << b)
+		} -> [b] == [wrapped_types.int] {
+			return int(a.int << b.int)
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return int(a << b.int)
+		}
+	}
+	return nil
+}
+
+func immut -> __shift_left_equals__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == ct.integer_type {
+			a.int <<= b
+			return a
+		} -> [b] == [wrapped_types.int] {
+			a.int <<= b.int
+			return a
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			a <<= b.int
+			return a
+		}
+	}
+	return nil
+}
+
+func immut -> __shift_right__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == ct.integer_type {
+			return int(a.int >> b)
+		} -> [b] == [wrapped_types.int] {
+			return int(a.int >> b.int)
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return int(a >> b.int)
+		}
+	}
+	return nil
+}
+
+func immut -> __shift_right_equals__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == ct.integer_type {
+			a.int >>= b
+			return a
+		} -> [b] == [wrapped_types.int] {
+			a.int >>= b.int
+			return a
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			a >>= b.int
+			return a
+		}
+	}
+	return nil
+}
+
+func immut -> __equals_equals__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == [wrapped_types.int] {
+			return boolean(a.int == b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a.int == b.decimal)
+		} -> [b] == ct.integer_type {
+			return boolean(a.int == b)
+		} -> [b] == [ct.integer_decimal] {
+			return boolean(a.int == b)
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return boolean(a == b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a == b.decimal)
+		}
+	} -> [a] == [wrapped_types.decimal] {
+		if [b] == [wrapped_types.int] {
+			return boolean(a.decimal == b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a.decimal == b.decimal)
+		} -> [b] == ct.integer_type {
+			return boolean(a.decimal == b)
+		} -> [b] == ct.decimal_type {
+			return boolean(a.decimal == b)
+		}
+	} -> [a] == ct.decimal_type {
+		if [b] == [wrapped_types.int] {
+			return boolean(a == b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a == b.decimal)
+		}
+	} -> [a] == [wrapped_types.boolean] {
+		if [b] == [wrapped_types.boolean] {
+			return boolean(a.boolean == b.boolean)
+		} -> [b] == ct.boolean_type {
+			return boolean(a.boolean == b)
+		}
+	} -> [a] == ct.boolean_type {
+		if [b] == [wrapped_types.boolean] {
+			return boolean(a == b.boolean)
+		}
+	} -> [a] == [wrapped_types.string] {
+		if [b] == [wrapped_types.string] {
+			return boolean(a.string == b.string)
+		} -> [b] == ct.string_type {
+			return boolean(a.string == b)
+		}
+	} -> [a] == ct.string_type {
+		if [b] == [wrapped_types.string] {
+			return boolean(a == b.string)
+		}
+	}
+	return nil
+}
+
+func immut -> __not_equals__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == [wrapped_types.int] {
+			return boolean(a.int != b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a.int != b.decimal)
+		} -> [b] == ct.integer_type {
+			return boolean(a.int != b)
+		} -> [b] == [ct.integer_decimal] {
+			return boolean(a.int != b)
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return boolean(a != b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a != b.decimal)
+		}
+	} -> [a] == [wrapped_types.decimal] {
+		if [b] == [wrapped_types.int] {
+			return boolean(a.decimal != b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a.decimal != b.decimal)
+		} -> [b] == ct.integer_type {
+			return boolean(a.decimal != b)
+		} -> [b] == ct.decimal_type {
+			return boolean(a.decimal != b)
+		}
+	} -> [a] == ct.decimal_type {
+		if [b] == [wrapped_types.int] {
+			return boolean(a != b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a != b.decimal)
+		}
+	} -> [a] == [wrapped_types.boolean] {
+		if [b] == [wrapped_types.boolean] {
+			return boolean(a.boolean != b.boolean)
+		} -> [b] == ct.boolean_type {
+			return boolean(a.boolean != b)
+		}
+	} -> [a] == ct.boolean_type {
+		if [b] == [wrapped_types.boolean] {
+			return boolean(a != b.boolean)
+		}
+	} -> [a] == [wrapped_types.string] {
+		if [b] == [wrapped_types.string] {
+			return boolean(a.string != b.string)
+		} -> [b] == ct.string_type {
+			return boolean(a.string != b)
+		}
+	} -> [a] == ct.string_type {
+		if [b] == [wrapped_types.string] {
+			return boolean(a != b.string)
+		}
+	}
+	return nil
+}
+
+func immut -> __less_than__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == [wrapped_types.int] {
+			return boolean(a.int < b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a.int < b.decimal)
+		} -> [b] == ct.integer_type {
+			return boolean(a.int < b)
+		} -> [b] == [ct.integer_decimal] {
+			return boolean(a.int < b)
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return boolean(a < b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a < b.decimal)
+		}
+	} -> [a] == [wrapped_types.decimal] {
+		if [b] == [wrapped_types.int] {
+			return boolean(a.decimal < b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a.decimal < b.decimal)
+		} -> [b] == ct.integer_type {
+			return boolean(a.decimal < b)
+		} -> [b] == ct.decimal_type {
+			return boolean(a.decimal < b)
+		}
+	} -> [a] == ct.decimal_type {
+		if [b] == [wrapped_types.int] {
+			return boolean(a < b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a < b.decimal)
+		}
+	}
+	return nil
+}
+
+func immut -> __greater_than__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == [wrapped_types.int] {
+			return boolean(a.int > b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a.int > b.decimal)
+		} -> [b] == ct.integer_type {
+			return boolean(a.int > b)
+		} -> [b] == [ct.integer_decimal] {
+			return boolean(a.int > b)
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return boolean(a > b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a > b.decimal)
+		}
+	} -> [a] == [wrapped_types.decimal] {
+		if [b] == [wrapped_types.int] {
+			return boolean(a.decimal > b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a.decimal > b.decimal)
+		} -> [b] == ct.integer_type {
+			return boolean(a.decimal > b)
+		} -> [b] == ct.decimal_type {
+			return boolean(a.decimal > b)
+		}
+	} -> [a] == ct.decimal_type {
+		if [b] == [wrapped_types.int] {
+			return boolean(a > b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a > b.decimal)
+		}
+	}
+	return nil
+}
+
+func immut -> __greater_than_or_equal_to__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == [wrapped_types.int] {
+			return boolean(a.int >= b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a.int >= b.decimal)
+		} -> [b] == ct.integer_type {
+			return boolean(a.int >= b)
+		} -> [b] == [ct.integer_decimal] {
+			return boolean(a.int >= b)
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return boolean(a >= b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a >= b.decimal)
+		}
+	} -> [a] == [wrapped_types.decimal] {
+		if [b] == [wrapped_types.int] {
+			return boolean(a.decimal >= b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a.decimal >= b.decimal)
+		} -> [b] == ct.integer_type {
+			return boolean(a.decimal >= b)
+		} -> [b] == ct.decimal_type {
+			return boolean(a.decimal >= b)
+		}
+	} -> [a] == ct.decimal_type {
+		if [b] == [wrapped_types.int] {
+			return boolean(a >= b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a >= b.decimal)
+		}
+	}
+	return nil
+}
+
+func immut -> __less_than_or_equal_to__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		if [b] == [wrapped_types.int] {
+			return boolean(a.int <= b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a.int <= b.decimal)
+		} -> [b] == ct.integer_type {
+			return boolean(a.int <= b)
+		} -> [b] == [ct.integer_decimal] {
+			return boolean(a.int <= b)
+		}
+	} -> [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return boolean(a <= b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a <= b.decimal)
+		}
+	} -> [a] == [wrapped_types.decimal] {
+		if [b] == [wrapped_types.int] {
+			return boolean(a.decimal <= b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a.decimal <= b.decimal)
+		} -> [b] == ct.integer_type {
+			return boolean(a.decimal <= b)
+		} -> [b] == ct.decimal_type {
+			return boolean(a.decimal <= b)
+		}
+	} -> [a] == ct.decimal_type {
+		if [b] == [wrapped_types.int] {
+			return boolean(a <= b.int)
+		} -> [b] == [wrapped_types.decimal] {
+			return boolean(a <= b.decimal)
+		}
+	}
+	return nil
+}
+
+func immut -> __cast__(var -> a, var -> b) {
+	if !is_pure(b) {
+		return nil
+	}
+	if [a] == ct.integer_type {
+		if [b] == [wrapped_types.int] {
+			return int(a)
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(a)
+		}
+	} -> [a] == ct.decimal_type {
+		if [b] == [wrapped_types.int] {
+			return int(a)
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(a)
+		}
+	} -> [a] == [wrapped_types.int] {
+		if [b] == ct.integer_type {
+			return a
+		} -> [b] == ct.decimal_type {
+			return decimal(a.int)
+		} -> [b] == [wrapped_types.int] {
+			return a
+		} -> [b] == [wrapped_types.decimal] {
+			return decimal(a.int)
+		}
+	} -> [a] == [wrapped_types.decimal] {
+		if [b] == ct.integer_type {
+			return int(a)
+		} -> [b] == ct.decimal_type {
+			return a
+		} -> [b] == [wrapped_types.int] {
+			return int(a)
+		} -> [b] == [wrapped_types.decimal] {
+			return a
+		}
+	}
+	return nil
+}
+
+func immut -> __binary_not__(var -> a) {
+	if is_pure(a) {
+		return nil
+	}
+	if [a] == [wrapped_types.boolean] {
+		return boolean(!a.boolean)
+	}
+	return nil
+}
+
+func immut -> __logical_and__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.boolean] {
+		if [b] == [wrapped_types.boolean] {
+			return boolean(a.boolean && b.boolean)
+		} -> [b] == ct.boolean_type {
+			return boolean(a.boolean && b)
+		}
+	} -> [a] == ct.boolean_type {
+		if [b] == [wrapped_types.boolean] {
+			return boolean(a && b.boolean)
+		}
+	}
+	return nil
+}
+
+func immut -> __logical_or__(var -> a, var -> b) {
+	if is_pure(a) || is_pure(b) {
+		return nil
+	}
+	if [a] == [wrapped_types.boolean] {
+		if [b] == [wrapped_types.boolean] {
+			return boolean(a.boolean || b.boolean)
+		} -> [b] == ct.boolean_type {
+			return boolean(a.boolean || b)
+		}
+	} -> [a] == ct.boolean_type {
+		if [b] == [wrapped_types.boolean] {
+			return boolean(a || b.boolean)
+		}
+	}
+	return nil
+}
+
+func immut -> __numeric_positive__(var -> a) {
+	if is_pure(a) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		return int(+a.int)
+	} -> [a] == [wrapped_types.decimal] {
+		return decimal(+a.decimal)
+	} -> [a] == [wrapped_types.boolean] {
+		return a.boolean
+	} -> [a] == ct.boolean_type {
+		return a
+	}
+	return nil
+}
+
+func immut -> __numeric_negate__(var -> a) {
+	if is_pure(a) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		return int(-a.int)
+	} -> [a] == [wrapped_types.decimal] {
+		return decimal(-a.decimal)
+	} -> [a] == [wrapped_types.boolean] {
+		return !a.boolean
+	} -> [a] == ct.boolean_type {
+		return !a
+	}
+	return nil
+}
+
+func immut -> __complement__(var -> a) {
+	if is_pure(a) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		return int(~a.int)
+	}
+	return nil
+}
+
+func immut -> __boolean_negate__(var -> a) {
+	if is_pure(a) {
+		return nil
+	}
+	if [a] == [wrapped_types.boolean] {
+		return boolean(!a.boolean)
+	}
+	return nil
+}
+
+func immut -> __pre_increment__(var -> a) {
+	if is_pure(a) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		a += 1
+		return a
+	}
+	return nil
+}
+
+func immut -> __pre_decrement__(var -> a) {
+	if is_pure(a) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		a -= 1
+		return a
+	}
+	return nil
+}
+
+func immut -> __post_increment__(var -> a) {
+	if is_pure(a) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		var -> temp = int(a.int + 1)
+		++a
+		return temp
+	}
+	return nil
+}
+
+func immut -> __post_decrement__(var -> a) {
+	if is_pure(a) {
+		return nil
+	}
+	if [a] == [wrapped_types.int] {
+		var -> temp = int(a.int - 1)
+		--a
+		return temp
+	}
+	return nil
+}
+
+func immut -> b(var -> a) {
+	if is_pure(a) {
+		return nil
+	}
+	if [a] == ct.integer_type || [a] == [wrapped_types.int] {
+		return boolean(a > 0)
+	} -> [a] == ct.decimal_type || [a] == [wrapped_types.decimal] {
+		return boolean(a > 0)
+	} -> [a] == ct.string_type || [a] == [wrapped_types.string] {
+		return boolean(a.size > 0)
+	} -> [a] == ct.boolean_type || [a] == [wrapped_types.boolean] {
+		return boolean(+a)
+	} -> [a] == [nil] {
+		return boolean(false)
+	}
+	return nil
+}
+
+func immut -> __print__(var -> a) {
+	if [a] == [wrapped_types.int] {
+		return a.int
+	} -> [a] == [wrapped_types.decimal] {
+		return a.decimal
+	} -> [a] == [wrapped_types.boolean] {
+		return a.boolean
+	} -> [a] == [wrapped_types.string] {
+		return a.string
+	}
+	return nil
+}

@@ -1,0 +1,61 @@
+import -> lang
+import -> core_types -> ct
+import -> util
+
+module -> wrapped_tree {
+	struct -> tree {
+		var -> root : [ [[[]]] ]
+		var -> branches : [ [[[]]] ]
+	}
+
+	func -> generate_print_string(var -> a) {
+		if a.branches.size == 0 {
+			return 'tree(' + util.to_string(a.root[0]) + ')'
+		}
+		var -> s = 'tree(' + util.to_string(a.root[0]) + ', [[[ '
+		var -> index = lang.int(0)
+		while +lang.b(index < a.branches.size) {
+			s += generate_print_string(a.branches[index.int])
+			if +lang.b(index != a.branches.size - 1) {
+				s += ', '
+			}
+			index++
+		}
+		s += ' ]]])'
+		return s
+	}
+}
+
+func -> root(var -> a) {
+	return a.root[0]
+}
+
+func -> tree(var -> r, var -> b) {
+	for var -> i : b {
+		if [i] != [wrapped_tree.tree] {
+			exit(1, 'All sub-branches of a tree should be a tree as well')
+		}
+	}
+	var -> ret = wrapped_tree.tree
+	ret.root = [[[ r ]]]
+	ret.branches = b
+	return ret
+}
+
+func -> tree(var -> r) {
+	var -> ret = wrapped_tree.tree
+	ret.root = [[[ r ]]]
+	ret.branches = [[[]]]
+	return ret
+}
+
+func immut -> __print__(var -> a) {
+	if [a] == [wrapped_tree.tree] {
+		return wrapped_tree.generate_print_string(a)
+	}
+	return nil
+}
+
+func immut -> is_leaf(var -> t) {
+	return t.branches.size == 0
+}

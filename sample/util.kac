@@ -1,0 +1,290 @@
+imprt lang lang
+imprt core_types ct
+mov r0 [lang@b]
+dmov [b] r0
+module internal_helper_functions
+ifunc single_digit_integer_to_string a 
+mov r1 [a]
+mov r2 [$1]
+dmov r3 r1
+equ r3 r2
+bneg r3
+jmp r3 .L1
+scope
+mov r4 [$'1']
+ret r4
+escope
+mov r5 [$true]
+jmp r5 .L0
+.L1
+mov r6 [$2]
+dmov r7 r1
+equ r7 r6
+bneg r7
+jmp r7 .L2
+scope
+mov r8 [$'2']
+ret r8
+escope
+mov r9 [$true]
+jmp r9 .L0
+.L2
+mov r10 [$3]
+dmov r11 r1
+equ r11 r10
+bneg r11
+jmp r11 .L3
+scope
+mov r12 [$'3']
+ret r12
+escope
+mov r13 [$true]
+jmp r13 .L0
+.L3
+mov r14 [$4]
+dmov r15 r1
+equ r15 r14
+bneg r15
+jmp r15 .L4
+scope
+mov r16 [$'4']
+ret r16
+escope
+mov r17 [$true]
+jmp r17 .L0
+.L4
+mov r18 [$5]
+dmov r19 r1
+equ r19 r18
+bneg r19
+jmp r19 .L5
+scope
+mov r20 [$'5']
+ret r20
+escope
+mov r21 [$true]
+jmp r21 .L0
+.L5
+mov r22 [$6]
+dmov r23 r1
+equ r23 r22
+bneg r23
+jmp r23 .L6
+scope
+mov r24 [$'6']
+ret r24
+escope
+mov r25 [$true]
+jmp r25 .L0
+.L6
+mov r26 [$7]
+dmov r27 r1
+equ r27 r26
+bneg r27
+jmp r27 .L7
+scope
+mov r28 [$'7']
+ret r28
+escope
+mov r29 [$true]
+jmp r29 .L0
+.L7
+mov r30 [$8]
+dmov r31 r1
+equ r31 r30
+bneg r31
+jmp r31 .L8
+scope
+mov r32 [$'8']
+ret r32
+escope
+mov r33 [$true]
+jmp r33 .L0
+.L8
+mov r34 [$9]
+dmov r35 r1
+equ r35 r34
+bneg r35
+jmp r35 .L9
+scope
+mov r36 [$'9']
+ret r36
+escope
+mov r37 [$true]
+jmp r37 .L0
+.L9
+mov r38 [$0]
+dmov r39 r1
+equ r39 r38
+bneg r39
+jmp r39 .L10
+scope
+mov r40 [$'0']
+ret r40
+escope
+mov r41 [$true]
+jmp r41 .L0
+.L10
+scope
+mov r43 [$1]
+mov r44 [$'Expected a single digit integer to convert into a string.']
+mov r42 [exit:r43,r44]
+escope
+.L0
+efunc
+emodule
+ifunc to_string a 
+mov r45 [a]
+dmov [__temp__0] r45
+tyof r45
+mov r46 [ct@string_type]
+equ r45 r46
+bneg r45
+jmp r45 .L12
+scope
+mov r47 [a]
+ret r47
+escope
+mov r48 [$true]
+jmp r48 .L11
+.L12
+mov r49 [a]
+dmov [__temp__1] r49
+tyof r49
+mov r51 [$'']
+mov r50 [lang@string:r51]
+dmov [__temp__2] r50
+tyof r50
+equ r49 r50
+bneg r49
+jmp r49 .L13
+scope
+mov r52 [a@string]
+ret r52
+escope
+mov r53 [$true]
+jmp r53 .L11
+.L13
+.L11
+mov r54 [a]
+dmov [__temp__3] r54
+tyof r54
+mov r55 [ct@integer_type]
+nequ r54 r55
+mov r56 [a]
+dmov [__temp__4] r56
+tyof r56
+mov r58 [$0]
+mov r57 [lang@int:r58]
+dmov [__temp__5] r57
+tyof r57
+nequ r56 r57
+land r54 r56
+bneg r54
+jmp r54 .L15
+scope
+mov r60 [$1]
+mov r61 [$'The only type that can be converted to a string as of now is an integer']
+mov r59 [exit:r60,r61]
+escope
+mov r62 [$true]
+jmp r62 .L14
+.L15
+.L14
+mov r63 [$0]
+dmov [temp] r63
+mov r64 [a]
+dmov [__temp__6] r64
+tyof r64
+mov r66 [$0]
+mov r65 [lang@int:r66]
+dmov [__temp__7] r65
+tyof r65
+equ r64 r65
+bneg r64
+jmp r64 .L17
+scope
+mov r67 [temp]
+mov r68 [a@int]
+mov [temp] r68
+escope
+mov r69 [$true]
+jmp r69 .L16
+.L17
+.L16
+mov r70 [$'']
+dmov [ret] r70
+.L18
+scope
+mov r72 [a]
+mov r71 [b:r72]
+pos r71
+bneg r71
+jmp r71 .L19
+mov r73 [a]
+mov r74 [$10]
+mod r73 r74
+dmov [mod] r73
+mov r75 [ret]
+mov r77 [ret]
+mov r78 [$0]
+mov r80 [mod]
+mov r79 [internal_helper_functions@single_digit_integer_to_string:r80]
+mov r76 [insert:r77,r78,r79]
+mov [ret] r76
+mov r81 [a]
+mov r82 [$10]
+dive [a] r82
+escope
+mov r83 [$true]
+jmp r83 .L18
+.L19
+mov r84 [ret]
+ret r84
+efunc
+ifunc sum a 
+mov r85 [a]
+dmov [__temp__8] r85
+tyof r85
+mov r86 [ct@list_type]
+nequ r85 r86
+mov r87 [a]
+dmov [__temp__9] r87
+tyof r87
+mov r88 [ct@tuple_type]
+nequ r87 r88
+land r85 r87
+bneg r85
+jmp r85 .L21
+scope
+mov r89 [$nil]
+ret r89
+escope
+mov r90 [$true]
+jmp r90 .L20
+.L21
+.L20
+mov r91 [$0]
+dmov [sum] r91
+dmov [__temp__10] [$0]
+mov r92 [a]
+dmov [__temp__11] r92
+.L22
+scope
+mov r93 [__temp__10]
+mov r94 [__temp__11@size]
+lt r93 r94
+bneg r93
+jmp r93 .L23
+dmov [temp] [__temp__11|__temp__10]
+mov r95 [sum]
+mov r96 [temp]
+adde [sum] r96
+poinc [__temp__10]
+escope
+mov r97 [$true]
+jmp r97 .L22
+.L23
+mov r98 [sum]
+ret r98
+efunc
