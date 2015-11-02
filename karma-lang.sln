@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "karma-lang", "karma-lang.vcxproj", "{B2D713BD-D56F-43AE-8029-C4EB8E3618B0}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "unified-includes", "..\unified-includes\unified-includes.vcxproj", "{5DCD3ED6-A405-4BD6-BFB0-9F2C95440858}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B2D713BD-D56F-43AE-8029-C4EB8E3618B0}.Debug|x64.ActiveCfg = Debug|Win32
+		{B2D713BD-D56F-43AE-8029-C4EB8E3618B0}.Debug|x86.ActiveCfg = Debug|Win32
+		{B2D713BD-D56F-43AE-8029-C4EB8E3618B0}.Debug|x86.Build.0 = Debug|Win32
+		{B2D713BD-D56F-43AE-8029-C4EB8E3618B0}.Release|x64.ActiveCfg = Release|Win32
+		{B2D713BD-D56F-43AE-8029-C4EB8E3618B0}.Release|x86.ActiveCfg = Release|Win32
+		{B2D713BD-D56F-43AE-8029-C4EB8E3618B0}.Release|x86.Build.0 = Release|Win32
+		{5DCD3ED6-A405-4BD6-BFB0-9F2C95440858}.Debug|x64.ActiveCfg = Debug|x64
+		{5DCD3ED6-A405-4BD6-BFB0-9F2C95440858}.Debug|x64.Build.0 = Debug|x64
+		{5DCD3ED6-A405-4BD6-BFB0-9F2C95440858}.Debug|x86.ActiveCfg = Debug|Win32
+		{5DCD3ED6-A405-4BD6-BFB0-9F2C95440858}.Debug|x86.Build.0 = Debug|Win32
+		{5DCD3ED6-A405-4BD6-BFB0-9F2C95440858}.Release|x64.ActiveCfg = Release|x64
+		{5DCD3ED6-A405-4BD6-BFB0-9F2C95440858}.Release|x64.Build.0 = Release|x64
+		{5DCD3ED6-A405-4BD6-BFB0-9F2C95440858}.Release|x86.ActiveCfg = Release|Win32
+		{5DCD3ED6-A405-4BD6-BFB0-9F2C95440858}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
